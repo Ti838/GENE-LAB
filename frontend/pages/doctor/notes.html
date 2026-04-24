@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Notes | GeneLab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="../../js/theme.js" defer></script>
+    <script src="../../js/api.js" defer></script>
+    <script src="../../js/auth.js" defer></script>
+    <script src="../../js/app.js" defer></script>
+    <script src="../../js/notes.js" defer></script>
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+<body class="selection:bg-cyan selection:text-ink">
+    <!-- DNA Background is injected by dna-background.js -->
+        </div>
+        <div id="particle-field" class="absolute inset-0"></div>
+    </div>
+
+    <div class="relative z-10 flex min-h-screen">
+        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
+                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+            </div>
+            <nav class="flex-1 px-6 space-y-2 mt-10">
+                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
+                <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
+                <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
+                <a href="notes.html" class="sidebar-link active"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
+                <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
+                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
+            </nav>
+            <div class="p-8 border-t border-white/5">
+                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 ml-80 p-10">
+            <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="section-badge mb-3">Doctor workflow</p>
+                    <h1 class="text-5xl font-display font-bold text-white mb-2">Clinical Notes</h1>
+                    <p class="text-slate-400 font-medium">Secure notepad for research observations and diagnostic notes.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button id="new-note-btn" class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">add</span> New Note
+                    </button>
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                        <span data-theme-label>Dark</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-8">
+                <!-- Notes List -->
+                <div class="glass-panel p-6 rounded-[32px] max-h-[70vh] overflow-y-auto" data-animate="panel">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">All Notes</h3>
+                    <div id="notes-list" class="space-y-3">
+                        <p class="text-slate-500 italic text-center p-4">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Note Editor -->
+                <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                    <input id="note-title" type="text" class="field-input mb-4 text-lg font-bold" placeholder="Note title...">
+                    <textarea id="note-content" class="field-input h-64 sm:h-80 resize-none placeholder:text-slate-500 p-5" placeholder="Write your clinical observations here..."></textarea>
+                    <button id="save-note-btn" class="btn-premium btn-cyan w-full sm:w-auto px-12 py-5 rounded-2xl mt-6 flex items-center gap-2 justify-center">
+                        <span class="material-symbols-outlined text-sm">save</span> Save Note
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

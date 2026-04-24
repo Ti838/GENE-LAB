@@ -1,0 +1,112 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Command Console | GeneLab Admin</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="../../css/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+        <script src="../../js/theme.js" defer></script>
+        <script src="../../js/api.js" defer></script>
+        <script src="../../js/auth.js" defer></script>
+        <script src="../../js/app.js" defer></script>
+        <link rel="stylesheet" href="../../theme.css">
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+    <body class="selection:bg-teal selection:text-ink">
+        <!-- DNA Background is injected by dna-background.js -->
+            </div>
+            <div id="particle-field" class="absolute inset-0"></div>
+        </div>
+
+        <div class="relative z-10 flex min-h-screen">
+            <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+                <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-teal text-3xl">admin_panel_settings</span>
+                    <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+                </div>
+                <nav class="flex-1 px-6 space-y-2 mt-10">
+                    <a href="dashboard.html" class="sidebar-link active"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
+                    <a href="doctors.html" class="sidebar-link"><span class="material-symbols-outlined">manage_accounts</span> Doctors</a>
+                    <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
+                    <a href="logs.html" class="sidebar-link"><span class="material-symbols-outlined">history</span> Activity Logs</a>
+                    <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">security</span> Profile</a>
+                </nav>
+                <div class="p-8 border-t border-white/5">
+                    <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                    </a>
+                </div>
+            </aside>
+
+            <main class="flex-1 ml-80 p-10">
+                <header data-animate="hero" class="mb-12 flex justify-between items-end">
+                    <div>
+                        <p class="section-badge mb-3">Admin control center</p>
+                        <h1 class="text-5xl font-display font-bold text-white mb-2">Command Console</h1>
+                        <p class="text-slate-400 font-medium">Enterprise-wide system monitoring, access governance, and operational visibility.</p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="info-chip"><span class="material-symbols-outlined text-sm">verified_user</span> Access policy active</span>
+                            <span class="info-chip"><span class="material-symbols-outlined text-sm">monitoring</span> Live telemetry stream</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap justify-end">
+                        <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">dark_mode</span>
+                            <span data-theme-label>Dark</span>
+                        </button>
+                    </div>
+                </header>
+                
+                <div class="grid grid-cols-4 gap-6 mb-12">
+                    <div data-animate="panel" class="glass-panel glass-card p-8 rounded-[32px] border-white/5">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Total Doctors</p>
+                        <p class="text-5xl font-display font-bold text-white" data-metric="totalDoctors">0</p>
+                    </div>
+                    <div data-animate="panel" class="glass-panel glass-card p-8 rounded-[32px] border-white/5">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Genetic Files</p>
+                        <p class="text-5xl font-display font-bold text-white" data-metric="totalFiles">0</p>
+                    </div>
+                    <div data-animate="panel" class="glass-panel glass-card p-8 rounded-[32px] border-white/5">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Analysis Count</p>
+                        <p class="text-5xl font-display font-bold text-teal" data-metric="totalAnalyses">0</p>
+                    </div>
+                    <div data-animate="panel" class="glass-panel glass-card p-8 rounded-[32px] border-white/5">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Recent Logs</p>
+                        <p class="text-5xl font-display font-bold text-coral" data-metric="recentLogsCount">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-8">
+                    <div class="col-span-2 glass-panel p-10 rounded-[40px] border-white/5" data-animate="panel">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-2xl font-display font-bold text-white">System Activity Logs</h3>
+                            <a href="logs.html" class="text-xs font-bold text-cyan uppercase tracking-widest hover:underline">View All Logs</a>
+                        </div>
+                        <div id="recent-logs" class="space-y-4">
+                            <p class="text-slate-500 italic text-center p-4">Streaming telemetry data...</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-10 rounded-[40px] border-white/5" data-animate="panel">
+                        <h3 class="text-2xl font-display font-bold text-white mb-8">Data Distribution</h3>
+                        <div class="h-80 w-full"><canvas id="storageChart"></canvas></div>
+                    </div>
+                </div>
+                <script src="../../js/charts.js" defer></script>
+                <script src="../../js/admin.js" defer></script>
+            </main>
+
+
+            </main>
+        </div>
+    
+    
+    </body>
+    </html>
+    
+
+

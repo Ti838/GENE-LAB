@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui;
+}
+
+/* General Typography & Transitions */
+body {
+  transition: background 0.45s ease, color 0.45s ease;
+  overflow-x: hidden;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+body[data-theme="light"] {
+  --cyan: #74c0fc;
+  --violet: #91a7ff;
+  background: linear-gradient(180deg, #eef5f9, #e2ebf2 100%);
+  color: #132a3f;
+}
+
+body[data-theme="dark"] {
+  --cyan: #a5d8ff;
+  --violet: #bac8ff;
+  background: linear-gradient(180deg, #050d17, #02060a 100%);
+  color: #e9f4fc;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Manrope', sans-serif;
+}
+
+/* ── DNA Canvas layer ── */
+#dna-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Gradient overlay to tone down the helix ── */
+#dna-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: transparent !important;
+  transition: background 0.5s ease;
+}
+
+[data-theme="dark"] #dna-overlay {
+  background: transparent !important;
+}
+
+/* Global Icon Alignment Fix */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  display: inline-block !important;
+  vertical-align: middle;
+  line-height: 1;
+  font-size: 20px !important; /* Standard size */
+  width: 20px !important;
+  height: 20px !important;
+  font-feature-settings: 'liga';
+}
+
+/* Specific fix for absolutely positioned icons in forms (Login/Signup) */
+.form-container .material-symbols-outlined.absolute,
+.auth-container .material-symbols-outlined.absolute {
+  position: absolute !important;
+  left: 0.875rem !important; /* Fixed left-3.5 position */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Ensure form inputs have enough padding for icons */
+.form-container .field-input,
+.auth-container .field-input {
+  padding-left: 3rem !important;
+}
+
+/* Base Layout isolating content from background */
+main, .relative.z-10 {
+  position: relative;
+  z-index: 5;
+}
+
+nav, header, footer, aside {
+  z-index: 50;
+}
+
+/* Glass Panel & Component Refinements */
+.glass-panel {
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+}
+
+body[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(43, 144, 201, 0.12) !important;
+  box-shadow: 0 20px 50px rgba(13, 33, 55, 0.06) !important;
+}
+
+body[data-theme="dark"] .glass-panel {
+  background: rgba(13, 25, 41, 0.82) !important;
+  backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(162, 211, 233, 0.14) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Premium Component Overrides */
+.glass {
+  background: rgba(255,255,255,0.62);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(42,180,200,0.14);
+}
+body[data-theme="dark"] .glass {
+  background: rgba(15,28,44,0.72);
+  border: 1px solid rgba(42,180,200,0.18);
+}
+
+/* Gradient Text */
+.grad-text {
+  background: linear-gradient(135deg, #1a7f8e 0%, #2ab4c8 40%, #2eb87e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+[data-theme="dark"] .grad-text {
+  background: linear-gradient(135deg, #4dd4e8 0%, #2ab4c8 40%, #3de89a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Neon Glows */
+.cyan-glow { background: #79e1ff; box-shadow: 0 0 18px 2px #79e1ff; }
+.teal-glow { background: #39c6b4; box-shadow: 0 0 18px 2px #39c6b4; }
+.lime-glow { background: #b8e36b; box-shadow: 0 0 18px 2px #b8e36b; }
+.coral-glow { background: #ff8e6e; box-shadow: 0 0 18px 2px #ff8e6e; }
+
+/* Theme-Aware Text Color Refinements (Safer Selectors) */
+body[data-theme="light"] .text-slate-500:not(.material-symbols-outlined) {
+  color: #557089 !important;
+}
+
+body[data-theme="light"] .bg-slate-900,
+body[data-theme="light"] .bg-slate-800 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* DNA Sequence Colors */
+.base-a { color: #e05252; }
+.base-t { color: #2ab4c8; }
+.base-g { color: #27c93f; }
+.base-c { color: #ffbe2e; }
+
+/* Animation tweaks */
+.feat-card {
+  transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.feat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth Transitions */
+button, a, input, select, textarea {
+  transition: all 0.3s ease;
+}

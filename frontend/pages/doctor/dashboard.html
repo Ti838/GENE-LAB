@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard | GeneLab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../js/theme.js" defer></script>
+    <script src="../../js/api.js" defer></script>
+    <script src="../../js/auth.js" defer></script>
+    <script src="../../js/app.js" defer></script>
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+<body class="selection:bg-cyan selection:text-ink">
+    <!-- DNA Background is injected by dna-background.js -->
+
+    <div class="relative z-10 flex min-h-screen">
+        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
+                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+            </div>
+            <nav class="flex-1 px-6 space-y-2 mt-10">
+                <a href="dashboard.html" class="sidebar-link active"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
+                <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
+                <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
+                <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
+                <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
+                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
+            </nav>
+            <div class="p-8 border-t border-white/5">
+                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 ml-80 p-10">
+            <header data-animate="hero" class="mb-12 flex justify-between items-end">
+                <div>
+                    <p class="section-badge mb-3">Doctor workflow</p>
+                    <h1 class="text-5xl font-display font-bold text-white mb-2">Systems Overview</h1>
+                    <p class="text-slate-400 font-medium">Real-time genomic processing, review queues, and reporting for clinical teams.</p>
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <span class="info-chip"><span class="material-symbols-outlined text-sm">lab_profile</span> Clinical workflow ready</span>
+                        <span class="info-chip"><span class="material-symbols-outlined text-sm">insights</span> High-confidence analysis</span>
+                    </div>
+                </div>
+                <div class="flex gap-4 flex-wrap justify-end">
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                        <span data-theme-label>Dark</span>
+                    </button>
+                    <button class="btn-premium px-6 py-3 rounded-xl border-white/10 hover:border-white transition flex items-center gap-2" onclick="location.reload()"><span class="material-symbols-outlined text-sm">sync</span> Sync Engine</button>
+                    <button class="btn-premium btn-cyan px-6 py-3 rounded-xl flex items-center gap-2"><span class="material-symbols-outlined text-sm">cloud_download</span> Export Batch</button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-4 gap-6 mb-12">
+                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Stored Sequences</p>
+                    <p class="text-5xl font-display font-bold text-white mb-2" data-stat="totalFiles">0</p>
+                    <div class="flex items-center gap-2 text-teal text-xs font-bold"><span class="material-symbols-outlined text-sm">trending_up</span> +12% this week</div>
+                </div>
+                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Total Analyses</p>
+                    <p class="text-5xl font-display font-bold text-white mb-2" data-stat="analyzed">0</p>
+                    <div class="flex items-center gap-2 text-cyan text-xs font-bold"><span class="material-symbols-outlined text-sm">rocket</span> Processing stable</div>
+                </div>
+                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card border-coral/30">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Anomalies Detected</p>
+                    <p class="text-5xl font-display font-bold text-coral text-glow mb-2" data-stat="anomalies">0</p>
+                    <div class="flex items-center gap-2 text-coral text-xs font-bold"><span class="material-symbols-outlined text-sm">warning</span> Critical attention</div>
+                </div>
+                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Server Health</p>
+                    <p class="text-5xl font-display font-bold text-teal text-glow mb-2">99%</p>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden"><div class="w-[99%] h-full bg-teal shadow-[0_0_15px_#00bea4]"></div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-8">
+                <div class="col-span-2 glass-panel p-10 rounded-[32px] border-white/5" data-animate="panel">
+                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
+                        <h3 class="text-2xl font-display font-bold">Recent Genomic Flux</h3>
+                        <div class="flex gap-2">
+                             <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer hover:bg-cyan/10">WEEKLY</div>
+                             <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer bg-white text-ink">MONTHLY</div>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="glass-panel p-10 rounded-[32px] border-white/5" data-animate="panel">
+                    <h3 class="text-2xl font-display font-bold mb-8">System Activity</h3>
+                    <div id="system-activity-logs" class="space-y-6">
+                         <p class="text-slate-500 text-sm italic">Loading activity...</p>
+                    </div>
+                    <button class="w-full mt-8 py-4 border border-white/10 text-slate-400 font-bold uppercase tracking-widest text-xs rounded-xl hover:text-white hover:bg-white/5 transition">Full System Logs</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../../js/charts.js" defer></script>
+    <script src="../../js/doctor-dashboard.js" defer></script>
+</body>
+</html>
+    
+

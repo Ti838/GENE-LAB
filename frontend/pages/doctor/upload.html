@@ -1,0 +1,107 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Upload DNA | GeneLab</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="../../css/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+        <link rel="stylesheet" href="../../theme.css">
+        <script src="../../js/theme.js" defer></script>
+        <script src="../../js/api.js" defer></script>
+        <script src="../../js/auth.js" defer></script>
+        <script src="../../js/app.js" defer></script>
+        <script src="../../js/dna-background.js" defer></script>
+    </head>
+    <body class="selection:bg-cyan selection:text-ink">
+        <!-- DNA Background is injected by dna-background.js -->
+
+        <div class="relative z-10 flex min-h-screen">
+            <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+                <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
+                    <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+                </div>
+                <nav class="flex-1 px-6 space-y-2 mt-10">
+                    <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                    <a href="upload.html" class="sidebar-link active"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
+                    <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
+                    <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
+                    <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
+                    <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
+                    <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
+                </nav>
+                <div class="p-8 border-t border-white/5">
+                    <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                    </a>
+                </div>
+            </aside>
+
+            <main class="flex-1 ml-80 p-10">
+                <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <p class="section-badge mb-3">Doctor workflow</p>
+                        <h1 class="text-5xl font-display font-bold text-white mb-2">Upload DNA</h1>
+                        <p class="text-slate-400 font-medium">Secure sequence intake and preparation for downstream analysis.</p>
+                    </div>
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                        <span data-theme-label>Dark</span>
+                    </button>
+                </header>
+                
+                <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-8 mt-6">
+                    <div class="space-y-6" data-animate="panel">
+                        <!-- Drop Zone -->
+                        <div class="glass-panel p-12 rounded-[40px] border-cyan/20 border text-center hover:bg-white/5 transition-all group cursor-pointer" id="drop-zone">
+                            <div class="w-20 h-20 bg-cyan/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-cyan/30 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-4xl text-cyan">cloud_upload</span>
+                            </div>
+                            <h2 class="text-2xl font-display font-bold text-white mb-3">Inject genomic file</h2>
+                            <p class="text-slate-400 mb-8 max-w-xs mx-auto">Drop FASTA, CSV, or TXT files here</p>
+                            
+                            <label class="btn-premium btn-cyan px-10 py-4 rounded-2xl cursor-pointer inline-flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">folder_open</span> Browse Files
+                                <input type="file" class="hidden" accept=".fasta,.csv,.txt" multiple />
+                            </label>
+                        </div>
+
+                        <!-- Manual Entry -->
+                        <div class="glass-panel p-8 rounded-[40px] border-white/5">
+                            <div class="flex items-center gap-3 mb-6">
+                                <span class="material-symbols-outlined text-teal">edit_note</span>
+                                <h3 class="text-xl font-display font-bold text-white">Manual Sequence Entry</h3>
+                            </div>
+                            <input id="manual-name" type="text" class="field-input mb-4" placeholder="Sequence Identifier (e.g. SAMPLE_001)">
+                            <textarea id="manual-paste-area" class="field-input h-48 resize-none font-mono text-xs p-5" placeholder="Paste DNA sequence (A, T, G, C)..."></textarea>
+                            <button id="save-manual-btn" class="btn-premium btn-cyan w-full py-4 rounded-2xl mt-4 flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">send</span> Inject Manual Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Queue / Recent Files -->
+                    <div class="glass-panel p-8 rounded-[40px] border-white/10" data-animate="panel">
+                        <div class="flex items-center justify-between mb-6">
+                            <p class="section-badge">Recent Bio-Assets</p>
+                            <button class="text-slate-500 hover:text-cyan transition" onclick="location.reload()"><span class="material-symbols-outlined">refresh</span></button>
+                        </div>
+                        <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2" id="file-list">
+                            <p class="text-slate-500 italic text-center p-4">Loading bio-assets...</p>
+                        </div>
+                    </div>
+                </div>
+
+<script src="../../js/upload.js" defer></script>
+
+            </main>
+        </div>
+    </body>
+    </html>
+    
+

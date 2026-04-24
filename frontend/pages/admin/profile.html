@@ -1,0 +1,155 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Master Control Profile | GeneLab</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <link rel="stylesheet" href="../../css/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+        <script src="../../js/theme.js" defer></script>
+        <script src="../../js/api.js" defer></script>
+        <script src="../../js/auth.js" defer></script>
+        <script src="../../js/profile.js" defer></script>
+        <script src="../../js/app.js" defer></script>
+        <link rel="stylesheet" href="../../theme.css">
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+    <body class="selection:bg-cyan selection:text-ink">
+        <!-- DNA Background is injected by dna-background.js -->
+            </div>
+            <div id="particle-field" class="absolute inset-0"></div>
+        </div>
+
+        <div class="relative z-10 flex min-h-screen">
+            <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+                <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-teal text-3xl">admin_panel_settings</span>
+                    <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+                </div>
+                <nav class="flex-1 px-6 space-y-2 mt-10">
+                    <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
+                    <a href="doctors.html" class="sidebar-link"><span class="material-symbols-outlined">manage_accounts</span> Doctors</a>
+                    <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
+                    <a href="logs.html" class="sidebar-link"><span class="material-symbols-outlined">history</span> Activity Logs</a>
+                    <a href="profile.html" class="sidebar-link active"><span class="material-symbols-outlined">security</span> Profile</a>
+                </nav>
+                <div class="p-8 border-t border-white/5">
+                    <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                    </a>
+                </div>
+            </aside>
+
+            <main class="flex-1 ml-80 p-10">
+                <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <p class="section-badge mb-3">Admin profile</p>
+                        <h1 class="text-5xl font-display font-bold text-white mb-2">Master Control Profile</h1>
+                        <p class="text-slate-400 font-medium">Root-level administrative identity and verification node.</p>
+                    </div>
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                        <span data-theme-label>Dark</span>
+                    </button>
+                </header>
+                
+<div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-6 max-w-6xl" data-animate="panel">
+    <div class="glass-panel p-8 rounded-[48px] border-white/10 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-10 opacity-10"><span class="material-symbols-outlined text-[120px] text-teal">shield_person</span></div>
+        <div class="flex flex-col items-center text-center gap-6">
+            <div class="w-32 h-32 bg-teal/10 border-2 border-teal/30 rounded-full flex items-center justify-center overflow-hidden text-4xl text-teal">
+                <img data-profile-photo-preview src="" alt="Profile" class="w-full h-full object-cover hidden">
+                <span data-profile-photo-initials>AD</span>
+            </div>
+            <div>
+                <h2 class="text-4xl font-display font-bold text-white mb-2">Admin Profile</h2>
+                <p class="text-slate-400 text-sm">Created manually by system / super admin</p>
+            </div>
+        </div>
+        <input type="file" data-profile-photo-input accept="image/*" class="hidden">
+        <button type="button" data-change-photo class="btn-premium btn-ghost w-full py-3 rounded-2xl mt-8 text-sm">View profile</button>
+
+        <div class="space-y-4 text-left mt-10">
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <span class="text-sm text-slate-400">Role</span>
+                <span class="status-chip status-online">Admin</span>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <span class="text-sm text-slate-400">Account Status</span>
+                <span class="status-chip status-online">Active</span>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                <span class="text-sm text-slate-400">Created Date</span>
+                <span class="status-chip status-muted">2026-04-22</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <form id="doctor-profile-form" class="glass-panel p-8 rounded-[48px] border-white/10">
+            <h3 class="text-2xl font-display font-bold text-white mb-8">Admin Profile Data</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                    <input name="name" type="text" value="System Administrator" class="field-input">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                    <input name="email" type="email" value="admin@genelab.industrial" class="field-input">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Phone Number (optional)</label>
+                    <input name="phone" type="text" value="+1 555 0199" class="field-input">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Profile Photo</label>
+                    <input name="profilePicture" type="text" value="Not uploaded" class="field-input" readonly>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                <button type="submit" class="btn-premium btn-cyan px-8 py-4 rounded-2xl text-sm">Update personal information</button>
+                <button type="button" data-change-photo class="btn-premium btn-ghost px-8 py-4 rounded-2xl text-sm">Change profile photo</button>
+            </div>
+        </form>
+
+        <div class="grid sm:grid-cols-2 gap-6">
+            <div class="glass-panel p-8 rounded-[48px] border-white/10">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">System Control Access</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Add doctor</span><span class="status-chip status-online">Allowed</span></div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Approve / block / delete doctor</span><span class="status-chip status-online">Allowed</span></div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">View all DNA data, delete files, manage storage</span><span class="status-chip status-online">Allowed</span></div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">View analytics, charts, activity logs</span><span class="status-chip status-online">Allowed</span></div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Configure system features and permissions</span><span class="status-chip status-online">Allowed</span></div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-8 rounded-[48px] border-white/10 border-coral/20">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Restrictions</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Access without authentication</span><span class="status-chip status-muted">Denied</span></div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Modify core analysis logic from UI</span><span class="status-chip status-muted">Denied</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-8 rounded-[48px] border-white/10">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Security</h3>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="button" data-change-password class="btn-premium btn-ghost px-8 py-4 rounded-2xl text-sm">Change password</button>
+                <button class="btn-premium btn-cyan px-8 py-4 rounded-2xl text-sm" onclick="auth.logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </main>
+        </div>
+    </body>
+    </html>
+    
+
+

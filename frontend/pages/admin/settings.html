@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings | GeneLab Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="../../js/theme.js" defer></script>
+    <script src="../../js/api.js" defer></script>
+    <script src="../../js/auth.js" defer></script>
+    <script src="../../js/app.js" defer></script>
+    <link rel="stylesheet" href="../../theme.css">
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+<body class="selection:bg-cyan selection:text-ink">
+    <!-- DNA Background is injected by dna-background.js -->
+        </div>
+        <div id="particle-field" class="absolute inset-0"></div>
+    </div>
+
+    <div class="relative z-10 flex min-h-screen">
+        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
+            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined text-teal text-3xl">admin_panel_settings</span>
+                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+            </div>
+            <nav class="flex-1 px-6 space-y-2 mt-10">
+                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
+                <a href="doctors.html" class="sidebar-link"><span class="material-symbols-outlined">manage_accounts</span> Doctors</a>
+                <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
+                <a href="logs.html" class="sidebar-link"><span class="material-symbols-outlined">history</span> Activity Logs</a>
+                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">security</span> Profile</a>
+            </nav>
+            <div class="p-8 border-t border-white/5">
+                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 ml-80 p-10">
+            <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="section-badge mb-3">Admin control</p>
+                    <h1 class="text-5xl font-display font-bold text-white mb-2">System Settings</h1>
+                    <p class="text-slate-400 font-medium">Configure platform behavior, policy rules, and security operations.</p>
+                </div>
+                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                    <span data-theme-label>Dark</span>
+                </button>
+            </header>
+
+            <div class="grid xl:grid-cols-[0.95fr_1.05fr] gap-6">
+                <div class="glass-panel p-8 rounded-[32px] border-white/10" data-animate="panel">
+                    <h3 class="text-2xl font-display font-bold mb-6">Platform Configuration</h3>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500 mb-2">Platform Name</label>
+                            <input type="text" value="GeneLab" class="field-input">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500 mb-2">Notification Email</label>
+                            <input type="email" value="ops@genelab.com" class="field-input">
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
+                            <span class="text-white">Maintenance mode</span>
+                            <span class="status-chip status-muted">Disabled</span>
+                        </div>
+                        <button class="btn-premium btn-cyan w-full py-4 rounded-xl">Save Settings</button>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="glass-panel p-8 rounded-[32px] border-white/10" data-animate="panel">
+                        <h3 class="text-2xl font-display font-bold mb-4">Security Policy</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Doctor public signup</span><span class="status-chip status-online">Enabled</span></div>
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Admin public signup</span><span class="status-chip status-warning">Disabled</span></div>
+                            <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10"><span class="text-slate-400">Audit log stream</span><span class="status-chip status-online">Active</span></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-[32px] border-white/10" data-animate="panel">
+                        <h3 class="text-2xl font-display font-bold mb-4">Quick Actions</h3>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <button class="btn-premium btn-ghost py-3 rounded-xl">Refresh Policy</button>
+                            <button class="btn-premium btn-ghost py-3 rounded-xl">Export Config</button>
+                            <button class="btn-premium btn-ghost py-3 rounded-xl">Restart Queue</button>
+                            <button class="btn-premium btn-cyan py-3 rounded-xl">Run Health Check</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+
+
+
