@@ -40,7 +40,7 @@ const resultSchema = new mongoose.Schema({
   clinicalRecommendations: { type: String },
   analystName: { type: String, default: 'GeneLab AI Analysis System' },
   analysisDate: { type: Date, default: Date.now }
-}, { timestamps: true });
+}, { timestamps: true, collection: 'Results' });
 
 module.exports = mongoose.model('Result', resultSchema);
 

@@ -8,6 +8,7 @@ const { protect } = require('../middleware/auth');
 const SequencingRequest = require('../models/SequencingRequest');
 const Result = require('../models/Result');
 const AuditLog = require('../models/AuditLog');
+const dnaAnalysis = require('../services/dnaAnalysis');
 
 // ── GET /api/requests ── List user's requests ──────────────────────
 router.get('/', protect, async (req, res, next) => {
@@ -56,25 +57,13 @@ router.get('/:id/result', protect, async (req, res, next) => {
 
     let result = await Result.findOne({ requestId: req.params.id });
     if (!result) {
-      // 🧬 TODO: PLUG IN ACTUAL SEQUENCING MODEL HERE
-      // When the user builds their actual model, it should be called here
-      // to generate real clinical results based on the sampleId.
+      // 🧬 Using DNA Analysis Service (Future Integration Point)
+      const analysisResults = await dnaAnalysis.analyzeDNA(request.dnaFile, request.sampleType);
       
-      // Auto-generate mock result for demo for now
       result = await Result.create({
         requestId: req.params.id,
         userId: req.user._id,
-        qualityMetrics: { coverageDepth: '30x', totalReads: '3.2B', gcContent: '41%', passQC: '99.8%', contamination: '0%', readLength: '150bp' },
-        variantSummary: { snvs: 2543, indels: 234, svs: 12, pathogenic: 3, vus: 18, benign: 4128 },
-        variants: [
-          { gene: 'BRCA1', variant: 'c.5266dupC', classification: 'Pathogenic', frequency: '0.001%', clinVar: 'Pathogenic', chromosome: 'chr17', position: 41246481, evidence: 'ClinVar: RCV000048267' },
-          { gene: 'TP53', variant: 'c.817C>T', classification: 'VUS', frequency: 'Rare', clinVar: 'Uncertain significance', chromosome: 'chr17', position: 7674220, evidence: 'ClinVar: RCV000421986' },
-          { gene: 'EGFR', variant: 'c.2369C>T', classification: 'Benign', frequency: '2.3%', clinVar: 'Benign', chromosome: 'chr7', position: 55249071, evidence: 'gnomAD: 0.023' },
-          { gene: 'BRCA2', variant: 'c.5946delT', classification: 'Pathogenic', frequency: '0.0005%', clinVar: 'Pathogenic', chromosome: 'chr13', position: 32906729, evidence: 'ClinVar: RCV000048267' },
-          { gene: 'MLH1', variant: 'c.1489A>G', classification: 'Likely Pathogenic', frequency: '0.01%', clinVar: 'Likely pathogenic', chromosome: 'chr3', position: 37038101, evidence: 'ClinVar: RCV000075764' }
-        ],
-        analysisSummary: `Whole genome sequencing analysis of sample ${request.sampleId} identified ${request.sampleType} variants with clinical significance. Three pathogenic variants identified in cancer predisposition genes.`,
-        clinicalRecommendations: 'Genetic counseling is strongly recommended. Consider cascade testing for family members. Enhanced surveillance protocol indicated.'
+        ...analysisResults
       });
     }
     res.json({ result, request });

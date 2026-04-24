@@ -1,89 +1,221 @@
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
- * Do not copy, distribute, or modify without permission.
+ * Professional Database Seeding Script
  */
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const User = require('./src/models/User');
-const SequencingRequest = require('./src/models/SequencingRequest');
-const Result = require('./src/models/Result');
+const User = require('./models/User');
+const SequencingRequest = require('./models/SequencingRequest');
+const Result = require('./models/Result');
+const Announcement = require('./models/Announcement');
+const AuditLog = require('./models/AuditLog');
 
 async function seed() {
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/genelab');
-  console.log('✅ Connected to MongoDB');
-
-  // Clear existing demo data
-  await User.deleteMany({ email: { $in: ['doctor@genelab.com', 'admin@genelab.com'] } });
-
-  // Create demo doctor
-  const doctor = await User.create({
-    name: 'Dr. Sarah Johnson',
-    email: 'doctor@genelab.com',
-    password: 'demo1234',
-    role: 'doctor',
-    organization: 'Johns Hopkins Hospital',
-    specialization: 'Medical Genetics',
-    licenseNumber: 'MD-JHH-2024',
-    phone: '+1 (410) 955-5000',
-    isActive: true,
-    isEmailVerified: true
-  });
-  console.log('👨‍⚕️ Doctor created:', doctor.email);
-
-  // Create demo admin
-  const admin = await User.create({
-    name: 'System Administrator',
-    email: 'admin@genelab.com',
-    password: 'admin1234',
-    role: 'admin',
-    organization: 'GeneLab Inc.',
-    isActive: true,
-    isEmailVerified: true
-  });
-  console.log('⚙️  Admin created:', admin.email);
-
-  // Create demo sequencing requests
-  const requestData = [
-    { sampleType: 'Whole Genome', specimenType: 'Blood', patientId: 'PT-2026-001', patientAge: 45, biologicalSex: 'Female', clinicalIndication: 'Hereditary breast/ovarian cancer predisposition', analysisType: 'Diagnostic', priorityLevel: 'Express', diseasePanels: ['Cancer', 'BRCA'], annotations: ['VEP', 'ClinVar', 'OMIM'], status: 'completed', familyHistory: true },
-    { sampleType: 'Whole Exome', specimenType: 'Blood', patientId: 'PT-2026-002', patientAge: 32, biologicalSex: 'Male', clinicalIndication: 'Cardiomyopathy - suspected genetic etiology', analysisType: 'Diagnostic', priorityLevel: 'Standard', diseasePanels: ['Cardiology'], annotations: ['VEP', 'ClinVar'], status: 'analyzing', familyHistory: false },
-    { sampleType: 'Targeted Panel', specimenType: 'Tissue', patientId: 'PT-2026-003', patientAge: 58, biologicalSex: 'Male', clinicalIndication: 'Colorectal cancer - somatic mutation profiling', analysisType: 'Diagnostic', priorityLevel: 'Stat', diseasePanels: ['Cancer'], annotations: ['VEP', 'ClinVar', 'OMIM'], status: 'pending', familyHistory: true },
-    { sampleType: 'RNA-seq', specimenType: 'Blood', patientId: 'PT-2026-004', patientAge: 28, biologicalSex: 'Female', clinicalIndication: 'Rare neurological disease investigation', analysisType: 'Research', priorityLevel: 'Standard', diseasePanels: ['Neurological', 'Rare Disease'], annotations: ['VEP'], status: 'pending', familyHistory: false },
-    { sampleType: 'Whole Genome', specimenType: 'Buccal Swab', patientId: 'PT-2026-005', patientAge: 67, biologicalSex: 'Male', clinicalIndication: 'Population genomics research cohort - cardiovascular', analysisType: 'Research', priorityLevel: 'Standard', diseasePanels: ['Cardiology'], annotations: ['ClinVar', 'dbSNP'], status: 'completed', familyHistory: false },
-  ];
-
-  for (const d of requestData) {
-    const req = await SequencingRequest.create({ ...d, userId: doctor._id, collectionDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) });
-    console.log(`🧬 Request: ${req.sampleId} (${d.status})`);
-
-    if (d.status === 'completed') {
-      await Result.create({
-        requestId: req._id,
-        userId: doctor._id,
-        qualityMetrics: { coverageDepth: '30x', totalReads: '3.2B', gcContent: '41%', passQC: '99.8%', contamination: '0%', readLength: '150bp' },
-        variantSummary: { snvs: 2543, indels: 234, svs: 12, pathogenic: 3, vus: 18, benign: 4128 },
-        variants: [
-          { gene: 'BRCA1', variant: 'c.5266dupC', classification: 'Pathogenic', frequency: '0.001%', clinVar: 'Pathogenic', chromosome: 'chr17', position: 41246481 },
-          { gene: 'TP53', variant: 'c.817C>T', classification: 'VUS', frequency: 'Rare', clinVar: 'Uncertain significance', chromosome: 'chr17', position: 7674220 },
-          { gene: 'EGFR', variant: 'c.2369C>T', classification: 'Benign', frequency: '2.3%', clinVar: 'Benign', chromosome: 'chr7', position: 55249071 },
-          { gene: 'BRCA2', variant: 'c.5946delT', classification: 'Pathogenic', frequency: '0.0005%', clinVar: 'Pathogenic', chromosome: 'chr13', position: 32906729 },
-          { gene: 'MLH1', variant: 'c.1489A>G', classification: 'Likely Pathogenic', frequency: '0.01%', clinVar: 'Likely pathogenic', chromosome: 'chr3', position: 37038101 }
-        ],
-        analysisSummary: `Analysis of sample ${req.sampleId} identified clinically significant variants associated with hereditary cancer predisposition.`,
-        clinicalRecommendations: 'Urgent genetic counseling recommended. Cascade testing for first-degree relatives advised. Enhanced surveillance protocol indicated.',
-        completedAt: new Date()
-      });
-    }
+  const MONGO_URI = process.env.MONGO_URI;
+  
+  if (!MONGO_URI) {
+    console.error('❌ MONGO_URI not found in .env');
+    process.exit(1);
   }
 
-  console.log('\n🎉 Seed complete!');
-  console.log('─────────────────────────────────');
-  console.log(' Doctor:  doctor@genelab.com / demo1234');
-  console.log(' Admin:   admin@genelab.com / admin1234');
-  console.log('─────────────────────────────────');
-  process.exit(0);
+  console.log('📡 Connecting to:', MONGO_URI.split('@')[1] || 'LocalDB');
+  
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB Atlas');
+
+    // ── CLEAR EXISTING DATA ──────────────────────────────────────────────
+    console.log('🧹 Clearing existing data for a fresh start...');
+    await Promise.all([
+      User.deleteMany({}),
+      SequencingRequest.deleteMany({}),
+      Result.deleteMany({}),
+      Announcement.deleteMany({}),
+      AuditLog.deleteMany({})
+    ]);
+
+    // ── CREATE PROFESSIONAL USERS ────────────────────────────────────────
+    console.log('👥 Creating professional user accounts...');
+    
+    // System Admin
+    const admin = await User.create({
+      name: 'GeneLab System Administrator',
+      email: 'admin@genelab.ai',
+      password: process.env.SEED_ADMIN_PASSWORD || 'GeneLabAdmin2026!',
+      role: 'admin',
+      organization: 'GeneLab Global Operations',
+      isActive: true,
+      isEmailVerified: true
+    });
+
+    // Senior Geneticist
+    const doctor1 = await User.create({
+      name: 'Dr. Elena Jameson',
+      email: 'dr.jameson@genelab.ai',
+      password: process.env.SEED_DOCTOR_PASSWORD || 'Geneticist2026!',
+      role: 'doctor',
+      organization: 'Mayo Clinic - Genomics Dept',
+      specialization: 'Clinical Genetics',
+      licenseNumber: 'MD-77281-GL',
+      phone: '+1 (555) 928-1100',
+      isActive: true,
+      isEmailVerified: true
+    });
+
+    // Medical Researcher
+    const doctor2 = await User.create({
+      name: 'Dr. David Chen',
+      email: 'dr.chen@genelab.ai',
+      password: process.env.SEED_RESEARCHER_PASSWORD || 'Researcher2026!',
+      role: 'researcher',
+      organization: 'Stanford School of Medicine',
+      specialization: 'Molecular Oncology',
+      licenseNumber: 'RES-88122-ST',
+      phone: '+1 (555) 443-2211',
+      isActive: true,
+      isEmailVerified: true
+    });
+
+    console.log('✅ Users created: Admin, Dr. Jameson, Dr. Chen');
+
+    // ── CREATE ANNOUNCEMENTS ────────────────────────────────────────────
+    console.log('📢 Creating system announcements...');
+    await Announcement.create([
+      {
+        title: 'GeneLab v2.4.0 Deployment',
+        content: 'We have successfully deployed the new high-throughput sequencing pipeline integration. Performance is improved by 40%.',
+        priority: 'high',
+        category: 'update',
+        authorId: admin._id
+      },
+      {
+        title: 'Scheduled Maintenance',
+        content: 'The sequencing nodes will undergo routine maintenance on Sunday at 02:00 UTC. Expect 15 minutes of downtime.',
+        priority: 'medium',
+        category: 'maintenance',
+        authorId: admin._id
+      }
+    ]);
+
+    // ── CREATE SEQUENCING REQUESTS ──────────────────────────────────────
+    console.log('🧬 Generating professional sequencing requests...');
+    const requestData = [
+      {
+        sampleType: 'Whole Genome',
+        specimenType: 'Blood',
+        patientId: 'GL-PAT-001',
+        patientAge: 42,
+        biologicalSex: 'Female',
+        clinicalIndication: 'Hereditary Breast and Ovarian Cancer (HBOC) syndrome screening',
+        analysisType: 'Diagnostic',
+        priorityLevel: 'Stat',
+        diseasePanels: ['Cancer', 'BRCA+'],
+        status: 'completed',
+        userId: doctor1._id
+      },
+      {
+        sampleType: 'Whole Exome',
+        specimenType: 'Tissue',
+        patientId: 'GL-PAT-002',
+        patientAge: 58,
+        biologicalSex: 'Male',
+        clinicalIndication: 'Metastatic lung adenocarcinoma - Somatic profiling',
+        analysisType: 'Diagnostic',
+        priorityLevel: 'Express',
+        diseasePanels: ['Oncology', 'Precision Medicine'],
+        status: 'analyzing',
+        userId: doctor1._id
+      },
+      {
+        sampleType: 'Targeted Panel',
+        specimenType: 'Saliva',
+        patientId: 'GL-PAT-003',
+        patientAge: 3,
+        biologicalSex: 'Female',
+        clinicalIndication: 'Developmental delay - Neurodevelopmental panel screening',
+        analysisType: 'Diagnostic',
+        priorityLevel: 'Standard',
+        diseasePanels: ['Pediatric', 'Neurology'],
+        status: 'pending',
+        userId: doctor1._id
+      },
+      {
+        sampleType: 'RNA-seq',
+        specimenType: 'Blood',
+        patientId: 'GL-PAT-004',
+        patientAge: 29,
+        biologicalSex: 'Male',
+        clinicalIndication: 'Transcriptome analysis for autoimmune research cohort',
+        analysisType: 'Research',
+        priorityLevel: 'Standard',
+        diseasePanels: ['Immunology'],
+        status: 'completed',
+        userId: doctor2._id
+      }
+    ];
+
+    for (const data of requestData) {
+      const request = await SequencingRequest.create({
+        ...data,
+        collectionDate: new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000)
+      });
+
+      if (data.status === 'completed') {
+        await Result.create({
+          requestId: request._id,
+          userId: data.userId,
+          qualityMetrics: {
+            coverageDepth: '32.5x',
+            totalReads: '4.1B',
+            gcContent: '42.1%',
+            passQC: '99.92%',
+            contamination: '0.01%',
+            readLength: '150bp'
+          },
+          variantSummary: {
+            snvs: 3122,
+            indels: 412,
+            svs: 24,
+            pathogenic: 2,
+            vus: 14,
+            benign: 5211
+          },
+          variants: [
+            { gene: 'BRCA2', variant: 'c.5946delT', classification: 'Pathogenic', frequency: '0.0004%', clinVar: 'Pathogenic', chromosome: 'chr13', position: 32906729, evidence: 'PMID: 12345678' },
+            { gene: 'TP53', variant: 'c.817C>T', classification: 'VUS', frequency: 'Rare', clinVar: 'Uncertain', chromosome: 'chr17', position: 7674220, evidence: 'In-silico prediction: Damaging' }
+          ],
+          analysisSummary: 'The sequencing results indicate a pathogenic frameshift mutation in BRCA2, significantly increasing the risk for related hereditary syndromes.',
+          clinicalRecommendations: 'Urgent referral to genetic counseling is advised. Recommend cascade testing for first-degree relatives.'
+        });
+      }
+
+      // Add to Audit Log
+      await AuditLog.create({
+        userId: data.userId,
+        action: 'create_request',
+        resourceType: 'SequencingRequest',
+        resourceId: request._id,
+        details: { patientId: data.patientId }
+      });
+    }
+
+    console.log('✅ Sequencing requests and results generated.');
+
+    console.log('\n🚀 SEEDING COMPLETE');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('Admin:    admin@genelab.ai / GeneLabAdmin2026!');
+    console.log('Doctor:   dr.jameson@genelab.ai / Geneticist2026!');
+    console.log('Researcher: dr.chen@genelab.ai / Researcher2026!');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('New Database: GeneLab_PROD');
+
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Seeding failed:', err);
+    process.exit(1);
+  }
 }
 
-seed().catch(err => { console.error('❌ Seed error:', err); process.exit(1); });
-
+seed();

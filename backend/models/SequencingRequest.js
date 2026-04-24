@@ -15,7 +15,7 @@ const sequencingRequestSchema = new mongoose.Schema({
   },
   specimenType: {
     type: String,
-    enum: ['Blood', 'Buccal Swab', 'Tissue', 'Other'],
+    enum: ['Blood', 'Buccal Swab', 'Tissue', 'Saliva', 'Other'],
     required: true
   },
   collectionDate: { type: Date, required: true },
@@ -48,10 +48,11 @@ const sequencingRequestSchema = new mongoose.Schema({
     default: 'pending'
   },
   estimatedCost: { type: Number, default: 250 },
+  dnaFile: { type: String }, // Store filename or URL of the uploaded DNA sequence
   notes: { type: String },
   adminNotes: { type: String },
   completedAt: { type: Date },
-}, { timestamps: true });
+}, { timestamps: true, collection: 'SequencingRequests' });
 
 // Auto-generate Sample ID
 sequencingRequestSchema.pre('save', async function (next) {

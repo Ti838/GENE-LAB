@@ -2,30 +2,93 @@
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.
  */
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 
-dotenv.config();
-connectDB();
+const authRoutes = require('./routes/auth');
+const requestRoutes = require('./routes/requests');
+const adminRoutes = require('./routes/admin');
+const profileRoutes = require('./routes/profile');
+const announcementRoutes = require('./routes/announcements');
+const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+// ── Security Middleware ──────────────────────────────────────────────
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Routes
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/dna', require('./routes/dna.routes'));
-app.use('/api/profile', require('./routes/profile.routes'));
-app.use('/api/admin', require('./routes/admin.routes'));
-app.use('/api/notes', require('./routes/notes.routes'));
+// ── Rate Limiting ────────────────────────────────────────────────────
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  message: { message: 'Too many requests, please try again later.' }
+});
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: 'Too many auth attempts, please try again later.' }
+});
 
-app.get('/', (req, res) => res.send('GeneLab API Running'));
+app.use('/api/', limiter);
+app.use('/api/auth/', authLimiter);
 
+// ── Body Parsing ─────────────────────────────────────────────────────
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(morgan('dev'));
+
+// ── Routes ───────────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/announcements', announcementRoutes);
+
+// ── Health Check ─────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'GeneLab API is running',
+    timestamp: new Date().toISOString(),
+    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// ── 404 Handler ──────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// ── Error Handler ────────────────────────────────────────────────────
+app.use(errorHandler);
+
+// ── MongoDB Connection ───────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/genelab';
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected successfully');
+    app.listen(PORT, () => {
+      console.log(`🧬 GeneLab Server running on http://localhost:${PORT}`);
+      console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
+module.exports = app;
 

@@ -13,7 +13,7 @@ const auditLogSchema = new mongoose.Schema({
   ipAddress: { type: String },
   userAgent: { type: String },
   timestamp: { type: Date, default: Date.now }
-});
+}, { collection: 'AuditLogs' });
 
 module.exports = mongoose.model('AuditLog', auditLogSchema);
 
