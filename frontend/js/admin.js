@@ -9,44 +9,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ============================
     // ADMIN DASHBOARD - Metrics
     // ============================
+    // ============================
+    // ADMIN DASHBOARD - Metrics
+    // ============================
     if (path.includes('admin/dashboard.html')) {
         try {
-            const data = await api.get('/admin/metrics');
-            const m = data.metrics;
-
+            const data = await api.get('/admin/stats');
+            
             // Update stat cards
             const statEls = document.querySelectorAll('[data-metric]');
             statEls.forEach(el => {
                 const key = el.dataset.metric;
-                if (m[key] !== undefined) el.textContent = m[key].toLocaleString();
+                if (data[key] !== undefined) el.textContent = data[key].toLocaleString();
             });
 
             // Recent logs
             const logsContainer = document.getElementById('recent-logs');
-            if (logsContainer && data.recentLogs) {
+            if (logsContainer) {
+                const logsData = await api.get('/admin/audit-logs?limit=5');
                 logsContainer.innerHTML = '';
-                data.recentLogs.forEach(log => {
+                logsData.logs.forEach(log => {
                     const iconMap = {
-                        'Upload DNA': 'upload_file',
-                        'Analyze DNA': 'psychology',
-                        'Compare DNA': 'compare_arrows',
-                        'Delete DNA': 'delete',
-                        'Pattern Search': 'search',
-                        'Paste DNA': 'content_paste',
-                        'Update Doctor Status': 'verified_user',
-                        'Delete Doctor': 'person_remove'
+                        'login': 'login',
+                        'register': 'person_add',
+                        'update_user': 'manage_accounts',
+                        'delete_user': 'person_remove',
+                        'approve_request': 'check_circle',
+                        'reject_request': 'cancel'
                     };
                     const colorMap = {
-                        'Upload DNA': 'text-cyan',
-                        'Analyze DNA': 'text-teal',
-                        'Delete DNA': 'text-coral',
-                        'Delete Doctor': 'text-coral',
-                        'Update Doctor Status': 'text-violet-400'
+                        'login': 'text-cyan',
+                        'register': 'text-teal',
+                        'delete_user': 'text-coral',
+                        'update_user': 'text-violet-400'
                     };
                     const icon = iconMap[log.action] || 'history';
                     const color = colorMap[log.action] || 'text-cyan';
-                    const time = new Date(log.createdAt).toLocaleString();
-                    const userName = log.user?.name || 'System';
+                    const time = new Date(log.timestamp).toLocaleString();
+                    const userName = log.userId?.name || 'System';
 
                     const row = document.createElement('div');
                     row.className = 'flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-cyan/20 transition-all';
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="material-symbols-outlined ${color}">${icon}</span>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-white">${log.action}</p>
-                            <p class="text-[10px] text-slate-500 font-mono truncate">${log.details || ''}</p>
+                            <p class="text-[10px] text-slate-500 font-mono truncate">${JSON.stringify(log.details) || ''}</p>
                         </div>
                         <div class="text-right flex-shrink-0">
                             <p class="text-[10px] text-slate-600 font-mono">${time}</p>
@@ -70,64 +70,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ============================
-    // DOCTOR MANAGEMENT
+    // USER MANAGEMENT (Doctors/Employees)
     // ============================
     if (path.includes('admin/doctors.html')) {
         const tableBody = document.getElementById('doctors-table-body');
         const searchInput = document.getElementById('doctor-search');
-        let allDoctors = [];
+        let allUsers = [];
 
-        async function loadDoctors() {
+        async function loadUsers() {
             try {
-                allDoctors = await api.get('/admin/doctors');
-                renderDoctors(allDoctors);
+                const data = await api.get('/admin/users');
+                allUsers = data.users;
+                renderUsers(allUsers);
             } catch (error) {
                 console.error(error);
-                if (tableBody) tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-red-400 p-6">Failed to load doctors</td></tr>';
+                if (tableBody) tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-red-400 p-6">Failed to load users</td></tr>';
             }
         }
 
-        function renderDoctors(doctors) {
+        function renderUsers(users) {
             if (!tableBody) return;
             tableBody.innerHTML = '';
 
-            if (doctors.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-500 p-6 italic">No doctors found</td></tr>';
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-slate-500 p-6 italic">No users found</td></tr>';
                 return;
             }
 
-            doctors.forEach(doc => {
-                const statusColors = {
-                    approved: 'bg-teal/20 text-teal border-teal/30',
-                    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-                    blocked: 'bg-coral/20 text-coral border-coral/30'
-                };
-                const statusClass = statusColors[doc.status] || statusColors.pending;
+            users.forEach(user => {
+                const statusClass = user.isActive ? 'bg-teal/20 text-teal border-teal/30' : 'bg-coral/20 text-coral border-coral/30';
+                const statusLabel = user.isActive ? 'Active' : 'Deactivated';
 
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-white/5 transition';
                 row.innerHTML = `
                     <td class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan text-sm font-bold">${doc.name?.charAt(0) || '?'}</div>
+                            <div class="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan text-sm font-bold">${user.name?.charAt(0) || '?'}</div>
                             <div>
-                                <p class="text-sm font-bold text-white">${doc.name}</p>
-                                <p class="text-[10px] text-slate-500">${doc.email}</p>
+                                <p class="text-sm font-bold text-white">${user.name}</p>
+                                <p class="text-[10px] text-slate-500">${user.email}</p>
                             </div>
                         </div>
                     </td>
-                    <td class="p-4 text-sm text-slate-400">${doc.specialization || '-'}</td>
-                    <td class="p-4 text-sm text-slate-400">${doc.hospital || '-'}</td>
+                    <td class="p-4 text-sm text-slate-400">${user.specialization || '-'}</td>
+                    <td class="p-4 text-sm text-slate-400">${user.role}</td>
                     <td class="p-4">
-                        <span class="text-[10px] font-bold uppercase px-3 py-1 rounded-full border ${statusClass}">${doc.status}</span>
+                        <span class="text-[10px] font-bold uppercase px-3 py-1 rounded-full border ${statusClass}">${statusLabel}</span>
                     </td>
-                    <td class="p-4 text-[10px] text-slate-500 font-mono">${new Date(doc.createdAt).toLocaleDateString()}</td>
+                    <td class="p-4 text-[10px] text-slate-500 font-mono">${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td class="p-4">
-                        <div class="flex gap-2">
-                            ${doc.status !== 'approved' ? `<button onclick="updateDoctorStatus('${doc._id}', 'approved')" class="px-3 py-1.5 rounded-lg bg-teal/10 border border-teal/30 text-teal text-[10px] font-bold hover:bg-teal/20 transition" title="Approve">✓ Approve</button>` : ''}
-                            ${doc.status !== 'blocked' ? `<button onclick="updateDoctorStatus('${doc._id}', 'blocked')" class="px-3 py-1.5 rounded-lg bg-coral/10 border border-coral/30 text-coral text-[10px] font-bold hover:bg-coral/20 transition" title="Block">⛔ Block</button>` : ''}
-                            ${doc.status === 'blocked' ? `<button onclick="updateDoctorStatus('${doc._id}', 'approved')" class="px-3 py-1.5 rounded-lg bg-teal/10 border border-teal/30 text-teal text-[10px] font-bold hover:bg-teal/20 transition" title="Unblock">🔓 Unblock</button>` : ''}
-                            <button onclick="deleteDoctor('${doc._id}', '${doc.name}')" class="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-bold hover:bg-red-500/20 transition" title="Delete">🗑</button>
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" class="px-3 py-1.5 rounded-lg bg-violet-400/10 border border-violet-400/30 text-violet-400 text-[10px] font-bold hover:bg-violet-400/20 transition" title="Toggle Status">${user.isActive ? 'Deactivate' : 'Activate'}</button>
+                            <button onclick="deleteUser('${user._id}', '${user.name}')" class="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-bold hover:bg-red-500/20 transition" title="Delete">🗑</button>
                         </div>
                     </td>
                 `;
@@ -139,30 +134,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 const q = e.target.value.toLowerCase();
-                const filtered = allDoctors.filter(d =>
-                    d.name?.toLowerCase().includes(q) || d.email?.toLowerCase().includes(q) || d.specialization?.toLowerCase().includes(q)
+                const filtered = allUsers.filter(d =>
+                    d.name?.toLowerCase().includes(q) || d.email?.toLowerCase().includes(q) || d.role?.toLowerCase().includes(q)
                 );
-                renderDoctors(filtered);
+                renderUsers(filtered);
             });
         }
 
         // Global functions for buttons
-        window.updateDoctorStatus = async (id, status) => {
+        window.toggleUserStatus = async (id, currentStatus) => {
             try {
-                await api.put(`/admin/doctors/${id}/status`, { status });
-                await loadDoctors();
+                await api.put(`/admin/users/${id}`, { isActive: !currentStatus });
+                await loadUsers();
             } catch (error) { alert('Failed: ' + error.message); }
         };
 
-        window.deleteDoctor = async (id, name) => {
-            if (!confirm(`Delete doctor "${name}" and ALL their DNA data? This cannot be undone.`)) return;
+        window.deleteUser = async (id, name) => {
+            if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
             try {
-                await api.delete(`/admin/doctors/${id}`);
-                await loadDoctors();
+                await api.delete(`/admin/users/${id}`);
+                await loadUsers();
             } catch (error) { alert('Failed: ' + error.message); }
         };
 
-        await loadDoctors();
+        await loadUsers();
     }
 
     // ============================
@@ -315,6 +310,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Analytics error:', error);
         }
+    }
+
+    // ============================
+    // ANNOUNCEMENTS
+    // ============================
+    const annList = document.getElementById('announcements-list');
+    const annForm = document.getElementById('announcement-form');
+
+    async function loadAnnouncements() {
+        if (!annList) return;
+        try {
+            const data = await api.get('/announcements');
+            annList.innerHTML = '';
+            if (data.announcements.length === 0) {
+                annList.innerHTML = '<p class="italic text-center p-4 text-xs" style="color:var(--text-faint)">No recent announcements.</p>';
+                return;
+            }
+            data.announcements.forEach(ann => {
+                const priorityColors = { high: 'text-coral', medium: 'text-violet-400', low: 'text-teal' };
+                const div = document.createElement('div');
+                div.className = 'p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-bold ${priorityColors[ann.priority]} uppercase tracking-widest">${ann.priority} priority</span>
+                        <button onclick="deleteAnnouncement('${ann._id}')" class="text-slate-600 hover:text-coral transition"><span class="material-symbols-outlined" style="font-size:16px!important;">delete</span></button>
+                    </div>
+                    <p class="text-sm font-bold text-white">${ann.title}</p>
+                    <p class="text-xs text-slate-400 line-clamp-2">${ann.content}</p>
+                    <p class="text-[10px] text-slate-600 font-mono">${new Date(ann.createdAt).toLocaleDateString()} • ${ann.authorId?.name || 'Admin'}</p>
+                `;
+                annList.appendChild(div);
+            });
+        } catch (error) { console.error('Announcements error:', error); }
+    }
+
+    window.showAnnouncementModal = () => document.getElementById('announcement-modal')?.classList.remove('hidden');
+    window.closeAnnouncementModal = () => document.getElementById('announcement-modal')?.classList.add('hidden');
+
+    window.deleteAnnouncement = async (id) => {
+        if (!confirm('Delete this announcement?')) return;
+        try {
+            await api.delete(`/announcements/${id}`);
+            await loadAnnouncements();
+        } catch (error) { alert(error.message); }
+    };
+
+    if (annForm) {
+        annForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                title: document.getElementById('ann-title').value,
+                content: document.getElementById('ann-content').value,
+                priority: document.getElementById('ann-priority').value
+            };
+            try {
+                await api.post('/announcements', body);
+                closeAnnouncementModal();
+                annForm.reset();
+                await loadAnnouncements();
+            } catch (error) { alert(error.message); }
+        });
+    }
+
+    if (path.includes('admin/dashboard.html')) {
+        loadAnnouncements();
     }
 });
 

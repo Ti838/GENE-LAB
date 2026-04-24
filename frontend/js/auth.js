@@ -32,8 +32,7 @@ const auth = {
     },
     async signup(userData) {
         const payload = {
-            ...userData,
-            role: 'doctor'
+            ...userData
         };
 
         try {
@@ -86,30 +85,31 @@ const auth = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.querySelector('form');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
 
-    if (window.location.pathname.includes('login.html') && loginForm) {
+    if (loginForm) {
         loginForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            const email = loginForm.querySelector('input[type="email"]')?.value || '';
-            const password = loginForm.querySelector('input[type="password"]')?.value || '';
+            const email = document.getElementById('login-email')?.value || '';
+            const password = document.getElementById('login-password')?.value || '';
             const roleHint = loginForm.querySelector('input[name="access-role"]:checked')?.value || 'doctor';
             auth.login(email, password, roleHint);
         });
     }
 
-    if (window.location.pathname.includes('signup.html') && loginForm) {
-        loginForm.addEventListener('submit', (event) => {
+    if (signupForm) {
+        signupForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const userData = {
-                name: loginForm.querySelector('input[name="full-name"]')?.value || '',
-                email: loginForm.querySelector('input[type="email"]')?.value || '',
-                password: loginForm.querySelector('input[type="password"]')?.value || '',
-                phone: loginForm.querySelector('input[name="phone"]')?.value || '',
-                specialization: loginForm.querySelector('select[name="specialization"]')?.value || '',
-                organization: loginForm.querySelector('input[name="hospital"]')?.value || '',
-                licenseNumber: loginForm.querySelector('input[name="license-id"]')?.value || '',
-                profilePicture: loginForm.querySelector('input[name="profile-photo"]')?.value || ''
+                name: document.getElementById('signup-name')?.value || '',
+                email: document.getElementById('signup-email')?.value || '',
+                password: document.getElementById('signup-password')?.value || '',
+                phone: document.getElementById('signup-phone')?.value || '',
+                role: signupForm.querySelector('input[name="signup-role-radio"]:checked')?.value || 'doctor',
+                specialization: document.getElementById('signup-spec')?.value || '',
+                organization: document.getElementById('signup-org')?.value || '',
+                licenseNumber: document.getElementById('signup-license')?.value || ''
             };
 
             auth.signup(userData);

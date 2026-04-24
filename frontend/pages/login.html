@@ -36,8 +36,8 @@
         #dna-canvas { z-index: -1; }
 
         .auth-container {
-            height: min(620px, calc(100svh - 44px));
-            min-height: 548px; max-height: 620px;
+            height: min(780px, calc(100svh - 44px));
+            min-height: 548px; max-height: 780px;
             width: min(98vw, 1120px); max-width: 1120px;
             margin: auto;
             box-shadow: none !important;
@@ -62,8 +62,8 @@
         }
         .auth-container::before { display: none !important; }
         .auth-container.right-panel-active {
-            height: min(620px, calc(100svh - 44px));
-            min-height: 548px; max-height: 620px;
+            height: min(780px, calc(100svh - 44px));
+            min-height: 548px; max-height: 780px;
         }
 
         .auth-container .form-container {
@@ -71,6 +71,7 @@
             position: absolute; top: 0; height: 100%;
             padding: 1.5rem 3rem; overflow: hidden;
         }
+
         .auth-container .field-input {
             padding: 0.75rem 0.75rem 0.75rem 2.75rem !important;
             font-size: 0.9rem !important;
@@ -177,6 +178,28 @@
             .auth-container.right-panel-active .overlay-left { transform: translateX(0) translateY(0); }
             .auth-container.right-panel-active .overlay-right { transform: translateX(0) translateY(20%); }
         }
+
+        .role-tile {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-glass);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .role-tile:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 212, 255, 0.05);
+        }
+        input[name="signup-role-radio"]:checked + .role-tile,
+        input[name="access-role"]:checked + .role-tile {
+            border-color: var(--cyan);
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
     </style>
 </head>
 <body class="selection:bg-cyan selection:text-ink min-h-screen relative overflow-hidden" data-theme="dark">
@@ -201,77 +224,95 @@
 
             <!-- ═══ Sign Up Form ═══ -->
             <div class="form-container sign-up-container">
-                <div class="h-full flex flex-col justify-start px-6 md:px-8 py-4">
-                    <div class="text-center mb-4">
-                        <h2 class="text-3xl md:text-4xl font-display font-extrabold">Register</h2>
-                        <p class="mt-1 text-sm" style="color:var(--text-muted)">Create your clinical profile</p>
+                <div class="flex flex-col justify-start px-6 md:px-8 py-4">
+                    <div class="text-center mb-2">
+                        <h2 class="text-2xl md:text-3xl font-display font-extrabold">Register</h2>
+                        <p class="mt-0.5 text-xs" style="color:var(--text-muted)">Create your clinical profile</p>
                     </div>
-                    <form class="space-y-3">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                    <form id="signup-form" class="space-y-2">
+                        <!-- Role Selection Tiles -->
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="signup-role-radio" value="doctor" class="sr-only" checked>
+                                <div class="role-tile p-2 text-center h-full">
+                                    <span class="material-symbols-outlined text-cyan" style="font-size:18px;">stethoscope</span>
+                                    <span class="font-bold text-[9px] uppercase tracking-wider">Doctor</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="signup-role-radio" value="admin" class="sr-only">
+                                <div class="role-tile p-2 text-center h-full">
+                                    <span class="material-symbols-outlined text-coral" style="font-size:18px;">admin_panel_settings</span>
+                                    <span class="font-bold text-[9px] uppercase tracking-wider">Admin</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Full Name</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Full Name</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">person</span>
-                                    <input type="text" required placeholder="Dr. John Doe" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">person</span>
+                                    <input type="text" id="signup-name" required placeholder="Dr. John Doe" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Phone Number</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Phone Number</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">call</span>
-                                    <input type="text" placeholder="+1 555 0100" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">call</span>
+                                    <input type="text" id="signup-phone" placeholder="+1 555 0100" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Email Address</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Email Address</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
-                                    <input type="email" required placeholder="name@genelab.com" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">mail</span>
+                                    <input type="email" id="signup-email" required placeholder="name@genelab.com" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Password</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Password</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">lock</span>
-                                    <input type="password" required placeholder="••••••••" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">lock</span>
+                                    <input type="password" id="signup-password" required placeholder="••••••••" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Specialization</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Specialization</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">science</span>
-                                    <input type="text" placeholder="Genetics Specialist" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">science</span>
+                                    <input type="text" id="signup-spec" placeholder="Genetics Specialist" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Medical License</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Medical License</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">badge</span>
-                                    <input type="text" placeholder="LICENSE-992" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">badge</span>
+                                    <input type="text" id="signup-license" placeholder="LICENSE-992" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Clinical Site</label>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Clinical Site</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">local_hospital</span>
-                                    <input type="text" placeholder="GeneLab Medical Center" class="field-input w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">local_hospital</span>
+                                    <input type="text" id="signup-org" placeholder="GeneLab Medical Center" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Verification</label>
-                                <div class="relative flex items-center border rounded-[12px] p-2 px-4 h-[46px] overflow-hidden transition-all" style="background:var(--bg-glass);border-color:var(--border)">
-                                    <span class="material-symbols-outlined mr-3" style="color:var(--text-faint);font-size:22px!important;">upload_file</span>
-                                    <input type="file" class="text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-cyan/10 file:text-cyan hover:file:bg-cyan/20 cursor-pointer w-full outline-none" style="color:var(--text-muted)">
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Account ID</label>
+                                <div class="relative w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">fingerprint</span>
+                                    <input type="text" placeholder="ID-AUTO-GEN" disabled class="field-input w-full opacity-50 cursor-not-allowed" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-1">Create Account</button>
+                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-2">Create Account</button>
                     </form>
                 </div>
             </div>
@@ -286,28 +327,32 @@
                         <h2 class="text-3xl md:text-4xl font-display font-extrabold">Secure Access</h2>
                         <p class="mt-1 text-xs md:text-sm" style="color:var(--text-muted)">Sign in to your workspace</p>
                     </div>
-                    <form class="space-y-4">
+                    <form id="login-form" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3 mb-1">
-                            <label class="role-tile p-2 text-center cursor-pointer">
+                            <label class="cursor-pointer">
                                 <input type="radio" name="access-role" value="doctor" class="sr-only" checked>
-                                <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">stethoscope</span> Doctor
-                                </span>
+                                <div class="role-tile p-2 text-center">
+                                    <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5 justify-center">
+                                        <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">stethoscope</span> Doctor
+                                    </span>
+                                </div>
                             </label>
-                            <label class="role-tile p-2 text-center cursor-pointer">
+                            <label class="cursor-pointer">
                                 <input type="radio" name="access-role" value="admin" class="sr-only">
-                                <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">admin_panel_settings</span> Admin
-                                </span>
+                                <div class="role-tile p-2 text-center">
+                                    <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5 justify-center">
+                                        <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">admin_panel_settings</span> Admin
+                                    </span>
+                                </div>
                             </label>
                         </div>
                         <div class="relative w-full mt-4">
                             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
-                            <input type="email" required placeholder="Email Address" class="field-input w-full">
+                            <input type="email" id="login-email" required placeholder="Email Address" class="field-input w-full">
                         </div>
                         <div class="relative w-full">
                             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">lock</span>
-                            <input type="password" required placeholder="Password" class="field-input w-full">
+                            <input type="password" id="login-password" required placeholder="Password" class="field-input w-full">
                         </div>
                         <div class="flex items-center justify-between text-[11px] mt-2 px-1" style="color:var(--text-muted)">
                             <label class="flex items-center gap-2 cursor-pointer select-none">

@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.disabled = true;
                 btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Updating...';
 
-                await api.post('/auth/profile/update', data);
+                await api.put('/profile', data);
                 
                 alert('Profile updated successfully!');
                 btn.disabled = false;

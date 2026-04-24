@@ -134,5 +134,30 @@ router.get('/audit-logs', protect, adminOnly, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── DELETE /api/admin/users/:id ── Delete user ─────────────────────
+router.delete('/users/:id', protect, adminOnly, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    // Prevent admin from deleting themselves
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ message: 'You cannot delete your own admin account.' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    
+    await AuditLog.create({ 
+      userId: req.user._id, 
+      action: 'delete_user', 
+      resourceType: 'user', 
+      resourceId: user._id,
+      details: { deletedUserEmail: user.email, deletedUserRole: user.role }
+    });
+
+    res.json({ message: 'User deleted successfully.' });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
 

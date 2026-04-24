@@ -56,7 +56,11 @@ router.get('/:id/result', protect, async (req, res, next) => {
 
     let result = await Result.findOne({ requestId: req.params.id });
     if (!result) {
-      // Auto-generate mock result for demo
+      // 🧬 TODO: PLUG IN ACTUAL SEQUENCING MODEL HERE
+      // When the user builds their actual model, it should be called here
+      // to generate real clinical results based on the sampleId.
+      
+      // Auto-generate mock result for demo for now
       result = await Result.create({
         requestId: req.params.id,
         userId: req.user._id,

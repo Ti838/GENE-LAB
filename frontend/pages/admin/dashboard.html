@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-3 gap-6 mb-10">
                 <div class="col-span-2 glass-panel p-8 rounded-[24px]" data-animate="panel">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-display font-bold">System Activity Logs</h3>
@@ -104,9 +104,49 @@
                         <p class="italic text-center p-4" style="color:var(--text-faint)">Streaming telemetry data...</p>
                     </div>
                 </div>
-                <div class="glass-panel p-8 rounded-[24px]" data-animate="panel">
-                    <h3 class="text-xl font-display font-bold mb-6">Data Distribution</h3>
-                    <div class="h-72 w-full"><canvas id="storageChart"></canvas></div>
+                <div class="flex flex-col gap-6">
+                    <div class="glass-panel p-8 rounded-[24px] flex-1" data-animate="panel">
+                        <h3 class="text-xl font-display font-bold mb-6">Announcements</h3>
+                        <div id="announcements-list" class="space-y-4">
+                            <p class="italic text-center p-4 text-xs" style="color:var(--text-faint)">No recent announcements.</p>
+                        </div>
+                        <button onclick="showAnnouncementModal()" class="btn-premium btn-ghost w-full py-3 mt-6 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined" style="font-size:16px!important;">add_comment</span> Post New
+                        </button>
+                    </div>
+                    <div class="glass-panel p-8 rounded-[24px]" data-animate="panel">
+                        <h3 class="text-xl font-display font-bold mb-4">Data Distribution</h3>
+                        <div class="h-48 w-full"><canvas id="storageChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcement Modal -->
+            <div id="announcement-modal" class="fixed inset-0 z-[100] hidden bg-ink/80 backdrop-blur-sm flex items-center justify-center p-6">
+                <div class="glass-panel w-full max-w-lg p-8 rounded-[32px] border border-white/10">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-display font-bold">Post Announcement</h2>
+                        <button onclick="closeAnnouncementModal()" class="text-slate-500 hover:text-white transition"><span class="material-symbols-outlined">close</span></button>
+                    </div>
+                    <form id="announcement-form" class="space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block" style="color:var(--text-faint)">Title</label>
+                            <input type="text" id="ann-title" required class="field-input w-full px-5 py-3 rounded-xl" placeholder="E.g., System Maintenance">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block" style="color:var(--text-faint)">Priority</label>
+                            <select id="ann-priority" class="field-input w-full px-5 py-3 rounded-xl">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-widest mb-2 block" style="color:var(--text-faint)">Content</label>
+                            <textarea id="ann-content" required class="field-input w-full px-5 py-3 rounded-xl h-32" placeholder="Describe the announcement..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-premium w-full py-4 rounded-xl font-bold mt-4">Broadcast Announcement</button>
+                    </form>
                 </div>
             </div>
         </main>

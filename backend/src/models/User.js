@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 8 },
-  role: { type: String, enum: ['doctor', 'researcher', 'admin'], default: 'doctor' },
+  role: { type: String, enum: ['doctor', 'researcher', 'admin', 'employee'], default: 'doctor' },
   organization: { type: String, trim: true },
   specialization: { type: String, trim: true },
   licenseNumber: { type: String, trim: true },
