@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -53,3 +57,4 @@ exports.getProfile = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+

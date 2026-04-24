@@ -1,8 +1,13 @@
 <!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GeneLab — Advanced DNA Sequencing & Genetic Intelligence Platform. Upload, analyze, and visualize complex genomic data with clinical precision.">
     <title>GeneLab | Advanced DNA Sequencing & Genetic Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,12 +21,7 @@
               lime: 'var(--lime)',
               coral: 'var(--coral)',
               ink: 'var(--ink)',
-              slate: {
-                300: 'var(--muted)',
-                400: 'var(--muted)',
-                500: 'var(--muted)',
-                800: '#1e293b'
-              }
+              slate: { 300: 'var(--text-muted)', 400: 'var(--text-muted)', 500: 'var(--text-faint)', 800: '#1e293b' }
             }
           }
         }
@@ -36,198 +36,481 @@
     <script src="../js/auth.js" defer></script>
     <script src="../js/app.js" defer></script>
     <script src="../js/dna-background.js" defer></script>
+    <style>
+        /* Landing page specific styles */
+        .hero-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-stat {
+            position: relative;
+            padding: 0 24px;
+        }
+        .hero-stat::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 15%; bottom: 15%;
+            width: 1px;
+            background: linear-gradient(180deg, transparent, var(--border-strong), transparent);
+        }
+        .hero-stat:last-child::after { display: none; }
+
+        /* Modal Styles */
+        #global-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(3, 11, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        #global-modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content-card {
+            width: min(90vw, 840px);
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 3.5rem 2.5rem;
+            animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-close-btn {
+            position: sticky; top: -1.5rem; right: -1rem; float: right;
+            z-index: 20;
+        }
+        .modal-body-text h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--cyan); }
+        .modal-body-text h3 { font-size: 1.15rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; }
+        .modal-body-text p { color: var(--text-muted); line-height: 1.7; margin-bottom: 1.25rem; font-size: 0.95rem; }
+        .modal-body-text ul { list-style: disc; padding-left: 1.5rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .modal-body-text li { margin-bottom: 0.5rem; font-size: 0.9rem; }
+
+        .feature-icon-wrap {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            transition: all 0.35s ease;
+        }
+        .feature-icon-wrap::after {
+            content: '';
+            position: absolute; inset: -3px;
+            border-radius: inherit;
+            background: inherit;
+            filter: blur(16px);
+            opacity: 0.35;
+            z-index: -1;
+            transition: opacity 0.35s ease;
+        }
+        .glass-card:hover .feature-icon-wrap::after { opacity: 0.6; }
+
+        .step-number {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 900; font-size: 1.5rem;
+            transition: all 0.4s ease;
+        }
+        .step-card:hover .step-number {
+            transform: scale(1.1);
+            box-shadow: 0 0 28px rgba(0,212,255,0.35);
+        }
+        .step-connector {
+            position: absolute;
+            top: 50%; height: 2px;
+            background: linear-gradient(90deg, var(--cyan), transparent);
+            z-index: 0; opacity: 0.25;
+        }
+
+        .trust-stat {
+            text-align: center; padding: 32px;
+            border-radius: 24px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            transition: all 0.35s ease;
+        }
+        .trust-stat:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-4px);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg,
+                rgba(0,180,216,0.08) 0%,
+                rgba(6,214,160,0.06) 50%,
+                rgba(124,58,237,0.06) 100%);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(24px);
+        }
+
+        @keyframes hero-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+    </style>
 </head>
-<body class="selection:bg-cyan selection:text-ink">
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
     <!-- DNA Background is injected by dna-background.js -->
 
-    <!-- Navbar -->
-    <nav class="fixed top-0 left-0 right-0 z-50 px-6 pt-6">
-        <div class="max-w-7xl mx-auto glass-panel px-6 py-4 flex items-center justify-between rounded-[32px]">
-            <a href="index.html" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/30 flex items-center justify-center text-cyan">
-                    <span class="material-symbols-outlined text-cyan text-2xl">biotech</span>
+    <!-- ═══ Navbar ═══ -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 pt-4 sm:pt-5">
+        <div class="max-w-7xl mx-auto glass-panel px-5 sm:px-8 py-3.5 flex items-center justify-between rounded-2xl sm:rounded-[28px]">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/30 flex items-center justify-center text-cyan transition-all group-hover:bg-cyan/20 group-hover:border-cyan/50 group-hover:shadow-[0_0_20px_rgba(0,212,255,0.2)]">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:24px!important;width:24px!important;height:24px!important;">biotech</span>
                 </div>
-                <span class="font-display font-bold text-xl tracking-wider">GENELAB</span>
+                <span class="font-display font-extrabold text-xl tracking-[0.18em]">GENELAB</span>
             </a>
 
-            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
-                <a href="#features" class="hover:text-cyan transition-colors">Features</a>
-                <a href="#workflow" class="hover:text-cyan transition-colors">How It Works</a>
+            <div class="hidden md:flex items-center gap-8 text-sm font-semibold" style="color:var(--text-muted)">
+                <a href="#features" class="hover:text-cyan transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-cyan after:transition-all hover:after:w-full">Features</a>
+                <a href="#workflow" class="hover:text-cyan transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-cyan after:transition-all hover:after:w-full">How It Works</a>
+                <a href="#trust" class="hover:text-cyan transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-cyan after:transition-all hover:after:w-full">Why GeneLab</a>
             </div>
 
-            <div class="flex items-center gap-4">
-                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-2 rounded-2xl flex items-center gap-2 text-sm">
-                    <span class="material-symbols-outlined text-sm">dark_mode</span>
-                    <span data-theme-label>Dark</span>
+            <div class="flex items-center gap-3">
+                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-3.5 py-2.5 rounded-xl flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
+                    <span data-theme-label class="hidden sm:inline">Dark</span>
                 </button>
-                <a href="login.html#signup" class="btn-premium btn-cyan px-5 py-2.5 rounded-xl text-sm flex items-center gap-2">
-                    Get Started
-                </a>
+                <a href="login.html" class="btn-premium btn-ghost px-4 py-2.5 rounded-xl text-sm hidden sm:flex">Sign In</a>
+                <a href="login.html#signup" class="btn-premium btn-cyan px-5 py-2.5 rounded-xl text-sm">Get Started</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <main class="relative min-h-screen flex items-center pt-24 pb-20 overflow-hidden">
+    <!-- ═══ Hero Section ═══ -->
+    <main id="hero" class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
+        <!-- Decorative glows -->
+        <div class="hero-glow" style="width:600px;height:600px;top:-10%;left:-8%;background:rgba(0,180,216,0.08);"></div>
+        <div class="hero-glow" style="width:500px;height:500px;bottom:-15%;right:-5%;background:rgba(124,58,237,0.06);"></div>
+
         <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <div class="space-y-8 flex flex-col items-start max-w-2xl" data-animate="hero">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan/30 bg-cyan/10 text-cyan text-[10px] font-bold tracking-[0.2em] uppercase w-fit">
-                    <span class="w-2 h-2 rounded-full bg-cyan animate-pulse"></span>
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-cyan/25 bg-cyan/8 text-cyan text-[10px] font-bold tracking-[0.2em] uppercase w-fit">
+                    <span class="w-2 h-2 rounded-full bg-cyan animate-pulse-dot"></span>
                     Clinical Luminary Engine v2.0
                 </div>
 
-                <h1 class="font-display font-extrabold text-5xl sm:text-6xl lg:text-7xl leading-[1.1] tracking-tight">
-                    Deciphering the <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan via-teal to-violet">Blueprint of Life</span>
+                <!-- Heading -->
+                <h1 class="font-display font-extrabold text-5xl sm:text-6xl lg:text-[4.25rem] leading-[1.08] tracking-tight">
+                    Deciphering the <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan via-teal to-violet">Blueprint of Life</span>
                 </h1>
 
-                <p class="text-lg text-slate-400 leading-relaxed max-w-xl">
+                <!-- Subheading -->
+                <p class="text-lg leading-relaxed max-w-xl" style="color:var(--text-muted)">
                     GeneLab provides state-of-the-art computational biology tools. Upload, analyze, and visualize complex genomic data with absolute precision and clinical clarity.
                 </p>
 
-                <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                    <a href="login.html#signup" class="btn-premium btn-cyan px-8 py-4 rounded-xl text-base inline-flex max-w-max items-center justify-center gap-2">
+                <!-- CTA -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                    <a href="login.html#signup" class="btn-premium btn-cyan px-8 py-4 rounded-xl text-base inline-flex items-center gap-3">
                         Start Sequencing
-                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                        <span class="material-symbols-outlined" style="font-size:22px!important;width:22px!important;height:22px!important;">arrow_forward</span>
+                    </a>
+                    <a href="#workflow" class="btn-premium btn-ghost px-8 py-4 rounded-xl text-base inline-flex items-center gap-3">
+                        <span class="material-symbols-outlined" style="font-size:22px!important;width:22px!important;height:22px!important;">play_circle</span>
+                        See How It Works
                     </a>
                 </div>
 
-                <div class="flex items-center gap-6 pt-8 border-t border-white/10">
-                    <div>
-                        <p class="text-2xl font-display font-bold">99.9%</p>
-                        <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">Accuracy</p>
+                <!-- Stats row -->
+                <div class="flex items-center pt-8 mt-2">
+                    <div class="hero-stat">
+                        <p class="text-3xl font-display font-extrabold">99.9%</p>
+                        <p class="text-[11px] uppercase tracking-[0.16em] mt-1 font-bold" style="color:var(--text-faint)">Accuracy</p>
                     </div>
-                    <div class="w-px h-8 bg-white/10"></div>
-                    <div>
-                        <p class="text-2xl font-display font-bold">10x</p>
-                        <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">Faster Analysis</p>
+                    <div class="hero-stat">
+                        <p class="text-3xl font-display font-extrabold">10x</p>
+                        <p class="text-[11px] uppercase tracking-[0.16em] mt-1 font-bold" style="color:var(--text-faint)">Faster</p>
                     </div>
-                    <div class="w-px h-8 bg-white/10"></div>
-                    <div>
-                        <p class="text-2xl font-display font-bold">Zero</p>
-                        <p class="text-xs text-slate-500 uppercase tracking-wider mt-1">Data Breaches</p>
+                    <div class="hero-stat">
+                        <p class="text-3xl font-display font-extrabold">Zero</p>
+                        <p class="text-[11px] uppercase tracking-[0.16em] mt-1 font-bold" style="color:var(--text-faint)">Data Breaches</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Empty column for DNA visualization space -->
+            <!-- Right side: empty for DNA canvas to show through -->
             <div class="hidden lg:block"></div>
         </div>
     </main>
 
-    <!-- Features Section -->
-    <section id="features" class="py-24 relative border-t border-white/10 bg-white/5">
+    <!-- ═══ Features Section ═══ -->
+    <section id="features" class="py-28 relative">
         <div class="max-w-7xl mx-auto px-6 relative z-10">
-            <div class="text-center mb-16" data-animate="hero">
-                <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Powerful capabilities</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">Comprehensive tools built for modern genomic research and clinical diagnostics.</p>
+            <div class="text-center mb-20" data-animate="hero">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet/25 bg-violet/8 text-violet text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
+                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">auto_awesome</span>
+                    Platform Capabilities
+                </div>
+                <h2 class="font-display font-extrabold text-4xl sm:text-5xl mb-5">Powerful capabilities</h2>
+                <p class="max-w-2xl mx-auto text-lg" style="color:var(--text-muted)">Comprehensive tools built for modern genomic research and clinical diagnostics.</p>
             </div>
 
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Feature 1 -->
-                <div class="glass-panel glass-card p-6 rounded-[24px]" data-animate="panel">
-                    <div class="w-12 h-12 rounded-lg bg-cyan/10 border border-cyan/20 flex items-center justify-center text-cyan mb-6">
-                        <span class="material-symbols-outlined">dataset</span>
+                <div class="glass-panel glass-card p-7 rounded-[24px] relative overflow-hidden group" data-animate="panel">
+                    <div class="feature-icon-wrap bg-cyan/12 border border-cyan/25 mb-6">
+                        <span class="material-symbols-outlined text-cyan" style="font-size:26px!important;width:26px!important;height:26px!important;">dataset</span>
                     </div>
                     <h3 class="font-display font-bold text-xl mb-3">Data Processing</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Instantly parse and visualize raw FASTA, FASTQ, or VCF genomic sequence files in a clean analytical dashboard.</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--text-muted)">Instantly parse and visualize raw FASTA, FASTQ, or VCF genomic sequence files in a clean analytical dashboard.</p>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="glass-panel glass-card p-6 rounded-[24px]" data-animate="panel">
-                    <div class="w-12 h-12 rounded-lg bg-violet/10 border border-violet/30 flex items-center justify-center text-violet-400 mb-6">
-                        <span class="material-symbols-outlined">biotech</span>
+                <div class="glass-panel glass-card p-7 rounded-[24px] relative overflow-hidden group" data-animate="panel">
+                    <div class="feature-icon-wrap bg-violet/12 border border-violet/25 mb-6">
+                        <span class="material-symbols-outlined text-violet" style="font-size:26px!important;width:26px!important;height:26px!important;">biotech</span>
                     </div>
                     <h3 class="font-display font-bold text-xl mb-3">Variant Analysis</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Automatically detect genetic anomalies and cross-reference mutations against global clinical databases.</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--text-muted)">Automatically detect genetic anomalies and cross-reference mutations against global clinical databases.</p>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="glass-panel glass-card p-6 rounded-[24px]" data-animate="panel">
-                    <div class="w-12 h-12 rounded-lg bg-teal/10 border border-teal/30 flex items-center justify-center text-teal-400 mb-6">
-                        <span class="material-symbols-outlined">manage_accounts</span>
+                <div class="glass-panel glass-card p-7 rounded-[24px] relative overflow-hidden group" data-animate="panel">
+                    <div class="feature-icon-wrap bg-teal/12 border border-teal/25 mb-6">
+                        <span class="material-symbols-outlined text-teal" style="font-size:26px!important;width:26px!important;height:26px!important;">manage_accounts</span>
                     </div>
                     <h3 class="font-display font-bold text-xl mb-3">Role Workspaces</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Dedicated analytical portals for Doctors, alongside comprehensive platform monitoring tools for Admins.</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--text-muted)">Dedicated analytical portals for Doctors, alongside comprehensive platform monitoring tools for Admins.</p>
                 </div>
 
                 <!-- Feature 4 -->
-                <div class="glass-panel glass-card p-6 rounded-[24px]" data-animate="panel">
-                    <div class="w-12 h-12 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-6">
-                        <span class="material-symbols-outlined">enhanced_encryption</span>
+                <div class="glass-panel glass-card p-7 rounded-[24px] relative overflow-hidden group" data-animate="panel">
+                    <div class="feature-icon-wrap bg-coral/8 border border-coral/20 mb-6">
+                        <span class="material-symbols-outlined" style="color:var(--coral);font-size:26px!important;width:26px!important;height:26px!important;">enhanced_encryption</span>
                     </div>
                     <h3 class="font-display font-bold text-xl mb-3">Clinical Security</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">JWT-based authentication and encrypted file uploads ensure that sensitive patient DNA records remain strictly private.</p>
+                    <p class="text-sm leading-relaxed" style="color:var(--text-muted)">JWT-based authentication and encrypted file uploads ensure sensitive patient DNA records remain strictly private.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section id="workflow" class="py-24 relative">
+    <!-- ═══ How It Works Section ═══ -->
+    <section id="workflow" class="py-28 relative">
         <div class="max-w-7xl mx-auto px-6 relative z-10">
-            <div class="flex flex-col md:flex-row gap-16 items-center">
-                <div class="md:w-1/3" data-animate="hero">
-                    <h2 class="font-display font-bold text-3xl sm:text-4xl mb-6">Seamless workflow</h2>
-                    <p class="text-slate-400 mb-8">From raw data to actionable clinical insights in three simple steps.</p>
-                    <a href="login.html#signup" class="btn-premium px-6 py-3 rounded-xl inline-flex items-center gap-2">
-                        Try it now
-                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            <div class="text-center mb-20" data-animate="hero">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal/25 bg-teal/8 text-teal text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
+                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">route</span>
+                    Simple Workflow
+                </div>
+                <h2 class="font-display font-extrabold text-4xl sm:text-5xl mb-5">Three steps to insights</h2>
+                <p class="max-w-2xl mx-auto text-lg" style="color:var(--text-muted)">From raw data to actionable clinical insights in minutes.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-8 relative">
+                <!-- Step connectors -->
+                <div class="hidden sm:block absolute top-[72px] left-[calc(33%+20px)] right-[calc(67%-20px)] h-[2px] bg-gradient-to-r from-cyan/30 to-cyan/10 z-0"></div>
+                <div class="hidden sm:block absolute top-[72px] left-[calc(67%+20px)] right-[calc(33%-20px)] h-[2px] bg-gradient-to-r from-cyan/10 to-teal/30 z-0"></div>
+
+                <!-- Step 1 -->
+                <div class="relative z-10 glass-panel glass-card p-8 text-center rounded-[24px] step-card" data-animate="panel">
+                    <div class="step-number mx-auto mb-6 bg-cyan/12 border-2 border-cyan/30 text-cyan">
+                        <span class="material-symbols-outlined" style="font-size:28px!important;width:28px!important;height:28px!important;">cloud_upload</span>
+                    </div>
+                    <h3 class="font-display font-bold text-lg mb-3">1. Upload DNA</h3>
+                    <p class="text-sm" style="color:var(--text-muted)">Securely import FASTA, FASTQ, or VCF genome formats via our encrypted upload pipeline.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative z-10 glass-panel glass-card p-8 text-center rounded-[24px] step-card" data-animate="panel">
+                    <div class="step-number mx-auto mb-6 bg-violet/12 border-2 border-violet/30 text-violet">
+                        <span class="material-symbols-outlined" style="font-size:28px!important;width:28px!important;height:28px!important;">memory</span>
+                    </div>
+                    <h3 class="font-display font-bold text-lg mb-3">2. Sequence Alignment</h3>
+                    <p class="text-sm" style="color:var(--text-muted)">Our powerful computational engine aligns, analyzes, and identifies mutations in the sequence.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative z-10 glass-panel glass-card p-8 text-center rounded-[24px] step-card" data-animate="panel">
+                    <div class="step-number mx-auto mb-6 bg-teal/12 border-2 border-teal/30 text-teal">
+                        <span class="material-symbols-outlined" style="font-size:28px!important;width:28px!important;height:28px!important;">summarize</span>
+                    </div>
+                    <h3 class="font-display font-bold text-lg mb-3">3. Get Reports</h3>
+                    <p class="text-sm" style="color:var(--text-muted)">Download formatted clinical interpretations with variant annotations and diagnostic insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Trust / Numbers Section ═══ -->
+    <section id="trust" class="py-28 relative">
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16" data-animate="hero">
+                <h2 class="font-display font-extrabold text-4xl sm:text-5xl mb-5">Trusted by clinical teams</h2>
+                <p class="max-w-xl mx-auto" style="color:var(--text-muted)">Built for professional medical environments with enterprise-grade reliability.</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-5" data-animate="panel">
+                <div class="trust-stat">
+                    <p class="text-3xl sm:text-4xl font-display font-extrabold text-cyan mb-1">24/7</p>
+                    <p class="text-xs uppercase tracking-[0.14em] font-bold" style="color:var(--text-faint)">Uptime</p>
+                </div>
+                <div class="trust-stat">
+                    <p class="text-3xl sm:text-4xl font-display font-extrabold text-teal mb-1">HIPAA</p>
+                    <p class="text-xs uppercase tracking-[0.14em] font-bold" style="color:var(--text-faint)">Compliant</p>
+                </div>
+                <div class="trust-stat">
+                    <p class="text-3xl sm:text-4xl font-display font-extrabold text-violet mb-1">256‑bit</p>
+                    <p class="text-xs uppercase tracking-[0.14em] font-bold" style="color:var(--text-faint)">Encryption</p>
+                </div>
+                <div class="trust-stat">
+                    <p class="text-3xl sm:text-4xl font-display font-extrabold text-coral mb-1">&lt;2s</p>
+                    <p class="text-xs uppercase tracking-[0.14em] font-bold" style="color:var(--text-faint)">Avg Latency</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CTA Section ═══ -->
+    <section class="py-20 relative">
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <div class="cta-section rounded-[32px] p-12 sm:p-16 text-center" data-animate="panel">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan/12 border border-cyan/25 text-cyan mb-6 mx-auto">
+                    <span class="material-symbols-outlined" style="font-size:32px!important;width:32px!important;height:32px!important;">rocket_launch</span>
+                </div>
+                <h2 class="font-display font-extrabold text-3xl sm:text-4xl mb-4">Ready to decode the genome?</h2>
+                <p class="max-w-lg mx-auto mb-8" style="color:var(--text-muted)">Join leading clinical teams using GeneLab for precision genomic analysis and diagnostics.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="login.html#signup" class="btn-premium btn-cyan px-8 py-4 rounded-xl text-base inline-flex items-center justify-center gap-2">
+                        Create Free Account
+                        <span class="material-symbols-outlined" style="font-size:20px!important;width:20px!important;height:20px!important;">arrow_forward</span>
+                    </a>
+                    <a href="login.html" class="btn-premium btn-ghost px-8 py-4 rounded-xl text-base inline-flex items-center justify-center gap-2">
+                        Sign In
                     </a>
                 </div>
-
-                <div class="md:w-2/3 grid sm:grid-cols-3 gap-6 relative">
-                    <!-- Connecting line -->
-                    <div class="hidden sm:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-cyan/0 via-cyan/20 to-cyan/0 -translate-y-1/2 z-0"></div>
-
-                    <!-- Step 1 -->
-                    <div class="relative z-10 glass-panel glass-card p-6 text-center rounded-[24px] group" data-animate="panel">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-slate-800 border-2 border-cyan/30 flex items-center justify-center mb-6 group-hover:border-cyan transition-colors">
-                            <span class="material-symbols-outlined text-2xl text-cyan">cloud_upload</span>
-                        </div>
-                        <h3 class="font-display font-bold text-lg mb-2">1. Upload DNA</h3>
-                        <p class="text-xs text-slate-400">Securely import FASTA, FASTQ, or VCF formats.</p>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="relative z-10 glass-panel glass-card p-6 text-center rounded-[24px] group" data-animate="panel">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-slate-800 border-2 border-cyan/30 flex items-center justify-center mb-6 group-hover:border-cyan transition-colors">
-                            <span class="material-symbols-outlined text-2xl text-cyan">memory</span>
-                        </div>
-                        <h3 class="font-display font-bold text-lg mb-2">2. Sequence Alignment</h3>
-                        <p class="text-xs text-slate-400">Our powerful computational engine aligns and analyzes the sequence.</p>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="relative z-10 glass-panel glass-card p-6 text-center rounded-[24px] group" data-animate="panel">
-                        <div class="w-16 h-16 mx-auto rounded-full bg-slate-800 border-2 border-cyan/30 flex items-center justify-center mb-6 group-hover:border-cyan transition-colors">
-                            <span class="material-symbols-outlined text-2xl text-cyan">summarize</span>
-                        </div>
-                        <h3 class="font-display font-bold text-lg mb-2">3. Get Reports</h3>
-                        <p class="text-xs text-slate-400">Download formatted clinical interpretations.</p>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
+    <!-- ═══ Footer ═══ -->
+    <footer class="border-t py-12 relative" style="border-color:var(--border)">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-cyan" style="font-size:20px!important;width:20px!important;height:20px!important;">biotech</span>
+                    </div>
+                    <span class="font-display font-bold tracking-[0.16em] text-sm">GENELAB</span>
+                    <span class="text-sm ml-3" style="color:var(--text-faint)">&copy; 2026. All rights reserved.</span>
+                </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-white/10 py-10 bg-white/5">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-cyan">biotech</span>
-                <span class="font-display font-bold tracking-wider">GENELAB</span>
-                <span class="text-slate-500 text-sm ml-4">&copy; 2026. All rights reserved.</span>
-            </div>
-
-            <div class="flex gap-6 text-sm text-slate-400">
-                <a href="#" class="hover:text-cyan transition-colors">Privacy</a>
-                <a href="#" class="hover:text-cyan transition-colors">Terms</a>
-                <a href="#" class="hover:text-cyan transition-colors">Documentation</a>
-                <a href="login.html" class="hover:text-white transition-colors">Admin</a>
+                <div class="flex gap-8 text-sm font-medium" style="color:var(--text-muted)">
+                    <button onclick="openModal('privacy')" class="hover:text-cyan transition-colors">Privacy</button>
+                    <button onclick="openModal('terms')" class="hover:text-cyan transition-colors">Terms</button>
+                    <button onclick="openModal('docs')" class="hover:text-cyan transition-colors">Documentation</button>
+                    <a href="login.html" class="hover:text-cyan transition-colors">Portal</a>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- ═══ Global Modal Overlay ═══ -->
+    <div id="global-modal" onclick="closeModal(event)">
+        <div class="modal-content-card glass-panel rounded-[32px] border border-cyan/20" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="modal-close-btn w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-coral/20 hover:text-coral transition-all">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <div id="modal-body" class="modal-body-text selection:bg-cyan/30">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Landing Page Animations & Modal Logic ═══ -->
+    <script>
+    const modalContents = {
+        privacy: `
+            <h2 class="font-display">Privacy Policy</h2>
+            <p>At GeneLab, we take clinical data privacy with the utmost seriousness. This Privacy Policy describes how your genetic information and clinical workspace data are protected.</p>
+            <ul>
+                <li><strong>Data Encryption:</strong> All DNA sequencing data is encrypted at rest (AES-256) and in transit (TLS 1.3).</li>
+                <li><strong>Access Control:</strong> Only authorized clinicians with valid JWT tokens can access results.</li>
+                <li><strong>Audit Logs:</strong> Every access attempt is logged for compliance auditing.</li>
+                <li><strong>No Data Sharing:</strong> We do not sell or share patient genetic data with third parties.</li>
+            </ul>
+        `,
+        terms: `
+            <h2 class="font-display">Terms of Service</h2>
+            <p>By accessing the GeneLab platform, you agree to comply with the following clinical and technical guidelines.</p>
+            <ul>
+                <li><strong>Professional Use:</strong> This platform is intended for professional geneticists and authorized medical administrators only.</li>
+                <li><strong>Confidentiality:</strong> Users are responsible for maintaining the confidentiality of their access credentials.</li>
+                <li><strong>System Integrity:</strong> Any attempt to bypass security measures or access unauthorized data is strictly prohibited.</li>
+                <li><strong>Software Ownership:</strong> All code and 3D visual assets are the proprietary property of GeneLab.</li>
+            </ul>
+        `,
+        docs: `
+            <h2 class="font-display">User Documentation</h2>
+            <p>Helpful resources and guides for GeneLab users.</p>
+            <h3 class="text-teal">Getting Started</h3>
+            <p>Clinicians can register for a workspace via the main portal. Authentication requires verification of medical credentials.</p>
+            <h3 class="text-teal">DNA Analysis</h3>
+            <p>View high-resolution nucleotide sequences and mutation reports directly in your browser with our optimized sequence viewer.</p>
+            <h3 class="text-teal">Clinical Reports</h3>
+            <p>Generate and download comprehensive lab reports for patient diagnostics and clinical records.</p>
+        `
+    };
+
+    function openModal(type) {
+        const modal = document.getElementById('global-modal');
+        const body = document.getElementById('modal-body');
+        body.innerHTML = modalContents[type] || '';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e) {
+        document.getElementById('global-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof gsap === 'undefined') return;
+
+        // Hero animations
+        const heroEls = document.querySelectorAll('[data-animate="hero"]');
+        heroEls.forEach((el, i) => {
+            gsap.from(el, {
+                y: 40, opacity: 0,
+                duration: 1,
+                delay: 0.15 * i,
+                ease: 'power3.out'
+            });
+        });
+
+        // Panel animations on scroll
+        const panels = document.querySelectorAll('[data-animate="panel"]');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    gsap.from(entry.target, {
+                        y: 32, opacity: 0,
+                        duration: 0.8,
+                        delay: 0.08 * Array.from(panels).indexOf(entry.target) % 4,
+                        ease: 'power2.out'
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        panels.forEach(p => observer.observe(p));
+    });
+    </script>
 </body>
 </html>
 

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // theme.js - Theme helpers for GeneLab
 (() => {
 	const THEME_KEY = 'genelab-theme';

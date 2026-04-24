@@ -1,31 +1,48 @@
 <!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard | GeneLab</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: { extend: { colors: {
+          cyan: 'var(--cyan)', teal: { DEFAULT: 'var(--teal)', 400: 'var(--teal)' },
+          violet: { DEFAULT: 'var(--violet)', 400: 'var(--violet)' },
+          coral: 'var(--coral)', lime: 'var(--lime)', ink: 'var(--ink)',
+          slate: { 300: 'var(--text-muted)', 400: 'var(--text-muted)', 500: 'var(--text-faint)', 800: '#1e293b' }
+        }}}
+      }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="../../theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script src="../../js/theme.js" defer></script>
     <script src="../../js/api.js" defer></script>
     <script src="../../js/auth.js" defer></script>
     <script src="../../js/app.js" defer></script>
     <script src="../../js/dna-background.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink">
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
     <!-- DNA Background is injected by dna-background.js -->
 
     <div class="relative z-10 flex min-h-screen">
-        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
-            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
-                <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
-                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="w-72 glass-panel m-3 rounded-[28px] flex flex-col fixed h-[calc(100vh-1.5rem)] z-20 overflow-hidden">
+            <div class="p-7 border-b flex items-center justify-center gap-3" style="border-color:var(--border)">
+                <div class="w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:22px!important;width:22px!important;height:22px!important;">biotech</span>
+                </div>
+                <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-6 space-y-2 mt-10">
+            <nav class="flex-1 px-5 space-y-1.5 mt-8">
                 <a href="dashboard.html" class="sidebar-link active"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
                 <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
@@ -34,74 +51,89 @@
                 <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
                 <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
             </nav>
-            <div class="p-8 border-t border-white/5">
-                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+            <div class="p-6 border-t" style="border-color:var(--border)">
+                <a href="#" onclick="auth.logout()" class="btn-premium btn-danger w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">power_settings_new</span> Logout
                 </a>
             </div>
         </aside>
 
-        <main class="flex-1 ml-80 p-10">
-            <header data-animate="hero" class="mb-12 flex justify-between items-end">
+        <!-- ═══ Main Content ═══ -->
+        <main class="flex-1 ml-[19.5rem] p-8">
+            <header data-animate="hero" class="mb-10 flex justify-between items-end flex-wrap gap-6">
                 <div>
                     <p class="section-badge mb-3">Doctor workflow</p>
-                    <h1 class="text-5xl font-display font-bold text-white mb-2">Systems Overview</h1>
-                    <p class="text-slate-400 font-medium">Real-time genomic processing, review queues, and reporting for clinical teams.</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Systems Overview</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">Real-time genomic processing, review queues, and reporting.</p>
                     <div class="flex flex-wrap gap-2 mt-4">
-                        <span class="info-chip"><span class="material-symbols-outlined text-sm">lab_profile</span> Clinical workflow ready</span>
-                        <span class="info-chip"><span class="material-symbols-outlined text-sm">insights</span> High-confidence analysis</span>
+                        <span class="info-chip"><span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">lab_profile</span> Clinical workflow ready</span>
+                        <span class="info-chip"><span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">insights</span> High-confidence analysis</span>
                     </div>
                 </div>
-                <div class="flex gap-4 flex-wrap justify-end">
-                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                <div class="flex gap-3 flex-wrap justify-end">
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
                         <span data-theme-label>Dark</span>
                     </button>
-                    <button class="btn-premium px-6 py-3 rounded-xl border-white/10 hover:border-white transition flex items-center gap-2" onclick="location.reload()"><span class="material-symbols-outlined text-sm">sync</span> Sync Engine</button>
-                    <button class="btn-premium btn-cyan px-6 py-3 rounded-xl flex items-center gap-2"><span class="material-symbols-outlined text-sm">cloud_download</span> Export Batch</button>
+                    <button class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2 text-sm" onclick="location.reload()">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">sync</span> Sync
+                    </button>
+                    <button class="btn-premium btn-cyan px-5 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">cloud_download</span> Export
+                    </button>
                 </div>
             </header>
 
-            <div class="grid grid-cols-4 gap-6 mb-12">
-                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Stored Sequences</p>
-                    <p class="text-5xl font-display font-bold text-white mb-2" data-stat="totalFiles">0</p>
-                    <div class="flex items-center gap-2 text-teal text-xs font-bold"><span class="material-symbols-outlined text-sm">trending_up</span> +12% this week</div>
+            <!-- ═══ Stat Cards ═══ -->
+            <div class="grid grid-cols-4 gap-5 mb-10">
+                <div data-animate="panel" class="glass-panel p-7 rounded-[24px] glass-card relative overflow-hidden">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Stored Sequences</p>
+                    <p class="text-4xl font-display font-extrabold mb-2" data-stat="totalFiles">0</p>
+                    <div class="flex items-center gap-2 text-teal text-xs font-bold">
+                        <span class="material-symbols-outlined" style="font-size:16px!important;width:16px!important;height:16px!important;">trending_up</span> +12% this week
+                    </div>
                 </div>
-                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Total Analyses</p>
-                    <p class="text-5xl font-display font-bold text-white mb-2" data-stat="analyzed">0</p>
-                    <div class="flex items-center gap-2 text-cyan text-xs font-bold"><span class="material-symbols-outlined text-sm">rocket</span> Processing stable</div>
+                <div data-animate="panel" class="glass-panel p-7 rounded-[24px] glass-card relative overflow-hidden">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Total Analyses</p>
+                    <p class="text-4xl font-display font-extrabold mb-2" data-stat="analyzed">0</p>
+                    <div class="flex items-center gap-2 text-cyan text-xs font-bold">
+                        <span class="material-symbols-outlined" style="font-size:16px!important;width:16px!important;height:16px!important;">rocket</span> Processing stable
+                    </div>
                 </div>
-                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card border-coral/30">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Anomalies Detected</p>
-                    <p class="text-5xl font-display font-bold text-coral text-glow mb-2" data-stat="anomalies">0</p>
-                    <div class="flex items-center gap-2 text-coral text-xs font-bold"><span class="material-symbols-outlined text-sm">warning</span> Critical attention</div>
+                <div data-animate="panel" class="glass-panel p-7 rounded-[24px] glass-card relative overflow-hidden" style="border-color:rgba(255,107,107,0.25)">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Anomalies Detected</p>
+                    <p class="text-4xl font-display font-extrabold text-coral text-glow mb-2" data-stat="anomalies">0</p>
+                    <div class="flex items-center gap-2 text-coral text-xs font-bold">
+                        <span class="material-symbols-outlined" style="font-size:16px!important;width:16px!important;height:16px!important;">warning</span> Critical attention
+                    </div>
                 </div>
-                <div data-animate="panel" class="glass-panel p-8 rounded-[32px] border-white/5 glass-card">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Server Health</p>
-                    <p class="text-5xl font-display font-bold text-teal text-glow mb-2">99%</p>
-                    <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden"><div class="w-[99%] h-full bg-teal shadow-[0_0_15px_#00bea4]"></div></div>
+                <div data-animate="panel" class="glass-panel p-7 rounded-[24px] glass-card relative overflow-hidden">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Server Health</p>
+                    <p class="text-4xl font-display font-extrabold text-teal text-glow mb-2">99%</p>
+                    <div class="w-full h-1.5 rounded-full mt-2 overflow-hidden" style="background:var(--bg-glass)">
+                        <div class="w-[99%] h-full rounded-full" style="background:var(--teal);box-shadow:0 0 14px var(--teal-dim)"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-8">
-                <div class="col-span-2 glass-panel p-10 rounded-[32px] border-white/5" data-animate="panel">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 class="text-2xl font-display font-bold">Recent Genomic Flux</h3>
+            <!-- ═══ Chart + Activity ═══ -->
+            <div class="grid grid-cols-3 gap-6">
+                <div class="col-span-2 glass-panel p-8 rounded-[24px]" data-animate="panel">
+                    <div class="flex justify-between items-center mb-6 pb-5" style="border-bottom:1px solid var(--border)">
+                        <h3 class="text-xl font-display font-bold">Recent Genomic Flux</h3>
                         <div class="flex gap-2">
-                             <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer hover:bg-cyan/10">WEEKLY</div>
-                             <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer bg-white text-ink">MONTHLY</div>
+                            <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer">WEEKLY</div>
+                            <div class="btn-premium btn-cyan px-3 py-1.5 rounded-lg text-[9px] cursor-pointer">MONTHLY</div>
                         </div>
                     </div>
-                    <div class="h-80 w-full"><canvas id="trendChart"></canvas></div>
+                    <div class="h-72 w-full"><canvas id="trendChart"></canvas></div>
                 </div>
-                <div class="glass-panel p-10 rounded-[32px] border-white/5" data-animate="panel">
-                    <h3 class="text-2xl font-display font-bold mb-8">System Activity</h3>
-                    <div id="system-activity-logs" class="space-y-6">
-                         <p class="text-slate-500 text-sm italic">Loading activity...</p>
+                <div class="glass-panel p-8 rounded-[24px]" data-animate="panel">
+                    <h3 class="text-xl font-display font-bold mb-6">System Activity</h3>
+                    <div id="system-activity-logs" class="space-y-5">
+                        <p class="text-sm italic" style="color:var(--text-faint)">Loading activity...</p>
                     </div>
-                    <button class="w-full mt-8 py-4 border border-white/10 text-slate-400 font-bold uppercase tracking-widest text-xs rounded-xl hover:text-white hover:bg-white/5 transition">Full System Logs</button>
+                    <button class="w-full mt-6 py-3.5 border text-xs font-bold uppercase tracking-widest rounded-xl transition-all hover:border-cyan/40" style="border-color:var(--border);color:var(--text-muted)">Full System Logs</button>
                 </div>
             </div>
         </main>
@@ -110,5 +142,4 @@
     <script src="../../js/doctor-dashboard.js" defer></script>
 </body>
 </html>
-    
 

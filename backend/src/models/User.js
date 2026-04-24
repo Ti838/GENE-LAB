@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -38,3 +42,4 @@ userSchema.methods.isLocked = function () {
 };
 
 module.exports = mongoose.model('User', userSchema);
+

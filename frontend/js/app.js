@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 document.addEventListener('DOMContentLoaded', () => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof window.gsap !== 'undefined';
@@ -161,3 +165,4 @@ function setupPointerParallax(animate) {
     });
   }, { passive: true });
 }
+

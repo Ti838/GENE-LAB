@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // doctor-dashboard.js - Doctor Dashboard real data
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('doctor/dashboard.html')) return;
@@ -48,3 +52,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Dashboard error:', error);
     }
 });
+

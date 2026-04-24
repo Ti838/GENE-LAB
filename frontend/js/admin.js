@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // admin.js - Admin Dashboard Logic (doctors management, metrics, logs, DNA data control)
 document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
@@ -313,3 +317,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
+

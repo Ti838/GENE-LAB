@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const express = require('express');
 const router = express.Router();
 const { protect, adminOnly } = require('../middleware/auth.middleware');
@@ -29,3 +33,4 @@ router.get('/metrics', getSystemMetrics);
 router.get('/logs', getLogs);
 
 module.exports = router;
+

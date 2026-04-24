@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // result.js - Detailed Analysis Result View
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -64,3 +68,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadResult();
 });
+

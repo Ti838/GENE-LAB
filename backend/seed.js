@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -82,3 +86,4 @@ async function seed() {
 }
 
 seed().catch(err => { console.error('❌ Seed error:', err); process.exit(1); });
+

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // profile.js - Profile Management
 document.addEventListener('DOMContentLoaded', async () => {
     const profileForm = document.getElementById('doctor-profile-form');
@@ -93,3 +97,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadProfile();
 });
+

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -24,3 +28,4 @@ app.get('/', (req, res) => res.send('GeneLab API Running'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

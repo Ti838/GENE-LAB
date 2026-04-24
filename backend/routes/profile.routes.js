@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
@@ -101,3 +105,4 @@ router.put('/password', protect, async (req, res) => {
 });
 
 module.exports = router;
+

@@ -1,92 +1,97 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Analytics | GeneLab</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script src="../../js/theme.js" defer></script>
     <script src="../../js/api.js" defer></script>
     <script src="../../js/auth.js" defer></script>
     <script src="../../js/app.js" defer></script>
     <script src="../../js/charts.js" defer></script>
-    <link rel="stylesheet" href="../../theme.css">
     <script src="../../js/dna-background.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink">
-    <!-- DNA Background is injected by dna-background.js -->
-        </div>
-        <div id="particle-field" class="absolute inset-0"></div>
-    </div>
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
 
     <div class="relative z-10 flex min-h-screen">
-        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20">
-            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
-                <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
-                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+        <aside class="w-72 glass-panel m-3 rounded-[28px] flex flex-col fixed h-[calc(100vh-1.5rem)] z-20 overflow-hidden">
+            <div class="p-7 border-b flex items-center justify-center gap-3" style="border-color:var(--border)">
+                <div class="w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:22px!important;width:22px!important;height:22px!important;">biotech</span>
+                </div>
+                <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-6 space-y-2 mt-10">
-                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Doctor Dashboard</a>
+            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
-                <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Sequence Analysis</a>
+                <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
                 <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
+                <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
                 <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
-                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Doctor Profile</a>
+                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
             </nav>
-            <div class="p-8 border-t border-white/5">
-                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">Logout</a>
+            <div class="p-6 border-t" style="border-color:var(--border)">
+                <a href="#" onclick="auth.logout()" class="btn-premium btn-danger w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">power_settings_new</span> Logout
+                </a>
             </div>
         </aside>
 
-        <main class="flex-1 ml-80 p-10">
-            <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+        <main class="flex-1 ml-[19.5rem] p-8">
+            <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <p class="section-badge mb-3">Doctor workflow</p>
-                    <h1 class="text-5xl font-display font-bold text-white mb-2">Personal Analytics</h1>
-                    <p class="text-slate-400 font-medium">Performance metrics and trend intelligence across your uploaded DNA studies.</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Personal Analytics</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">Performance metrics and trend intelligence across your uploaded DNA studies.</p>
                 </div>
-                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
                     <span data-theme-label>Dark</span>
                 </button>
             </header>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8" data-animate="panel">
-                <div class="glass-panel p-6 rounded-[28px] border-white/10">
-                    <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-2">Processed Samples</p>
-                    <p class="text-4xl font-display font-bold">248</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8" data-animate="panel">
+                <div class="glass-panel p-6 rounded-[24px]">
+                    <p class="text-[10px] uppercase tracking-[0.18em] mb-2" style="color:var(--text-faint)">Processed Samples</p>
+                    <p class="text-3xl font-display font-extrabold">248</p>
                 </div>
-                <div class="glass-panel p-6 rounded-[28px] border-white/10">
-                    <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-2">Pending Review</p>
-                    <p class="text-4xl font-display font-bold">12</p>
+                <div class="glass-panel p-6 rounded-[24px]">
+                    <p class="text-[10px] uppercase tracking-[0.18em] mb-2" style="color:var(--text-faint)">Pending Review</p>
+                    <p class="text-3xl font-display font-extrabold">12</p>
                 </div>
-                <div class="glass-panel p-6 rounded-[28px] border-white/10">
-                    <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-2">Avg Turnaround</p>
-                    <p class="text-4xl font-display font-bold text-cyan">2.4d</p>
+                <div class="glass-panel p-6 rounded-[24px]">
+                    <p class="text-[10px] uppercase tracking-[0.18em] mb-2" style="color:var(--text-faint)">Avg Turnaround</p>
+                    <p class="text-3xl font-display font-extrabold text-cyan">2.4d</p>
                 </div>
-                <div class="glass-panel p-6 rounded-[28px] border-white/10">
-                    <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500 mb-2">Report Accuracy</p>
-                    <p class="text-4xl font-display font-bold text-teal">99.1%</p>
+                <div class="glass-panel p-6 rounded-[24px]">
+                    <p class="text-[10px] uppercase tracking-[0.18em] mb-2" style="color:var(--text-faint)">Report Accuracy</p>
+                    <p class="text-3xl font-display font-extrabold text-teal">99.1%</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div class="xl:col-span-2 glass-panel p-8 rounded-[32px] border-white/10" data-animate="panel">
-                    <h3 class="text-2xl font-display font-bold mb-6">Submission Trend</h3>
-                    <div class="h-80 w-full"><canvas id="trendChart"></canvas></div>
+                <div class="xl:col-span-2 glass-panel p-7 rounded-[24px]" data-animate="panel">
+                    <h3 class="text-xl font-display font-bold mb-5">Submission Trend</h3>
+                    <div class="h-72 w-full"><canvas id="trendChart"></canvas></div>
                 </div>
-                <div class="glass-panel p-8 rounded-[32px] border-white/10" data-animate="panel">
-                    <h3 class="text-2xl font-display font-bold mb-6">Sequence Balance</h3>
-                    <div class="h-80 w-full"><canvas id="nucleotideChart"></canvas></div>
+                <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
+                    <h3 class="text-xl font-display font-bold mb-5">Sequence Balance</h3>
+                    <div class="h-72 w-full"><canvas id="nucleotideChart"></canvas></div>
                 </div>
             </div>
         </main>
     </div>
 </body>
 </html>
-
 

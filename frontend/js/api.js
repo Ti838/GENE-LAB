@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // api.js - Central API helper with DELETE support
 const API_BASE_URL = 'http://localhost:5000/api';
 const api = {
@@ -37,3 +41,4 @@ const api = {
         }).then(res => res.json());
     }
 };
+

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const DNA = require('../models/DNA');
 const Log = require('../models/Log');
 const fs = require('fs');
@@ -260,3 +264,4 @@ exports.compareSequences = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+

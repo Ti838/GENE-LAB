@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
+/**
  * GeneLab DNA Analysis Service
  * Real computational logic for DNA sequence analysis
  */
@@ -146,3 +150,4 @@ module.exports = {
     transcribeToRNA,
     compareSequences
 };
+

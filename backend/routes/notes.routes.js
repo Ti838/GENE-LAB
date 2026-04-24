@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth.middleware');
@@ -58,3 +62,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+

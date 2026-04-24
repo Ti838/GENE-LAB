@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,19 +11,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              cyan: 'var(--cyan)',
-              teal: { DEFAULT: 'var(--teal)', 400: 'var(--teal)' },
-              violet: { DEFAULT: 'var(--violet)', 400: 'var(--violet)', 500: 'var(--violet)' },
-              lime: 'var(--lime)',
-              coral: 'var(--coral)',
-              ink: 'var(--ink)',
-              slate: { 300: 'var(--muted)', 400: 'var(--muted)', 500: 'var(--muted)', 800: '#1e293b' }
-            }
-          }
-        }
+        theme: { extend: { colors: {
+          cyan: 'var(--cyan)', teal: { DEFAULT: 'var(--teal)', 400: 'var(--teal)' },
+          violet: { DEFAULT: 'var(--violet)', 400: 'var(--violet)', 500: 'var(--violet)' },
+          lime: 'var(--lime)', coral: 'var(--coral)', ink: 'var(--ink)',
+          slate: { 300: 'var(--text-muted)', 400: 'var(--text-muted)', 500: 'var(--text-faint)', 800: '#1e293b' }
+        }}}
       }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -30,527 +27,321 @@
     <script src="../js/api.js" defer></script>
     <script src="../js/auth.js" defer></script>
     <script src="../js/app.js" defer></script>
+    <script src="../js/dna-background.js" defer></script>
     <style>
-        html,
-        body {
-            height: 100dvh;
-            overflow: hidden !important;
-        }
+        html, body { height: 100dvh; overflow: hidden !important; }
+        body { min-height: 100dvh !important; }
 
-        body {
-            min-height: 100dvh !important;
-            background: linear-gradient(180deg, #07111d 0%, #091522 100%) !important;
-        }
+        /* Show DNA on login */
+        #dna-canvas { z-index: -1; }
 
         .auth-container {
             height: min(620px, calc(100svh - 44px));
-            min-height: 548px;
-            max-height: 620px;
-            width: min(98vw, 1120px);
-            max-width: 1120px; /* Use more horizontal room while preserving centered layout */
+            min-height: 548px; max-height: 620px;
+            width: min(98vw, 1120px); max-width: 1120px;
             margin: auto;
             box-shadow: none !important;
-            transition: height 0.35s ease, min-height 0.35s ease, max-height 0.35s ease;
-        }        
-
+            transition: height 0.35s ease;
+        }
         .auth-container.glass-panel {
-            box-shadow: none !important;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(243, 248, 253, 0.88)) !important;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.35) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(6px) saturate(1.2) !important;
+            -webkit-backdrop-filter: blur(6px) saturate(1.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }
-
-        .auth-container::before {
-            display: none !important;
+        body[data-theme="dark"] .auth-container.glass-panel {
+            background: rgba(8, 22, 40, 0.25) !important;
+            border-color: rgba(0, 180, 216, 0.2) !important;
         }
-
+        body[data-theme="light"] .auth-container.glass-panel {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(2px) saturate(1.05) !important;
+            -webkit-backdrop-filter: blur(2px) saturate(1.05) !important;
+            border-color: rgba(0, 180, 216, 0.15) !important;
+        }
+        .auth-container::before { display: none !important; }
         .auth-container.right-panel-active {
             height: min(620px, calc(100svh - 44px));
-            min-height: 548px;
-            max-height: 620px;
+            min-height: 548px; max-height: 620px;
         }
 
         .auth-container .form-container {
             transition: all 0.6s ease-in-out;
-            position: absolute;
-            top: 0;
-            height: 100%;
-            padding: 1.5rem 3rem;
-            overflow: hidden;
+            position: absolute; top: 0; height: 100%;
+            padding: 1.5rem 3rem; overflow: hidden;
         }
-
         .auth-container .field-input {
-            padding-top: 0.75rem !important;
-            padding-bottom: 0.75rem !important;
-            padding-left: 2.75rem !important;
+            padding: 0.75rem 0.75rem 0.75rem 2.75rem !important;
             font-size: 0.9rem !important;
             border-radius: 12px !important;
         }
-
-        .auth-container .btn-premium {
-            padding-top: 0.85rem !important;
-            padding-bottom: 0.85rem !important;
+        .auth-container .btn-premium.btn-cyan {
+            padding: 0.85rem 1rem !important;
             font-size: 0.95rem !important;
             border-radius: 14px !important;
             background: linear-gradient(135deg, var(--cyan), var(--violet)) !important;
             color: #0c121d !important;
             font-weight: 700 !important;
-            letter-spacing: 0.02em;
-            box-shadow: none !important;
-            transition: all 0.3s ease;
+            border: none !important;
         }
-
-        .auth-container .btn-premium:hover {
+        .auth-container .btn-premium.btn-cyan:hover {
             transform: translateY(-2px);
-            box-shadow: none !important;
             filter: brightness(1.1);
+            box-shadow: 0 12px 32px rgba(0,180,216,0.35) !important;
         }
 
+        /* Header buttons */
         .header-pill-btn {
-            min-width: 52px;
-            width: 52px;
-            height: 52px;
-            padding: 0 !important;
-            justify-content: center;
-            box-shadow: none !important;
-            border: 0 !important;
-            background: transparent !important;
-            border-radius: 999px !important;
+            min-width: 48px; width: 48px; height: 48px;
+            padding: 0 !important; justify-content: center;
+            box-shadow: none !important; border: 0 !important;
+            background: transparent !important; border-radius: 999px !important;
         }
-
         .home-nav-btn {
             border-color: transparent !important;
             background: transparent !important;
-            box-shadow: none !important;
-            min-width: 52px;
+            box-shadow: none !important; min-width: 48px;
         }
-
-        body[data-theme='dark'] .home-nav-btn,
-        body[data-theme='dark'] .header-pill-btn {
-            color: #e9f4fc !important;
-            box-shadow: none !important;
-        }
-
-        body[data-theme='dark'] .home-nav-btn:hover,
-        body[data-theme='dark'] .header-pill-btn:hover {
-            background: transparent !important;
-        }
-
-        .home-nav-btn .material-symbols-outlined {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            width: 24px !important;
-            height: 24px !important;
-            font-size: 22px !important;
-        }
-
+        .home-nav-btn .material-symbols-outlined,
         .header-pill-btn .material-symbols-outlined {
-            width: 24px !important;
-            height: 24px !important;
-            font-size: 22px !important;
+            display: inline-flex !important; align-items: center; justify-content: center;
+            width: 24px !important; height: 24px !important; font-size: 22px !important;
         }
-
         .home-nav-btn .home-nav-label,
-        [data-theme-toggle] [data-theme-label] {
-            display: none !important;
-        }
-
-        .home-nav-btn:hover {
-            border-color: transparent !important;
-            box-shadow: none !important;
-        }
-
-        .header-pill-btn:hover {
-            transform: none !important;
-            box-shadow: none !important;
+        [data-theme-toggle] [data-theme-label] { display: none !important; }
+        .header-pill-btn:hover, .home-nav-btn:hover {
+            transform: none !important; box-shadow: none !important;
             background: transparent !important;
-            filter: none !important;
         }
 
-        body[data-theme='light'] {
-            background: linear-gradient(180deg, #dce8f2 0%, #d6e3ee 100%) !important;
-        }
-
-        body[data-theme='dark'] {
-            background: linear-gradient(180deg, #07111d 0%, #091522 100%) !important;
-        }
-
-        body[data-theme='light']::after {
-            opacity: 0;
-        }
-
-        body::before,
-        body::after {
-            display: none !important;
-            content: none !important;
-        }
-
-        #dna-canvas,
-        #dna-overlay {
-            display: none !important;
-            opacity: 0 !important;
-        }
-
-        .sign-in-container {
-            left: 0;
-            width: 50%;
-            z-index: 20;
-        }
-        
-        .sign-up-container {
-            left: 0;
-            width: 50%;
-            opacity: 0;
-            z-index: 10;
-            pointer-events: none;
-        }
+        /* Panels */
+        .sign-in-container { left: 0; width: 50%; z-index: 20; }
+        .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 10; pointer-events: none; }
 
         .overlay-container {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            transition: transform 0.6s ease-in-out;
-            z-index: 100;
+            position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
+            overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100;
         }
-
         .overlay {
-            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            background: linear-gradient(135deg, rgba(0, 150, 199, 0.35), rgba(124, 58, 237, 0.35));
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             background-size: 200% 200%;
-            color: white;
-            position: relative;
-            left: -100%;
-            height: 100%;
-            width: 200%;
+            color: white; position: relative; left: -100%;
+            height: 100%; width: 200%;
             transition: transform 0.6s ease-in-out;
         }
-
         .overlay-panel {
-            position: absolute;
-            top: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            height: 100%;
-            width: 50%; /* Internal relative to the 200% overlay width */
+            position: absolute; top: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; height: 100%; width: 50%;
             transition: transform 0.6s ease-in-out;
         }
-
         .overlay-banner-icon {
-            display: block;
-            margin: 0 auto 1rem;
-            width: auto !important;
-            height: auto !important;
-            line-height: 1;
-            font-size: 56px !important;
-            opacity: 0.94;
+            display: block; margin: 0 auto 1rem;
+            width: auto !important; height: auto !important;
+            line-height: 1; font-size: 56px !important; opacity: 0.94;
         }
+        .overlay-left { left: 0; transform: translateX(-20%); }
+        .overlay-right { right: 0; transform: translateX(0); }
 
-        .overlay-left {
-            left: 0;
-            transform: translateX(-20%);
-        }
-
-        .overlay-right {
-            right: 0;
-            transform: translateX(0);
-        }
-
-        /* Active State - Horizontal */
-        .auth-container.right-panel-active .sign-in-container {
-            transform: translateX(100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .auth-container.right-panel-active .sign-up-container {
-            transform: translateX(100%);
-            opacity: 1;
-            z-index: 50;
-            pointer-events: auto;
-            animation: show 0.6s;
-        }
-
-        .auth-container.right-panel-active .overlay-container {
-            transform: translateX(-100%);
-        }
-
-        .auth-container.right-panel-active .overlay {
-            transform: translateX(50%);
-        }
-
-        .auth-container.right-panel-active .overlay-left {
-            transform: translateX(0);
-        }
-
-        .auth-container.right-panel-active .overlay-right {
-            transform: translateX(20%);
-        }
+        /* Active slide state */
+        .auth-container.right-panel-active .sign-in-container { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        .auth-container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 50; pointer-events: auto; animation: show 0.6s; }
+        .auth-container.right-panel-active .overlay-container { transform: translateX(-100%); }
+        .auth-container.right-panel-active .overlay { transform: translateX(50%); }
+        .auth-container.right-panel-active .overlay-left { transform: translateX(0); }
+        .auth-container.right-panel-active .overlay-right { transform: translateX(20%); }
 
         @keyframes show {
             0%, 49.99% { opacity: 0; z-index: 10; }
             50%, 100% { opacity: 1; z-index: 50; }
         }
 
-        /* Mobile Adjustments - Vertical */
+        /* Mobile vertical layout */
         @media (max-width: 768px) {
-            .auth-container {
-                min-height: 860px;
-                height: auto;
-                max-height: none;
-                transform: scale(1) !important;
-                margin-top: 0;
-                margin-bottom: 2rem;
-            }
-
-            .overlay-banner-icon {
-                font-size: 46px !important;
-                margin-bottom: 0.75rem;
-            }
-
-            .sign-in-container, .sign-up-container {
-                width: 100%;
-                height: 50%;
-                left: 0;
-            }
-            .overlay-container {
-                width: 100%;
-                height: 50%;
-                left: 0;
-                top: 50%;
-            }
-            .overlay {
-                width: 100%;
-                height: 200%;
-                left: 0;
-                top: -100%;
-            }
-            .overlay-panel {
-                width: 100%;
-                height: 50%;
-            }
-            .overlay-left {
-                top: 0;
-                transform: translateY(-20%);
-                left: 0;
-            }
-            .overlay-right {
-                top: 50%;
-                transform: translateY(0);
-                right: auto;
-            }
-
-            /* Active State - Vertical */
-            .auth-container.right-panel-active .sign-in-container {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            .auth-container.right-panel-active .sign-up-container {
-                transform: translateY(100%);
-                opacity: 1;
-            }
-            .auth-container.right-panel-active .overlay-container {
-                transform: translateX(0) translateY(-100%);
-            }
-            .auth-container.right-panel-active .overlay {
-                transform: translateX(0) translateY(50%);
-            }
-            .auth-container.right-panel-active .overlay-left {
-                transform: translateX(0) translateY(0);
-            }
-            .auth-container.right-panel-active .overlay-right {
-                transform: translateX(0) translateY(20%);
-            }
+            .auth-container { min-height: 860px; height: auto; max-height: none; margin-bottom: 2rem; }
+            .overlay-banner-icon { font-size: 46px !important; margin-bottom: 0.75rem; }
+            .sign-in-container, .sign-up-container { width: 100%; height: 50%; left: 0; }
+            .overlay-container { width: 100%; height: 50%; left: 0; top: 50%; }
+            .overlay { width: 100%; height: 200%; left: 0; top: -100%; }
+            .overlay-panel { width: 100%; height: 50%; }
+            .overlay-left { top: 0; transform: translateY(-20%); left: 0; }
+            .overlay-right { top: 50%; transform: translateY(0); right: auto; }
+            .auth-container.right-panel-active .sign-in-container { transform: translateY(100%); opacity: 0; }
+            .auth-container.right-panel-active .sign-up-container { transform: translateY(100%); opacity: 1; }
+            .auth-container.right-panel-active .overlay-container { transform: translateX(0) translateY(-100%); }
+            .auth-container.right-panel-active .overlay { transform: translateX(0) translateY(50%); }
+            .auth-container.right-panel-active .overlay-left { transform: translateX(0) translateY(0); }
+            .auth-container.right-panel-active .overlay-right { transform: translateX(0) translateY(20%); }
         }
-        
     </style>
 </head>
-<body class="selection:bg-cyan selection:text-ink min-h-screen relative overflow-hidden">
-    <!-- Header with Home button in the left place -->
-    <header class="fixed top-0 left-0 w-full z-[9999] p-4 sm:p-5 flex justify-between items-center bg-transparent pointer-events-auto">
-        <div class="flex items-center gap-3 sm:gap-4">
-            <a href="index.html" class="home-nav-btn header-pill-btn flex items-center justify-center" title="Home" aria-label="Home">
+<body class="selection:bg-cyan selection:text-ink min-h-screen relative overflow-hidden" data-theme="dark">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-[9999] p-4 sm:p-5 flex justify-between items-center pointer-events-auto">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="home-nav-btn header-pill-btn flex items-center justify-center" title="Home">
                 <span class="material-symbols-outlined">home</span>
             </a>
         </div>
-        <div class="flex items-center gap-3 sm:gap-4">
-            <button type="button" data-theme-toggle class="header-pill-btn flex items-center justify-center" aria-label="Toggle theme">
-                <span class="material-symbols-outlined text-sm">dark_mode</span>
+        <div class="flex items-center gap-3">
+            <button type="button" data-theme-toggle class="header-pill-btn flex items-center justify-center">
+                <span class="material-symbols-outlined">dark_mode</span>
                 <span data-theme-label>Dark</span>
             </button>
         </div>
     </header>
 
-    <!-- Strict vertical bound logic: 100px from top for header, 20px padding bottom. Total safe area = 100vh - 120px -->
-    <main class="relative z-10 w-full flex items-center justify-center mx-auto overflow-hidden" style="margin-top: 0; height: 100svh; padding: 22px 0; box-sizing: border-box;">
-        
-        <div id="container" class="auth-container relative w-full glass-panel rounded-[32px] overflow-hidden">
-            
-            <!-- Sign Up Form (Left side initially, but hidden/underneath) -->
-            <div class="form-container sign-up-container bg-slate-900/20 backdrop-blur-md">
-                    <div class="h-full flex flex-col justify-start px-6 md:px-8 py-4">
-                        <div class="text-center mb-4 shrink-0">
-                        <h2 class="text-3xl md:text-4xl font-display font-bold">Register</h2>
-                        <p class="text-slate-400 mt-1 text-sm">Create your clinical profile</p>
+    <main class="relative z-10 w-full flex items-center justify-center mx-auto overflow-hidden" style="height:100svh;padding:22px 0;">
+        <div id="container" class="auth-container relative w-full glass-panel rounded-[28px] overflow-hidden">
+
+            <!-- ═══ Sign Up Form ═══ -->
+            <div class="form-container sign-up-container">
+                <div class="h-full flex flex-col justify-start px-6 md:px-8 py-4">
+                    <div class="text-center mb-4">
+                        <h2 class="text-3xl md:text-4xl font-display font-extrabold">Register</h2>
+                        <p class="mt-1 text-sm" style="color:var(--text-muted)">Create your clinical profile</p>
                     </div>
-                    <form class="space-y-3 shrink-0">
+                    <form class="space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Full Name</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Full Name</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">person</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">person</span>
                                     <input type="text" required placeholder="Dr. John Doe" class="field-input w-full">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Phone Number</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Phone Number</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">call</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">call</span>
                                     <input type="text" placeholder="+1 555 0100" class="field-input w-full">
                                 </div>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Email Address</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Email Address</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">mail</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
                                     <input type="email" required placeholder="name@genelab.com" class="field-input w-full">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Password</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Password</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">lock</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">lock</span>
                                     <input type="password" required placeholder="••••••••" class="field-input w-full">
                                 </div>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Specialization</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Specialization</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">science</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">science</span>
                                     <input type="text" placeholder="Genetics Specialist" class="field-input w-full">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Medical License</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Medical License</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">badge</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">badge</span>
                                     <input type="text" placeholder="LICENSE-992" class="field-input w-full">
                                 </div>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Clinical Site</label>
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Clinical Site</label>
                                 <div class="relative w-full">
-                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">local_hospital</span>
+                                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">local_hospital</span>
                                     <input type="text" placeholder="GeneLab Medical Center" class="field-input w-full">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs uppercase font-semibold text-slate-500/80 mb-1.5 ml-1">Verification</label>
-                                <div class="relative flex items-center bg-slate-500/5 border border-slate-500/20 rounded-[14px] p-2 px-4 group hover:border-cyan/30 transition-all h-[46px] overflow-hidden">
-                                    <span class="material-symbols-outlined text-slate-400/80 mr-3" style="font-size: 22px !important;">upload_file</span>
-                                    <input type="file" class="text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-cyan/10 file:text-cyan hover:file:bg-cyan/20 cursor-pointer w-full outline-none">
+                                <label class="block text-xs uppercase font-semibold mb-1.5 ml-1" style="color:var(--text-faint)">Verification</label>
+                                <div class="relative flex items-center border rounded-[12px] p-2 px-4 h-[46px] overflow-hidden transition-all" style="background:var(--bg-glass);border-color:var(--border)">
+                                    <span class="material-symbols-outlined mr-3" style="color:var(--text-faint);font-size:22px!important;">upload_file</span>
+                                    <input type="file" class="text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-cyan/10 file:text-cyan hover:file:bg-cyan/20 cursor-pointer w-full outline-none" style="color:var(--text-muted)">
                                 </div>
                             </div>
                         </div>
-
-                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-1">
-                            Create Account
-                        </button>
+                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-1">Create Account</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Sign In Form (Left side initially) -->
-            <div class="form-container sign-in-container bg-slate-900/20 backdrop-blur-md">
+            <!-- ═══ Sign In Form ═══ -->
+            <div class="form-container sign-in-container">
                 <div class="h-full flex flex-col justify-center px-6 md:px-8 py-4">
                     <div class="text-center mb-5">
-                        <div class="w-12 h-12 mx-auto rounded-[14px] bg-cyan/10 border border-cyan/20 flex items-center justify-center text-cyan mb-3">
-                            <span class="material-symbols-outlined" style="font-size: 26px !important;">lock</span>
+                        <div class="w-12 h-12 mx-auto rounded-[14px] bg-cyan/10 border border-cyan/25 flex items-center justify-center text-cyan mb-3">
+                            <span class="material-symbols-outlined" style="font-size:26px!important;width:26px!important;height:26px!important;">lock</span>
                         </div>
-                        <h2 class="text-3xl md:text-4xl font-display font-bold">Secure Access</h2>
-                        <p class="text-slate-400 mt-1 text-xs md:text-sm">Sign in to your workspace</p>
+                        <h2 class="text-3xl md:text-4xl font-display font-extrabold">Secure Access</h2>
+                        <p class="mt-1 text-xs md:text-sm" style="color:var(--text-muted)">Sign in to your workspace</p>
                     </div>
-                    <form class="space-y-4 shrink-0">
+                    <form class="space-y-4">
                         <div class="grid grid-cols-2 gap-3 mb-1">
-                            <label class="role-tile p-2 text-center cursor-pointer flex items-center justify-center">
+                            <label class="role-tile p-2 text-center cursor-pointer">
                                 <input type="radio" name="access-role" value="doctor" class="sr-only" checked>
                                 <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined text-[14px]">stethoscope</span> Doctor
+                                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">stethoscope</span> Doctor
                                 </span>
                             </label>
-                            <label class="role-tile p-2 text-center cursor-pointer flex items-center justify-center">
+                            <label class="role-tile p-2 text-center cursor-pointer">
                                 <input type="radio" name="access-role" value="admin" class="sr-only">
                                 <span class="font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span> Admin
+                                    <span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">admin_panel_settings</span> Admin
                                 </span>
                             </label>
                         </div>
                         <div class="relative w-full mt-4">
-                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">mail</span>
+                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
                             <input type="email" required placeholder="Email Address" class="field-input w-full">
                         </div>
                         <div class="relative w-full">
-                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400/80" style="font-size: 22px !important;">lock</span>
+                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">lock</span>
                             <input type="password" required placeholder="Password" class="field-input w-full">
                         </div>
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 px-1">
+                        <div class="flex items-center justify-between text-[11px] mt-2 px-1" style="color:var(--text-muted)">
                             <label class="flex items-center gap-2 cursor-pointer select-none">
-                                <input type="checkbox" name="remember-me" class="w-3.5 h-3.5 rounded border-white/20 bg-transparent text-cyan">
-                                <span>Remember me</span>
+                                <input type="checkbox" name="remember-me" class="w-3.5 h-3.5 rounded text-cyan"> Remember me
                             </label>
                             <a href="#" class="hover:text-cyan transition-colors">Forgot password?</a>
                         </div>
-                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-4">
-                            Sign In
-                        </button>
+                        <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-4">Sign In</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Overlay Container -->
+            <!-- ═══ Overlay ═══ -->
             <div class="overlay-container">
-                <!-- The sliding background -->
                 <div class="overlay backdrop-blur-md">
-                    
-                    <!-- Overlay Left Panel (Hidden initially) -->
                     <div class="overlay-panel overlay-left p-6 md:p-10">
                         <span class="material-symbols-outlined overlay-banner-icon">biotech</span>
                         <h1 class="text-3xl md:text-4xl font-display font-bold mb-4 md:mb-6 text-white">Welcome Back!</h1>
                         <p class="text-xs md:text-sm opacity-90 mb-6 md:mb-8 leading-relaxed text-white max-w-xs">
                             Already have a clinical profile? Log in to continue analyzing your sequence data.
                         </p>
-                        <button class="px-6 md:px-8 py-3 rounded-xl border-2 border-white hover:bg-white hover:text-cyan transition-colors text-sm font-semibold" id="signIn">
-                            Sign In
-                        </button>
+                        <button class="px-6 md:px-8 py-3 rounded-xl border-2 border-white hover:bg-white hover:text-cyan transition-colors text-sm font-semibold" id="signIn">Sign In</button>
                     </div>
-
-                    <!-- Overlay Right Panel (Visible initially) -->
                     <div class="overlay-panel overlay-right p-6 md:p-10">
                         <span class="material-symbols-outlined overlay-banner-icon">science</span>
                         <h1 class="text-3xl md:text-4xl font-display font-bold mb-4 md:mb-6 text-white">Hello, Researcher!</h1>
                         <p class="text-xs md:text-sm opacity-90 mb-6 md:mb-8 leading-relaxed text-white max-w-xs">
                             Start your clinical journey with GeneLab. Register for a new account to sequence DNA.
                         </p>
-                        <button class="px-6 md:px-8 py-3 rounded-xl border-2 border-white hover:bg-white hover:text-cyan transition-colors text-sm font-semibold" id="signUp">
-                            Sign Up
-                        </button>
+                        <button class="px-6 md:px-8 py-3 rounded-xl border-2 border-white hover:bg-white hover:text-cyan transition-colors text-sm font-semibold" id="signUp">Sign Up</button>
                     </div>
                 </div>
             </div>
         </div>
-
     </main>
 
     <script>
@@ -558,21 +349,13 @@
             const container = document.getElementById('container');
             const signUpBtn = document.getElementById('signUp');
             const signInBtn = document.getElementById('signIn');
-
             if (signUpBtn && signInBtn) {
-                signUpBtn.addEventListener('click', () => {
-                    container.classList.add('right-panel-active');
-                });
-
-                signInBtn.addEventListener('click', () => {
-                    container.classList.remove('right-panel-active');
-                });
+                signUpBtn.addEventListener('click', () => container.classList.add('right-panel-active'));
+                signInBtn.addEventListener('click', () => container.classList.remove('right-panel-active'));
             }
-
-            if (window.location.hash === '#signup') {
-                container.classList.add('right-panel-active');
-            }
+            if (window.location.hash === '#signup') container.classList.add('right-panel-active');
         });
     </script>
 </body>
 </html>
+

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -85,3 +89,4 @@ mongoose.connect(MONGO_URI)
   });
 
 module.exports = app;
+

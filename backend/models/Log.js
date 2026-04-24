@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const mongoose = require('mongoose');
 
 const logSchema = new mongoose.Schema({
@@ -9,3 +13,4 @@ const logSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Log', logSchema);
+

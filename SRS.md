@@ -1,3 +1,8 @@
+> **© 2026 GeneLab. All rights reserved.**
+> *Confidential and Proprietary. Do not copy, distribute, or modify without express written permission.*
+
+---
+
 # GeneLab Software Requirements Specification (SRS)
 
 ## 1. Introduction
@@ -70,3 +75,4 @@ GeneLab supports DNA workflow operations for doctor users and governance operati
 ## 9. Verification
 - Diagnostics checks on edited files must report no syntax errors.
 - Functional smoke checks: profile load, save, photo update, password update prompt.
+

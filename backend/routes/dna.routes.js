@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload.middleware');
@@ -39,3 +43,4 @@ router.get('/:id/transcribe', transcribe);
 router.post('/compare', compareSequences);
 
 module.exports = router;
+

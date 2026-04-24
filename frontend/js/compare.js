@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // compare.js - DNA Comparison Logic
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('compare.html')) return;

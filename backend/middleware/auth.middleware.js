@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const jwt = require('jsonwebtoken');
 
 exports.protect = (req, res, next) => {
@@ -23,3 +27,4 @@ exports.adminOnly = (req, res, next) => {
         res.status(403).json({ message: 'Not authorized as admin' });
     }
 };
+

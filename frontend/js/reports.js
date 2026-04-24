@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // reports.js - DNA Analysis Reports List
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('reports.html')) return;
@@ -55,3 +59,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadReports();
 });
+

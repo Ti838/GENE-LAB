@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // auth.js - Login/Signup logic
 const auth = {
     async login(email, password, roleHint = 'doctor') {
@@ -112,3 +116,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

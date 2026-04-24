@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 // charts.js - Chart.js Initializations for GeneLab
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof Chart === 'undefined') {

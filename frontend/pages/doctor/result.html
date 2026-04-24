@@ -1,109 +1,110 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostics Report | GeneLab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="../../js/theme.js" defer></script>
+    <script src="../../js/api.js" defer></script>
+    <script src="../../js/auth.js" defer></script>
+    <script src="../../js/app.js" defer></script>
+    <script src="../../js/dna-background.js" defer></script>
+</head>
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
 
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Diagnostics Report | GeneLab</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link rel="stylesheet" href="../../css/style.css">
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-        <link rel="stylesheet" href="../../theme.css">
-        <script src="../../js/theme.js" defer></script>
-        <script src="../../js/api.js" defer></script>
-        <script src="../../js/auth.js" defer></script>
-        <script src="../../js/app.js" defer></script>
-        <script src="../../js/dna-background.js" defer></script>
-    </head>
-    <body class="selection:bg-cyan selection:text-ink">
-        <!-- DNA Background is injected by dna-background.js -->
-
-        <div class="relative z-10 flex min-h-screen">
-            <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
-                <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
-                    <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
-                    <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+    <div class="relative z-10 flex min-h-screen">
+        <aside class="w-72 glass-panel m-3 rounded-[28px] flex flex-col fixed h-[calc(100vh-1.5rem)] z-20 overflow-hidden">
+            <div class="p-7 border-b flex items-center justify-center gap-3" style="border-color:var(--border)">
+                <div class="w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:22px!important;width:22px!important;height:22px!important;">biotech</span>
                 </div>
-                <nav class="flex-1 px-6 space-y-2 mt-10">
-                    <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
-                    <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
-                    <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
-                    <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
-                    <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
-                    <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
-                    <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
-                </nav>
-                <div class="p-8 border-t border-white/5">
-                    <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
-                    </a>
-                </div>
-            </aside>
+                <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
+            </div>
+            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+                <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
+                <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
+                <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
+                <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
+                <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
+                <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
+            </nav>
+            <div class="p-6 border-t" style="border-color:var(--border)">
+                <a href="#" onclick="auth.logout()" class="btn-premium btn-danger w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">power_settings_new</span> Logout
+                </a>
+            </div>
+        </aside>
 
-            <main class="flex-1 ml-80 p-10">
-                <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                        <p class="section-badge mb-3">Diagnostic analysis</p>
-                        <h1 class="text-5xl font-display font-bold text-white mb-2">Molecular Interpretation</h1>
-                        <p class="text-slate-400 font-medium">High-fidelity clinical output for interpreted bio-asset.</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="window.print()" class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">print</span> Print
-                        </button>
-                        <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">dark_mode</span>
-                            <span data-theme-label>Dark</span>
-                        </button>
-                    </div>
-                </header>
-                
-                <div class="grid md:grid-cols-3 gap-6 mb-10">
-                    <div class="glass-panel p-6 sm:p-8 rounded-[32px] border-cyan/20" data-animate="panel">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">GC Content</p>
-                        <p class="text-5xl font-display font-bold text-white mb-4" data-metric="gcContent">0%</p>
-                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden"><div data-progress="gcContent" class="w-0 h-full bg-cyan shadow-[0_0_15px_#00f0ff] transition-all duration-1000"></div></div>
-                    </div>
-                    <div class="glass-panel p-6 sm:p-8 rounded-[32px] border-teal/20" data-animate="panel">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">AT Ratio</p>
-                        <p class="text-5xl font-display font-bold text-white mb-4" data-metric="atRatio">0%</p>
-                        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden"><div data-progress="atRatio" class="w-0 h-full bg-teal shadow-[0_0_15px_#00bea4] transition-all duration-1000"></div></div>
-                    </div>
-                    <div class="glass-panel p-6 sm:p-8 rounded-[32px] border-lime/20" data-animate="panel">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Sequence Length</p>
-                        <p class="text-5xl font-display font-bold text-white" data-metric="length">0</p>
-                    </div>
+        <main class="flex-1 ml-[19.5rem] p-8">
+            <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <p class="section-badge mb-3">Diagnostic analysis</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Molecular Interpretation</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">High-fidelity clinical output for interpreted bio-asset.</p>
                 </div>
-
-                <div class="grid lg:grid-cols-2 gap-8 mb-10">
-                    <div class="glass-panel p-6 sm:p-10 rounded-[40px] min-h-[20rem] lg:h-96" data-animate="panel">
-                        <h3 class="text-xl font-display font-bold text-white mb-8">Nucleotide Distribution</h3>
-                        <div class="h-64 w-full relative"><canvas id="nucleotideChart"></canvas></div>
-                    </div>
-                    <div class="glass-panel p-6 sm:p-10 rounded-[40px] min-h-[20rem] lg:h-96" data-animate="panel">
-                        <h3 class="text-xl font-display font-bold text-white mb-8">Mutation Screening</h3>
-                        <div id="mutations-container" class="space-y-4 max-h-[15rem] overflow-y-auto pr-2">
-                             <p class="text-slate-500 italic">Scanning for genetic deviations...</p>
-                        </div>
-                    </div>
+                <div class="flex gap-3">
+                    <button onclick="window.print()" class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">print</span> Print
+                    </button>
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
+                        <span data-theme-label>Dark</span>
+                    </button>
                 </div>
+            </header>
 
-                <div class="glass-panel p-6 sm:p-10 rounded-[40px] border-white/5" data-animate="panel">
-                    <h3 class="text-xl font-display font-bold text-white mb-6">Sequence Data Stream</h3>
-                    <div class="sequence-viewer custom-scrollbar" id="sequence-viewer">
-                        <p class="text-slate-500 italic">Initializing nucleotide stream...</p>
+            <div class="grid md:grid-cols-3 gap-5 mb-8">
+                <div class="glass-panel p-6 rounded-[24px]" style="border-color:rgba(0,180,216,0.2)" data-animate="panel">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">GC Content</p>
+                    <p class="text-4xl font-display font-extrabold mb-3" data-metric="gcContent">0%</p>
+                    <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:var(--bg-glass)"><div data-progress="gcContent" class="w-0 h-full rounded-full transition-all duration-1000" style="background:var(--cyan);box-shadow:0 0 12px var(--cyan-dim)"></div></div>
+                </div>
+                <div class="glass-panel p-6 rounded-[24px]" style="border-color:rgba(6,214,160,0.2)" data-animate="panel">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">AT Ratio</p>
+                    <p class="text-4xl font-display font-extrabold mb-3" data-metric="atRatio">0%</p>
+                    <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:var(--bg-glass)"><div data-progress="atRatio" class="w-0 h-full rounded-full transition-all duration-1000" style="background:var(--teal);box-shadow:0 0 12px var(--teal-dim)"></div></div>
+                </div>
+                <div class="glass-panel p-6 rounded-[24px]" data-animate="panel">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Sequence Length</p>
+                    <p class="text-4xl font-display font-extrabold" data-metric="length">0</p>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
+                    <h3 class="text-lg font-display font-bold mb-6">Nucleotide Distribution</h3>
+                    <div class="h-56 w-full"><canvas id="nucleotideChart"></canvas></div>
+                </div>
+                <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
+                    <h3 class="text-lg font-display font-bold mb-6">Mutation Screening</h3>
+                    <div id="mutations-container" class="space-y-3 max-h-56 overflow-y-auto pr-2">
+                        <p class="italic" style="color:var(--text-faint)">Scanning for genetic deviations...</p>
                     </div>
                 </div>
-                <script src="../../js/charts.js" defer></script>
-                <script src="../../js/result.js" defer></script>
-            </main>
+            </div>
 
-
-            </main>
-        </div>
-    </body>
-    </html>
-    
+            <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
+                <h3 class="text-lg font-display font-bold mb-5">Sequence Data Stream</h3>
+                <div class="sequence-viewer" id="sequence-viewer">
+                    <p class="italic" style="color:var(--text-faint)">Initializing nucleotide stream...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../../js/charts.js" defer></script>
+    <script src="../../js/result.js" defer></script>
+</body>
+</html>
 

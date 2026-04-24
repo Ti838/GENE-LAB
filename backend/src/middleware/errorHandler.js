@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const errorHandler = (err, req, res, next) => {
   console.error('❌ Error:', err.message);
 
@@ -34,3 +38,4 @@ const errorHandler = (err, req, res, next) => {
 };
 
 module.exports = { errorHandler };
+

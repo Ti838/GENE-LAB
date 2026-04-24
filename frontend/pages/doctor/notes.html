@@ -1,33 +1,35 @@
 <!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Notes | GeneLab</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
     <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script src="../../js/theme.js" defer></script>
     <script src="../../js/api.js" defer></script>
     <script src="../../js/auth.js" defer></script>
     <script src="../../js/app.js" defer></script>
-    <script src="../../js/notes.js" defer></script>
-    <link rel="stylesheet" href="../../theme.css">
     <script src="../../js/dna-background.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink">
-    <!-- DNA Background is injected by dna-background.js -->
-        </div>
-        <div id="particle-field" class="absolute inset-0"></div>
-    </div>
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
 
     <div class="relative z-10 flex min-h-screen">
-        <aside class="w-72 glass-panel m-4 rounded-[32px] border-white/5 flex flex-col fixed h-[calc(100vh-2rem)] z-20 overflow-hidden">
-            <div class="p-8 border-b border-white/5 flex items-center justify-center gap-3">
-                <span class="material-symbols-outlined text-cyan text-3xl">biotech</span>
-                <span class="text-xl font-display font-bold text-white tracking-[0.2em]">GENELAB</span>
+        <aside class="w-72 glass-panel m-3 rounded-[28px] flex flex-col fixed h-[calc(100vh-1.5rem)] z-20 overflow-hidden">
+            <div class="p-7 border-b flex items-center justify-center gap-3" style="border-color:var(--border)">
+                <div class="w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:22px!important;width:22px!important;height:22px!important;">biotech</span>
+                </div>
+                <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-6 space-y-2 mt-10">
+            <nav class="flex-1 px-5 space-y-1.5 mt-8">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
                 <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
@@ -36,50 +38,49 @@
                 <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
                 <a href="profile.html" class="sidebar-link"><span class="material-symbols-outlined">person</span> Profile</a>
             </nav>
-            <div class="p-8 border-t border-white/5">
-                <a href="#" onclick="auth.logout()" class="btn-premium w-full py-4 rounded-xl border-coral/30 text-coral flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">power_settings_new</span> Logout
+            <div class="p-6 border-t" style="border-color:var(--border)">
+                <a href="#" onclick="auth.logout()" class="btn-premium btn-danger w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">power_settings_new</span> Logout
                 </a>
             </div>
         </aside>
 
-        <main class="flex-1 ml-80 p-10">
-            <header data-animate="hero" class="mb-12 flex items-start justify-between gap-4 flex-wrap">
+        <main class="flex-1 ml-[19.5rem] p-8">
+            <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <p class="section-badge mb-3">Doctor workflow</p>
-                    <h1 class="text-5xl font-display font-bold text-white mb-2">Clinical Notes</h1>
-                    <p class="text-slate-400 font-medium">Secure notepad for research observations and diagnostic notes.</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Clinical Notes</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">Secure notepad for research observations and diagnostic notes.</p>
                 </div>
                 <div class="flex gap-3">
-                    <button id="new-note-btn" class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">add</span> New Note
+                    <button id="new-note-btn" class="btn-premium btn-cyan px-5 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">add</span> New Note
                     </button>
-                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-5 py-3 rounded-xl flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">dark_mode</span>
+                    <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
                         <span data-theme-label>Dark</span>
                     </button>
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-8">
-                <!-- Notes List -->
-                <div class="glass-panel p-6 rounded-[32px] max-h-[70vh] overflow-y-auto" data-animate="panel">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">All Notes</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
+                <div class="glass-panel p-6 rounded-[24px] max-h-[70vh] overflow-y-auto" data-animate="panel">
+                    <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--text-faint)">All Notes</h3>
                     <div id="notes-list" class="space-y-3">
-                        <p class="text-slate-500 italic text-center p-4">Loading...</p>
+                        <p class="italic text-center p-4" style="color:var(--text-faint)">Loading...</p>
                     </div>
                 </div>
-
-                <!-- Note Editor -->
-                <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
-                    <input id="note-title" type="text" class="field-input mb-4 text-lg font-bold" placeholder="Note title...">
-                    <textarea id="note-content" class="field-input h-64 sm:h-80 resize-none placeholder:text-slate-500 p-5" placeholder="Write your clinical observations here..."></textarea>
-                    <button id="save-note-btn" class="btn-premium btn-cyan w-full sm:w-auto px-12 py-5 rounded-2xl mt-6 flex items-center gap-2 justify-center">
-                        <span class="material-symbols-outlined text-sm">save</span> Save Note
+                <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
+                    <input id="note-title" type="text" class="field-input mb-3 text-lg font-bold" placeholder="Note title...">
+                    <textarea id="note-content" class="field-input h-56 sm:h-72 resize-none p-4" placeholder="Write your clinical observations here..."></textarea>
+                    <button id="save-note-btn" class="btn-premium btn-cyan w-full sm:w-auto px-10 py-4 rounded-xl mt-4 flex items-center gap-2 justify-center">
+                        <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">save</span> Save Note
                     </button>
                 </div>
             </div>
         </main>
     </div>
+    <script src="../../js/notes.js" defer></script>
 </body>
 </html>
+

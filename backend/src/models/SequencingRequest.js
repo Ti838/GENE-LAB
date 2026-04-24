@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ */
 const mongoose = require('mongoose');
 
 const sequencingRequestSchema = new mongoose.Schema({
@@ -60,3 +64,4 @@ sequencingRequestSchema.pre('save', async function (next) {
 });
 
 module.exports = mongoose.model('SequencingRequest', sequencingRequestSchema);
+
