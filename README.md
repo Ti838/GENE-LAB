@@ -1,5 +1,6 @@
-<!-- cspell:disable-file -->
 # 🧬 GeneLab: Advanced DNA Sequencing & Analysis System
+
+<!-- cspell:disable-file -->
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
