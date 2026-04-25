@@ -1,46 +1,34 @@
-﻿> **© 2026 GeneLab. All rights reserved.**
-> *Confidential and Proprietary. Do not copy, distribute, or modify without express written permission.*
+# UI/UX Specification
 
----
+This is the practical UI direction for GeneLab.
+No buzzwords, just clarity.
 
-# 🎨 GeneLab: UI/UX Specification
+## Design priorities
 
-GeneLab employs a premium, high-fidelity visual design language. The goal is to provide a clinical, futuristic, yet highly usable interface that handles complex genetic data without overwhelming the user.
+- Keep screens clean and readable
+- Reduce clicks for common doctor tasks
+- Keep admin pages dense but understandable
 
-## 1. Core Design Philosophy: "Glassmorphism"
+## Navigation
 
-The entire UI is built around a modern "frosted glass" aesthetic.
-*   **Containers:** Panels, cards, and sidebars use semi-transparent backgrounds with strong backdrop-filter: blur() effects.
-*   **Borders:** Subtle, semi-transparent borders give the glass panels defined edges and depth.
-*   **Shadows:** Soft, colorful drop-shadows (cyan, teal, violet) are used to indicate elevation and active states.
+- Separate sections for doctor and admin flows
+- Predictable sidebar/menu behavior
+- Clear page title and current context indicator
 
-## 2. Dynamic Theme Engine
+## Visual system
 
-The platform features a fully integrated Light and Dark mode toggle.
-*   **Dark Mode (Default):** Utilizes deep navy and ink blacks (#050d1a). Glass panels have a dark tint (rgba(8, 22, 40, 0.72)). Text is bright white or cyan for high contrast. This mode highlights the neon glow of the 3D DNA.
-*   **Light Mode:** Utilizes clean, clinical whites and soft blues (#edf4fb). Glass panels are heavily frosted white (rgba(255, 255, 255, 0.75)). Text is dark navy. The 3D DNA lighting automatically boosts intensity to maintain visibility against the bright background.
+- Reuse shared theme tokens from `theme.css`
+- Keep spacing and typography consistent
+- Use status colors consistently (success, warning, error)
 
-## 3. Real-Time 3D Background
+## Interaction principles
 
-A core component of the UX is the interactive Three.js DNA double helix running constantly in the background.
-*   **Immersive but Unobtrusive:** The canvas sits at z-index: 0. It spins continuously and adjusts its lighting dynamically based on the current CSS theme.
-*   **Smart Positioning:** The 3D engine scans the DOM. On the login page, the helix is perfectly centered. On dashboard pages with a sidebar, the helix automatically shifts to the right (x = 3.0) to center itself within the remaining available content area.
+- Show clear success/error messages
+- Validate forms before submit
+- Keep loading states visible for API actions
 
-## 4. Typography
+## Accessibility baseline
 
-*   **Primary Font:** Inter or Manrope for all body text, ensuring maximum legibility of clinical data at small sizes.
-*   **Monospace Font:** JetBrains Mono or similar used exclusively for DNA sequencing arrays (A, C, T, G) to ensure perfect alignment and readability.
-
-## 5. Color Palette
-
-*   **Primary Accents:** Cyan (#00d4ff) and Teal (#06ffa0). Used for primary buttons, active states, and success metrics.
-*   **Secondary Accents:** Violet (#a78bfa) and Coral (#ff6b6b). Used for secondary actions, warnings, or distinct data series in charts.
-*   **Text Hierarchy:** 
-    *   --text: Main readable text.
-    *   --text-muted: Secondary descriptions and labels.
-    *   --text-faint: Placeholder text and subtle icons.
-
-## 6. Interaction & Animation
-
-*   **Micro-interactions:** Buttons and cards feature smooth 0.3s cubic-bezier transitions, slightly floating upwards (translateY(-2px)) and glowing when hovered.
-*   **Page Transitions:** The login portal features a fluid sliding overlay that smoothly masks the underlying forms when toggling between "Sign In" and "Register".
+- Sufficient color contrast
+- Clickable elements with clear labels
+- Keyboard-friendly form controls where practical

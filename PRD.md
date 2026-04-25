@@ -1,29 +1,37 @@
-﻿> **© 2026 GeneLab. All rights reserved.**
-> *Confidential and Proprietary. Do not copy, distribute, or modify without express written permission.*
+# PRD (Product Requirements Document)
 
----
+## Product goal
 
-# 🎨 GeneLab: Design Specification (PRD Supplement)
+Build a secure and usable DNA sequencing workflow platform for doctors and admins.
 
-## Overview
-A detailed look at the design system tokens and visual identity.
+## Primary users
 
-## Typography
-- **Headings:** Manrope (ExtraBold)
-- **Body:** Inter (Regular/SemiBold)
-- **Data:** JetBrains Mono
+- Doctor
+- Admin
 
-## Design Tokens
-- **Primary:** #00d4ff (Cyan)
-- **Secondary:** #06ffa0 (Teal)
-- **Surface:** Glassmorphism with 12px-24px backdrop blur.
+## Core outcomes
 
----
-# 📋 Product Requirements (PRD)
+- Fast sequencing request handling
+- Reliable result management
+- Transparent admin controls and logs
 
-## Scope
-Release 1.0 focuses on Core Authentication and Patient Sequencing Data Visualization.
+## Key features
 
-## User Stories
-1. As a doctor, I want to securely log in and see my patients' DNA analysis.
-2. As an admin, I want to manage system logs and user access.
+- Auth and role-based access
+- Request submission and tracking
+- DNA analysis support workflow
+- Report and notes support in doctor side
+- Announcement management
+- Admin analytics and audit visibility
+
+## Non-functional expectations
+
+- Secure authentication and protected routes
+- Stable API behavior
+- Clear, maintainable folder structure
+- Beginner-friendly documentation
+
+## Success signal
+
+A new developer can run and understand the project quickly,
+and doctors/admin can complete daily tasks without confusion.

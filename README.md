@@ -1,94 +1,81 @@
-﻿# 🧬 GeneLab: Next-Gen Bioinformatics Platform
+# GeneLab DNA Sequencing System
 
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
-[![Stack: Node.js](https://img.shields.io/badge/Stack-Node.js-green.svg)](https://nodejs.org/)
-[![Database: MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen.svg)](https://www.mongodb.com/)
-[![UI: Three.js](https://img.shields.io/badge/UI-Three.js-blue.svg)](https://threejs.org/)
+If you are opening this project for the first time, do not worry.
+This README is written like a teammate explaining things to you step by step.
 
-GeneLab is a high-fidelity, professional biotech SaaS platform designed for clinical geneticists and laboratory administrators. It features an immersive **3D DNA visualization engine** and a robust, secure clinical management system.
+## What this project does
 
----
+GeneLab is a web system where:
+- Patients or doctors can submit sequencing requests
+- Doctors can analyze DNA data and write notes/reports
+- Admin can manage users, logs, announcements, and system data
 
-## 📖 Table of Contents
-*   [Key Features](#-key-features)
-*   [Documentation Center](#-documentation-center)
-*   [Technology Stack](#-technology-stack)
-*   [Project Structure](#-project-structure)
-*   [Quick Start](#-quick-start)
-*   [Security & Compliance](#-security--compliance)
+Tech stack in plain words:
+- Backend: Node.js + Express + MongoDB (Mongoose)
+- Frontend: HTML + CSS + Vanilla JavaScript
 
----
+## Project folders (quick idea)
 
-## 🚀 Key Features
+- `backend/` -> API server and database logic
+- `frontend/` -> Website UI pages and browser scripts
+- Root markdown files -> all project docs (setup, architecture, PRD, SRS, etc.)
 
-*   **Interactive 3D UI:** Premium glassmorphism interface with a real-time, responsive 3D DNA double-helix background powered by **Three.js** and **GSAP**.
-*   **Dual-Theme System:** Intelligent Light and Dark modes with real-time 3D lighting adjustments.
-*   **DNA Analysis Suite:** High-performance nucleotide sequence viewer, mutation analysis, and pattern matching.
-*   **Role-Based Dashboards:** Distinct, secure interfaces for **Doctors** (clinical data) and **Admins** (system oversight).
-*   **Secure Authentication:** JWT-based auth with clinical-grade password hashing and encrypted PHI data.
+## README map (which README is for what)
 
----
+These are folder-level operational notes. Read the one for the folder you are editing.
 
-## 📚 Documentation Center
+- `backend/uploads/README.md`
+  - Runtime upload lifecycle and cleanup rules.
 
-Explore our detailed technical and product documentation:
+- `backend/utils/README.md`
+  - What should and should not go into shared helpers.
 
-| Document | Description |
-| :--- | :--- |
-| 🏗️ **[System Architecture](./System_Architecture.md)** | Deep dive into the full-stack engine and data flow. |
-| 💾 **[Database CRUD Operations](./DATABASE_CRUD_OPERATIONS.md)** | Full guide to all MongoDB actions (Create, Read, Update, Delete). |
-| 🎨 **[UI/UX Specification](./UI_UX_Specification.md)** | Our "Frosted Glass" design system and 3D visualization logic. |
-| ⚡ **[Quick Start Summary](./Quick_Start_Summary.md)** | The fastest way to get the project running locally. |
-| 🛠️ **[Implementation Guide](./Implementation_Guide.md)** | Developer-focused integration and extension manual. |
-| 🧬 **[DNA PRD & Technical Doc](./DNA_Sequencing_PRD_Technical_Doc.md)** | Product requirements for the sequencing portal. |
+- `frontend/assets/animations/README.md`
+  - Motion asset formats, naming, and performance notes.
 
----
+- `frontend/assets/images/README.md`
+  - Static image organization and optimization guidance.
 
-## 💻 Technology Stack
+- `frontend/assets/icons/README.md`
+  - Icon system naming and consistency rules.
 
-- **Frontend:** HTML5, Vanilla JavaScript (ES6+), TailwindCSS, Three.js, GSAP.
-- **Backend:** Node.js, Express.js.
-- **Database:** MongoDB Atlas (Mongoose ODM).
-- **Security:** JWT, bcrypt.js, Helmet, CORS.
+- `frontend/components/README.md`
+  - Reusable component workflow for this frontend structure.
 
----
+## Quick start (copy-paste)
 
-## 📁 Project Structure
+1. Clone and open the project.
+2. Install backend packages:
 
-`ash
-genelab/
-├── backend/            # Express API, Controllers, Models, Routes
-├── frontend/           # Client-side (HTML, CSS, JS)
-│   ├── css/            # Global styles
-│   ├── js/             # Core logic & 3D engine
-│   └── pages/          # Secure UI modules (Admin/Doctor)
-├── System_Architecture.md
-├── DATABASE_CRUD_OPERATIONS.md
-└── README.md           # You are here
-`
-
----
-
-## ⚙️ Quick Start
-
-### 1. Backend Setup
-`ash
+```powershell
 cd backend
 npm install
+```
+
+3. Create `.env` in `backend/` and set values:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/genelab
+JWT_SECRET=change_this_to_a_long_random_secret
+```
+
+4. Run backend:
+
+```powershell
 npm run dev
-`
-*Note: Ensure your .env file is configured with MONGODB_URI and JWT_SECRET.*
+```
 
-### 2. Frontend Setup
-Simply serve the rontend/ directory using a local web server (e.g., Live Server).
+5. Open frontend page files from `frontend/pages/` in browser.
 
----
+## Important docs to read next
 
-## 🛡️ Security & Compliance
+- `Quick_Start_Summary.md` -> fastest runbook
+- `MONGODB_BACKEND_SETUP_GUIDE.md` -> MongoDB install/connect/check
+- `FULL_FILE_STRUCTURE_CODE_EXPLANATION.md` -> folder structure and why folders exist
+- `EVERY_CODE_FILE_EXPLANATION.md` -> exact file usage map (source of truth)
 
-> **Important:** All clinical data is treated as Protected Health Information (PHI). GeneLab implements industry-standard encryption and security protocols to ensure patient confidentiality.
+## Truth source note
 
----
-
-## ⚖️ License
-© 2026 GeneLab. All rights reserved. Unauthorized copying of this project, via any medium, is strictly prohibited. Proprietary and confidential.
+If any two docs feel different, trust `EVERY_CODE_FILE_EXPLANATION.md`.
+That file was aligned directly with current code includes and route mounts.

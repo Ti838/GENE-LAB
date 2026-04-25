@@ -1,37 +1,55 @@
-﻿> **© 2026 GeneLab. All rights reserved.**
-> *Confidential and Proprietary. Do not copy, distribute, or modify without express written permission.*
+# Quick Start Summary (No Confusion Version)
 
----
+This is the shortest path to run the system.
+If you only want the app running quickly, follow this.
 
-# ⚡ GeneLab: Quick Start Summary
+## 1) Install backend dependencies
 
-A high-level executive summary and rapid setup guide for the GeneLab platform.
-
-## 🏁 Overview
-GeneLab is a premium biotech SaaS designed to streamline DNA sequence analysis and clinical data management for modern genetics laboratories.
-
-## 🛠️ Rapid Setup (3 Minutes)
-
-### 1. Database
-Ensure you have a MongoDB Atlas cluster running and obtain your connection string.
-
-### 2. Backend
-`ash
+```powershell
 cd backend
 npm install
-# Update .env with MONGODB_URI and JWT_SECRET
+```
+
+## 2) Make `.env`
+
+Create `backend/.env`:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/genelab
+JWT_SECRET=your_long_secret_key
+```
+
+## 3) Start backend
+
+```powershell
 npm run dev
-`
+```
 
-### 3. Frontend
-Serve the frontend/ folder.
-Login as an **Admin** or **Doctor** to access the respective dashboards.
+You should see a success log in terminal.
 
-## 📦 Key Deliverables
-- **Advanced 3D UI:** Custom Three.js DNA visualization.
-- **Glassmorphism Design:** Modern, premium aesthetics.
-- **Secure API:** Express/Node backend with JWT protection.
-- **Responsive Dashboards:** Fully optimized for desktop and tablet clinical workstations.
+## 4) Health check
 
-## 📞 Support & License
-This software is proprietary. For support or licensing inquiries, contact the GeneLab administration. Unauthorized reproduction is strictly prohibited.
+Open:
+
+```text
+http://localhost:5000/api/health
+```
+
+If API is okay, you get a healthy response.
+
+## 5) Open frontend
+
+Open files from `frontend/pages/`:
+- `index.html`
+- `login.html`
+- `doctor/*.html`
+- `admin/*.html`
+
+## 6) Optional: seed test data
+
+```powershell
+node seed.js
+```
+
+Run this from `backend/` folder.

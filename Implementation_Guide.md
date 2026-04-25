@@ -1,54 +1,41 @@
-﻿> **© 2026 GeneLab. All rights reserved.**
-> *Confidential and Proprietary. Do not copy, distribute, or modify without express written permission.*
+# Implementation Guide (Practical Step-by-Step)
 
----
+Think of this as the build diary for developers.
+Not fancy theory, just what to implement and in what order.
 
-# 🛠️ GeneLab: Implementation Guide
+## Phase 1: Environment setup
 
-This guide provides technical details for developers on how to maintain, extend, and integrate the GeneLab biotech platform.
+1. Install Node.js LTS
+2. Install MongoDB Community
+3. Run `npm install` in `backend/`
+4. Configure `.env`
+5. Start server and verify `/api/health`
 
-## 1. Project Initialization
+## Phase 2: Core backend
 
-GeneLab is structured as a full-stack Node.js application with a decoupled frontend.
+1. Define models (`User`, `SequencingRequest`, `Result`, `Announcement`, `AuditLog`)
+2. Build auth flow (register/login/JWT)
+3. Build request endpoints
+4. Add admin endpoints and audit logs
+5. Add profile and announcement endpoints
 
-### 1.1 Backend Setup
-- **Environment:** Node.js 16+ is recommended.
-- **Dependencies:** Run npm install in the /backend directory.
-- **Configuration:** Ensure the .env file contains valid credentials for:
-    - MONGODB_URI: Connection string for MongoDB Atlas.
-    - JWT_SECRET: A high-entropy string for signing authentication tokens.
-- **Run:** Use npm run dev for development with hot-reloading (Nodemon).
+## Phase 3: Frontend pages
 
-### 1.2 Frontend Setup
-- **Architecture:** Vanilla JS/HTML/CSS. No build step required.
-- **Deployment:** The /frontend directory can be served via any static web server (NGINX, Apache, or VS Code Live Server).
-- **Core Script:** dna-background.js must be included in every page to provide the 3D visual experience.
+1. Setup login and landing pages
+2. Build doctor dashboard pages
+3. Build admin dashboard pages
+4. Connect pages to backend APIs with `frontend/js/api.js`
 
-## 2. Core Implementation Modules
+## Phase 4: QA and hardening
 
-### 2.1 The Design System (theme.css)
-To change global colors or glass effects:
-- Modify CSS variables in the :root (Dark Mode) or body[data-theme="light"] sections.
-- Blur intensity is controlled by the --blur variable applied via .glass-panel.
+1. Error handling checks
+2. Role-based access checks
+3. API validation checks
+4. Basic manual test cases
 
-### 2.2 3D Visualization (dna-background.js)
-The DNA helix is rendered using Three.js. Key parameters for adjustment include:
-- CFG.numBasePairs: Adjusts the length of the strand.
-- CFG.autoRotateY: Adjusts the spinning speed.
-- targetX: Controls the horizontal centering logic based on page layout.
+## Phase 5: Deployment readiness
 
-### 2.3 Authentication Logic (auth.js & api.js)
-- auth.js handles form submission and local storage of the JWT.
-- api.js serves as a wrapper for all fetch requests, automatically including the Authorization header when a token is present.
-
-## 3. Database Schema
-
-- **User Model:** Stores username, email, password (hashed), and role (Admin/Doctor).
-- **Patient Model:** (Planned) To store genetic metadata and sequencing history.
-- **Report Model:** (Planned) To link specific DNA analyses to Doctor profiles.
-
-## 4. Best Practices for Developers
-
-1.  **Semantic HTML:** Always use semantic tags (<header>, <main>, <aside>, <footer>) as the 3D engine uses these to calculate layout positioning.
-2.  **Theme Consistency:** Never hardcode colors. Always use the provided CSS variables (e.g., var(--cyan), var(--bg-panel)).
-3.  **Security:** Always use the authMiddleware on the backend to protect sensitive medical data endpoints.
+1. Move secrets to secure env management
+2. Enable CORS rules for deployment domains
+3. Add logging and monitoring plan
+4. Prepare backup strategy for database
