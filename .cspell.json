@@ -1,0 +1,25 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+        "GeneLab",
+        "jsonwebtoken",
+        "BcryptJS",
+        "multer",
+        "Mongoose",
+        "nodedotjs",
+        "chartdotjs",
+        "greensock",
+        "logoColor",
+        "brightgreen",
+        "CRUD",
+        "PRD",
+        "SRS",
+        "biotech",
+        "shields",
+        "img"
+    ],
+    "ignorePaths": [
+        "node_modules/**"
+    ]
+}
