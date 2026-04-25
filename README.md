@@ -1,81 +1,106 @@
-# GeneLab DNA Sequencing System
+# 🧬 GeneLab: Advanced DNA Sequencing & Analysis System
 
-If you are opening this project for the first time, do not worry.
-This README is written like a teammate explaining things to you step by step.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-## What this project does
+GeneLab is a high-performance, professional biotech platform designed for clinical DNA sequencing workflows. It provides a seamless interface for Doctors to analyze genetic data, Patients to track sequencing requests, and Administrators to monitor system integrity.
 
-GeneLab is a web system where:
-- Patients or doctors can submit sequencing requests
-- Doctors can analyze DNA data and write notes/reports
-- Admin can manage users, logs, announcements, and system data
+---
 
-Tech stack in plain words:
-- Backend: Node.js + Express + MongoDB (Mongoose)
-- Frontend: HTML + CSS + Vanilla JavaScript
+## 🚀 Tech Stack
 
-## Project folders (quick idea)
+### Frontend (High-Fidelity UI)
+- **Styling:** ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+- **Animations:** ![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=flat&logo=greensock&logoColor=white) (3D DNA Visualization)
+- **Data Viz:** ![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=flat&logo=chartdotjs&logoColor=white) (Clinical Analytics)
+- **Logic:** ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) (ES6+ Vanilla)
 
-- `backend/` -> API server and database logic
-- `frontend/` -> Website UI pages and browser scripts
-- Root markdown files -> all project docs (setup, architecture, PRD, SRS, etc.)
+### Backend (Enterprise Logic)
+- **Runtime:** ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
+- **Framework:** ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white)
+- **ORM:** ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat&logo=mongodb&logoColor=white)
+- **Security:** ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=json-web-tokens&logoColor=white) (Stateless Auth), BcryptJS (Encryption), Helmet (Header Security)
 
-## README map (which README is for what)
+### Database & Storage
+- **Database:** ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) (Atlas Cluster)
+- **Uploads:** Multer (Streaming File Support)
 
-These are folder-level operational notes. Read the one for the folder you are editing.
+---
 
-- [`backend/uploads/README.md`](./backend/uploads/README.md)
-  - Runtime upload lifecycle and cleanup rules.
+## ✨ Key Features
 
-- [`backend/utils/README.md`](./backend/utils/README.md)
-  - What should and should not go into shared helpers.
+- **🧬 DNA Visualization:** Interactive 3D double-helix background powered by GSAP.
+- **📊 Professional Dashboard:** Real-time clinical metrics and sequencing status tracking.
+- **🔐 Clinical-Grade Security:** JWT-based role access control (Doctor, Admin, Patient).
+- **📁 Secure Uploads:** Validated sequencing file ingestion with automated cleanup.
+- **📈 Analytics Engine:** Integrated Chart.js for visualizing DNA match percentages and patient statistics.
 
-- [`frontend/assets/animations/README.md`](./frontend/assets/animations/README.md)
-  - Motion asset formats, naming, and performance notes.
+---
 
-- [`frontend/assets/images/README.md`](./frontend/assets/images/README.md)
-  - Static image organization and optimization guidance.
+## 📁 Professional Project Architecture
 
-- [`frontend/assets/icons/README.md`](./frontend/assets/icons/README.md)
-  - Icon system naming and consistency rules.
+| Directory | Purpose |
+| :--- | :--- |
+| [`backend/`](./backend/) | Core API, Auth Middleware, and Mongoose Models. |
+| [`frontend/`](./frontend/) | High-fidelity UI with GSAP integration. |
+| [`docs/`](#important-documentation) | Root-level technical specification documents. |
 
-- [`frontend/components/README.md`](./frontend/components/README.md)
-  - Reusable component workflow for this frontend structure.
+---
 
-## Quick start (copy-paste)
+## 📖 Important Documentation
 
-1. Clone and open the project.
-2. Install backend packages:
+These documents provide the technical foundation and operational guidance for the GeneLab platform.
 
-```powershell
-cd backend
-npm install
-```
+### 🛠️ Setup & Operations
+- [**Quick Start Summary**](./Quick_Start_Summary.md) — Fast-track local environment setup.
+- [**MongoDB Backend Setup Guide**](./MONGODB_BACKEND_SETUP_GUIDE.md) — Connection strings and collection verification.
+- [**Implementation Guide**](./Implementation_Guide.md) — Detailed deployment walkthrough.
 
-3. Create `.env` in `backend/` and set values:
+### 🧠 System Intelligence
+- [**Every Code File Explanation**](./EVERY_CODE_FILE_EXPLANATION.md) — **Primary Truth Source** for all file roles.
+- [**Full File Structure Explanation**](./FULL_FILE_STRUCTURE_CODE_EXPLANATION.md) — Deep dive into directory hierarchy.
+- [**Database CRUD Operations**](./DATABASE_CRUD_OPERATIONS.md) — Documentation for core data interaction patterns.
 
-```env
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/genelab
-JWT_SECRET=change_this_to_a_long_random_secret
-```
+### 📋 Technical Specifications
+- [**PRD (Product Requirements Document)**](./PRD.md)
+- [**SRS (Software Requirements Specification)**](./SRS.md)
+- [**System Architecture**](./System_Architecture.md)
+- [**UI/UX Specification**](./UI_UX_Specification.md)
 
-4. Run backend:
+---
 
-```powershell
-npm run dev
-```
+## 🛠️ Installation & Development
 
-5. Open frontend page files from `frontend/pages/` in browser.
+1. **Clone the Repository**
+2. **Install Backend Dependencies**
+   ```powershell
+   cd backend
+   npm install
+   ```
+3. **Configure Environment**
+   Create a `.env` file in the `backend` directory:
+   ```env
+   PORT=5000
+   MONGO_URI=your_mongodb_atlas_uri
+   JWT_SECRET=your_secure_random_key
+   ```
+4. **Launch Application**
+   ```powershell
+   npm run dev
+   ```
 
-## Important docs to read next
+---
 
-- [`Quick_Start_Summary.md`](./Quick_Start_Summary.md) -> fastest runbook
-- [`MONGODB_BACKEND_SETUP_GUIDE.md`](./MONGODB_BACKEND_SETUP_GUIDE.md) -> MongoDB install/connect/check
-- [`FULL_FILE_STRUCTURE_CODE_EXPLANATION.md`](./FULL_FILE_STRUCTURE_CODE_EXPLANATION.md) -> folder structure and why folders exist
-- [`EVERY_CODE_FILE_EXPLANATION.md`](./EVERY_CODE_FILE_EXPLANATION.md) -> exact file usage map (source of truth)
+## 🛡️ Security Implementation
 
-## Truth source note
+- **Stateless Authentication:** JWT with custom `auth` middleware for role-based permissions.
+- **Data Integrity:** Mongoose strict schema enforcement for clinical data.
+- **Protection:** 
+  - `helmet` for HTTP header protection.
+  - `express-rate-limit` to prevent brute-force attacks.
+  - `express-validator` for strict input sanitization.
 
-If any two docs feel different, trust [`EVERY_CODE_FILE_EXPLANATION.md`](./EVERY_CODE_FILE_EXPLANATION.md).
-That file was aligned directly with current code includes and route mounts.
+---
+
+© 2026 GeneLab DNA Sequencing. All rights reserved.
