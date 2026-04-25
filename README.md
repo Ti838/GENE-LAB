@@ -21,8 +21,10 @@ GeneLab is a high-performance, professional biotech platform designed for clinic
 ### Backend (Enterprise Logic)
 - **Runtime:** ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
 - **Framework:** ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white)
-- **ORM:** ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat&logo=mongodb&logoColor=white)
-- **Security:** ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=json-web-tokens&logoColor=white) (Stateless Auth), BcryptJS (Encryption), Helmet (Header Security)
+- **Database Logic:** ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat&logo=mongodb&logoColor=white)
+- **Middleware:** ![CORS](https://img.shields.io/badge/CORS-FF6F61?style=flat) ![Morgan](https://img.shields.io/badge/Morgan-000000?style=flat)
+- **Dev Tools:** ![Nodemon](https://img.shields.io/badge/Nodemon-76D04B?style=flat&logo=nodemon&logoColor=white)
+- **Security:** ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=json-web-tokens&logoColor=white) ![BcryptJS](https://img.shields.io/badge/BcryptJS-37474F?style=flat) ![Helmet](https://img.shields.io/badge/Helmet-000000?style=flat)
 
 ### Database & Storage
 - **Database:** ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) (Atlas Cluster)
@@ -87,10 +89,11 @@ These documents provide the technical foundation and operational guidance for th
    MONGO_URI=your_mongodb_atlas_uri
    JWT_SECRET=your_secure_random_key
    ```
-4. **Launch Application**
+4. **Launch Application (Development Mode)**
    ```powershell
    npm run dev
    ```
+   *Note: Uses Nodemon for automatic server restarts.*
 
 ---
 
@@ -102,6 +105,7 @@ These documents provide the technical foundation and operational guidance for th
   - `helmet` for HTTP header protection.
   - `express-rate-limit` to prevent brute-force attacks.
   - `express-validator` for strict input sanitization.
+  - `bcryptjs` for high-entropy password hashing.
 
 ---
 
