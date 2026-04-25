@@ -24,22 +24,22 @@ Tech stack in plain words:
 
 These are folder-level operational notes. Read the one for the folder you are editing.
 
-- `backend/uploads/README.md`
+- [`backend/uploads/README.md`](./backend/uploads/README.md)
   - Runtime upload lifecycle and cleanup rules.
 
-- `backend/utils/README.md`
+- [`backend/utils/README.md`](./backend/utils/README.md)
   - What should and should not go into shared helpers.
 
-- `frontend/assets/animations/README.md`
+- [`frontend/assets/animations/README.md`](./frontend/assets/animations/README.md)
   - Motion asset formats, naming, and performance notes.
 
-- `frontend/assets/images/README.md`
+- [`frontend/assets/images/README.md`](./frontend/assets/images/README.md)
   - Static image organization and optimization guidance.
 
-- `frontend/assets/icons/README.md`
+- [`frontend/assets/icons/README.md`](./frontend/assets/icons/README.md)
   - Icon system naming and consistency rules.
 
-- `frontend/components/README.md`
+- [`frontend/components/README.md`](./frontend/components/README.md)
   - Reusable component workflow for this frontend structure.
 
 ## Quick start (copy-paste)
@@ -70,12 +70,12 @@ npm run dev
 
 ## Important docs to read next
 
-- `Quick_Start_Summary.md` -> fastest runbook
-- `MONGODB_BACKEND_SETUP_GUIDE.md` -> MongoDB install/connect/check
-- `FULL_FILE_STRUCTURE_CODE_EXPLANATION.md` -> folder structure and why folders exist
-- `EVERY_CODE_FILE_EXPLANATION.md` -> exact file usage map (source of truth)
+- [`Quick_Start_Summary.md`](./Quick_Start_Summary.md) -> fastest runbook
+- [`MONGODB_BACKEND_SETUP_GUIDE.md`](./MONGODB_BACKEND_SETUP_GUIDE.md) -> MongoDB install/connect/check
+- [`FULL_FILE_STRUCTURE_CODE_EXPLANATION.md`](./FULL_FILE_STRUCTURE_CODE_EXPLANATION.md) -> folder structure and why folders exist
+- [`EVERY_CODE_FILE_EXPLANATION.md`](./EVERY_CODE_FILE_EXPLANATION.md) -> exact file usage map (source of truth)
 
 ## Truth source note
 
-If any two docs feel different, trust `EVERY_CODE_FILE_EXPLANATION.md`.
+If any two docs feel different, trust [`EVERY_CODE_FILE_EXPLANATION.md`](./EVERY_CODE_FILE_EXPLANATION.md).
 That file was aligned directly with current code includes and route mounts.
