@@ -109,4 +109,4 @@ genelab/
 
 ---
 
-© 2026 GeneLab DNA Sequencing. All rights reserved.
+© 2026 Timon Biswas. All rights reserved.
