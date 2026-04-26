@@ -73,12 +73,15 @@ genelab/
 1. **Navigate to backend:** `cd backend`
 2. **Install Dependencies:** `npm install`
 3. **Configure `.env`:**
+
    ```env
    PORT=5000
    MONGO_URI=your_mongodb_uri
    JWT_SECRET=your_secure_random_key
    ```
+
 4. **Seed Initial Data (Optional):**
+
    ```powershell
    node seed.js
    ```
