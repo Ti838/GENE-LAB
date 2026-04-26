@@ -67,6 +67,7 @@ genelab/
 ## 🛠️ Installation & Setup
 
 ### 1. Backend Configuration
+
 1. **Navigate to backend:** `cd backend`
 2. **Install Dependencies:** `npm install`
 3. **Configure `.env`:**
@@ -81,6 +82,7 @@ genelab/
    ```
 
 ### 2. Running the Application
+
 - **Start Backend:** `npm run dev` (Starts server on `http://localhost:5000`)
 - **Launch Frontend:** Open `frontend/pages/index.html` in your browser.
   - *Recommended: Use a static server like VS Code Live Server for the best experience.*
