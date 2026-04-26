@@ -72,18 +72,25 @@
         .modal-content-card {
             width: min(90vw, 840px);
             max-height: 85vh;
-            overflow-y: auto;
+            overflow: hidden; /* Prevent scrollbar from touching rounded corners */
             position: relative;
-            padding: 3.5rem 2.5rem;
+            display: flex;
+            flex-direction: column;
             animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 3.5rem 2.5rem;
+            scrollbar-gutter: stable;
         }
         @keyframes modalPop {
             from { transform: scale(0.9) translateY(20px); opacity: 0; }
             to { transform: scale(1) translateY(0); opacity: 1; }
         }
         .modal-close-btn {
-            position: sticky; top: -1.5rem; right: -1rem; float: right;
-            z-index: 20;
+            position: absolute; top: 1.5rem; right: 1.5rem;
+            z-index: 100;
         }
         .modal-body-text h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--cyan); }
         .modal-body-text h3 { font-size: 1.15rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; }
@@ -424,8 +431,10 @@
             <button onclick="closeModal()" class="modal-close-btn w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-coral/20 hover:text-coral transition-all">
                 <span class="material-symbols-outlined">close</span>
             </button>
-            <div id="modal-body" class="modal-body-text selection:bg-cyan/30">
-                <!-- Content injected via JS -->
+            <div class="modal-scroll-area">
+                <div id="modal-body" class="modal-body-text selection:bg-cyan/30">
+                    <!-- Content injected via JS -->
+                </div>
             </div>
         </div>
     </div>
