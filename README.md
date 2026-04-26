@@ -109,4 +109,9 @@ genelab/
 
 ---
 
+---
+
+**Status:** Unpublished Personal Project
+**Owner:** Timon Biswas
+
 © 2026 Timon Biswas. All rights reserved.
