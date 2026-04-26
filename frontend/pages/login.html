@@ -2,7 +2,7 @@
 <!--
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.
--->
+ -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -24,13 +24,13 @@
     <link rel="stylesheet" href="../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script src="../js/theme.js" defer></script>
+    <script src="../js/app.js" defer></script>
     <script src="../js/api.js" defer></script>
     <script src="../js/auth.js" defer></script>
-    <script src="../js/app.js" defer></script>
     <script src="../js/dna-background.js" defer></script>
     <style>
         html, body { height: 100dvh; overflow: hidden !important; }
-        body { min-height: 100dvh !important; }
+        body { min-height: 100dvh !important; display: block; padding: 0; }
 
         /* Show DNA on login */
         #dna-canvas { z-index: -1; }
@@ -69,7 +69,7 @@
         .auth-container .form-container {
             transition: all 0.6s ease-in-out;
             position: absolute; top: 0; height: 100%;
-            padding: 1.5rem 3rem; overflow: hidden;
+            padding: 1.5rem 3rem; overflow-y: auto; overflow-x: hidden;
         }
 
         .auth-container .field-input {
@@ -163,9 +163,9 @@
 
         /* Mobile vertical layout */
         @media (max-width: 768px) {
-            .auth-container { min-height: 860px; height: auto; max-height: none; margin-bottom: 2rem; }
+            .auth-container { min-height: 860px; height: auto; max-height: none; margin-bottom: 2rem; overflow: visible; }
             .overlay-banner-icon { font-size: 46px !important; margin-bottom: 0.75rem; }
-            .sign-in-container, .sign-up-container { width: 100%; height: 50%; left: 0; }
+            .sign-in-container, .sign-up-container { width: 100%; height: 50%; left: 0; position: absolute; }
             .overlay-container { width: 100%; height: 50%; left: 0; top: 50%; }
             .overlay { width: 100%; height: 200%; left: 0; top: -100%; }
             .overlay-panel { width: 100%; height: 50%; }
@@ -403,4 +403,3 @@
     </script>
 </body>
 </html>
-

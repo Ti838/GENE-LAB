@@ -25,7 +25,11 @@ const api = {
                 data = { message: text };
             }
         }
-        if (!response.ok) throw new Error(data.message || 'Something went wrong');
+        if (!response.ok) {
+            const errorMsg = data.message || 'Something went wrong';
+            if (window.showToast) window.showToast(errorMsg, 'error');
+            throw new Error(errorMsg);
+        }
         return data;
     },
     get(endpoint) { return this.request(endpoint, { method: 'GET' }); },

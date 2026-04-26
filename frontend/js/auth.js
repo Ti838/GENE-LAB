@@ -9,8 +9,10 @@ const auth = {
 
         try {
             const data = await api.post('/auth/login', { email, password, role: roleHint });
+            const userRole = data.user ? data.user.role : roleHint;
             this.persistSession(data, rememberMe);
-            this.redirectByRole(data.role || roleHint);
+            showToast('Login successful!', 'success');
+            setTimeout(() => { this.redirectByRole(userRole); }, 800);
         } catch (error) {
             const fallbackRole = /admin/i.test(email) || roleHint === 'admin' ? 'admin' : 'doctor';
             const fallbackUser = {
@@ -27,7 +29,8 @@ const auth = {
                 ...fallbackUser
             }, rememberMe);
 
-            this.redirectByRole(fallbackRole);
+            showToast('Demo login active.', 'info');
+            setTimeout(() => { this.redirectByRole(fallbackRole); }, 800);
         }
     },
     async signup(userData) {
@@ -37,8 +40,8 @@ const auth = {
 
         try {
             await api.post('/auth/register', payload);
-            alert('Registration successful. Please login.');
-            window.location.href = 'login.html';
+            showToast('Account created! Redirecting to login...', 'success');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
         } catch (error) {
             const savedUsers = JSON.parse(localStorage.getItem('genelab_demo_users') || '[]');
             savedUsers.push({
@@ -47,8 +50,8 @@ const auth = {
                 joinedAt: new Date().toISOString()
             });
             localStorage.setItem('genelab_demo_users', JSON.stringify(savedUsers));
-            alert('Demo registration saved locally. Please login.');
-            window.location.href = 'login.html';
+            showToast('Demo account created! Redirecting...', 'info');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
         }
     },
     logout() {
@@ -57,8 +60,14 @@ const auth = {
         sessionStorage.removeItem('genelab_token');
         sessionStorage.removeItem('genelab_user');
 
+        showToast('Logged out successfully.', 'info');
+
         const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/admin/');
-        window.location.href = isSubDir ? '../login.html' : 'login.html';
+        const target = isSubDir ? '../login.html' : 'login.html';
+        
+        setTimeout(() => {
+            window.location.href = target;
+        }, 800);
     },
     persistSession(data, rememberMe) {
         const storage = rememberMe ? localStorage : sessionStorage;

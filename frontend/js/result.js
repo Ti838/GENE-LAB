@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileId = urlParams.get('id');
 
     if (!fileId) {
-        alert('No file ID provided');
-        window.location.href = 'reports.html';
+        showToast('No sequence identifier provided', 'error');
+        setTimeout(() => { window.location.href = 'reports.html'; }, 1500);
         return;
     }
 
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             console.error(error);
-            alert('Failed to load report data');
+            // Error toast handled in api.js
         }
     }
 

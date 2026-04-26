@@ -1,33 +1,42 @@
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
- * Do not copy, distribute, or modify without permission.
  */
-// charts.js - Chart.js Initializations for GeneLab
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof Chart === 'undefined') {
-        return;
+// charts.js - Dynamic Chart management for GeneLab
+
+window.genelabCharts = (() => {
+    let trendChart = null;
+    let nucleotideChart = null;
+
+    function getThemeColors() {
+        const isLightTheme = document.body?.dataset.theme === 'light';
+        return {
+            axis: isLightTheme ? '#5b6c84' : '#8d9bb5',
+            grid: isLightTheme ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255,255,255,0.06)',
+            fill: isLightTheme ? 'rgba(83, 230, 255, 0.16)' : 'rgba(83, 230, 255, 0.14)'
+        };
     }
 
-    const isLightTheme = document.body?.dataset.theme === 'light';
-    const axisColor = isLightTheme ? '#5b6c84' : '#8d9bb5';
-    const gridColor = isLightTheme ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255,255,255,0.06)';
-    const lineFill = isLightTheme ? 'rgba(83, 230, 255, 0.16)' : 'rgba(83, 230, 255, 0.14)';
+    function initTrendChart(labels, data) {
+        const ctx = document.getElementById('trendChart');
+        if (!ctx) return;
 
-    Chart.defaults.color = axisColor;
-    Chart.defaults.borderColor = gridColor;
+        const colors = getThemeColors();
+        
+        if (trendChart) trendChart.destroy();
 
-    const barCtx = document.getElementById('nucleotideChart');
-    if (barCtx) {
-        new Chart(barCtx, {
-            type: 'bar',
+        trendChart = new Chart(ctx, {
+            type: 'line',
             data: {
-                labels: ['A', 'T', 'G', 'C'],
+                labels: labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
-                    label: 'Count',
-                    data: [2800, 2200, 1900, 3100],
-                    backgroundColor: ['#53e6ff', '#3ff0bf', '#c9f071', '#ff9e72'],
-                    borderRadius: 14,
-                    borderSkipped: false
+                    label: 'Analyses',
+                    data: data || [0, 0, 0, 0, 0, 0],
+                    borderColor: '#53e6ff',
+                    backgroundColor: colors.fill,
+                    pointBackgroundColor: '#53e6ff',
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: true
                 }]
             },
             options: {
@@ -35,70 +44,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: gridColor }, ticks: { color: axisColor } },
-                    x: { grid: { display: false }, ticks: { color: axisColor } }
+                    y: { grid: { color: colors.grid }, ticks: { color: colors.axis, stepSize: 1 } },
+                    x: { grid: { color: colors.grid }, ticks: { color: colors.axis } }
                 }
             }
         });
     }
 
-    const lineCtx = document.getElementById('trendChart');
-    if (lineCtx) {
-        new Chart(lineCtx, {
-            type: 'line',
+    function initNucleotideChart(data) {
+        const ctx = document.getElementById('nucleotideChart');
+        if (!ctx) return;
+
+        const colors = getThemeColors();
+        if (nucleotideChart) nucleotideChart.destroy();
+
+        nucleotideChart = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: ['A', 'T', 'G', 'C'],
                 datasets: [{
-                    label: 'Analyses',
-                    data: [12, 19, 25, 45, 60, 85],
-                    borderColor: '#53e6ff',
-                    backgroundColor: lineFill,
-                    pointBackgroundColor: '#53e6ff',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.42,
-                    fill: true
+                    data: data || [0, 0, 0, 0],
+                    backgroundColor: ['#ff6b6b', '#00d4ff', '#06ffa0', '#ffd166'],
+                    borderRadius: 12
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: axisColor }
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: gridColor }, ticks: { color: axisColor } },
-                    x: { grid: { color: gridColor }, ticks: { color: axisColor } }
+                    y: { grid: { color: colors.grid }, ticks: { color: colors.axis } },
+                    x: { grid: { display: false }, ticks: { color: colors.axis } }
                 }
             }
         });
     }
 
-    const storageCtx = document.getElementById('storageChart');
-    if (storageCtx) {
-        new Chart(storageCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Used', 'Free'],
-                datasets: [{
-                    data: [84, 16],
-                    backgroundColor: ['#ff9e72', isLightTheme ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255,255,255,0.05)'],
-                    borderWidth: 0,
-                    hoverOffset: 8
-                }]
-            },
-            options: {
-                cutout: '78%',
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: axisColor }
-                    }
-                }
-            }
-        });
-    }
-});
+    // Initialize with defaults or wait for data
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof Chart === 'undefined') return;
+        initTrendChart();
+        initNucleotideChart();
+    });
+
+    return {
+        updateTrend: initTrendChart,
+        updateNucleotides: initNucleotideChart
+    };
+})();

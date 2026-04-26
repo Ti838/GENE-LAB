@@ -59,12 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await api.upload('/dna/upload', formData);
             if (response.success || response._id) {
                 updateFileUI(fileId, 'Uploaded', 'teal');
+                showToast(`File ${file.name} uploaded successfully!`, 'success');
             } else {
                 updateFileUI(fileId, 'Failed', 'coral');
+                showToast(`Upload failed for ${file.name}`, 'error');
             }
         } catch (error) {
             console.error(error);
             updateFileUI(fileId, 'Error', 'coral');
+            showToast(`Error uploading ${file.name}: ${error.message}`, 'error');
         }
     }
 
@@ -107,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = document.getElementById('manual-name')?.value?.trim() || 'Manual_Sequence';
             
             if (!sequence) {
-                alert('Please enter a DNA sequence');
+                showToast('Please enter a DNA sequence', 'info');
                 return;
             }
 
@@ -116,12 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const response = await api.post('/dna/paste', { sequence, name });
-                alert('Sequence saved successfully!');
+                showToast('Sequence saved successfully!', 'success');
                 manualPasteArea.value = '';
                 if (document.getElementById('manual-name')) document.getElementById('manual-name').value = '';
                 // Optional: load my files if we have a list somewhere
             } catch (error) {
-                alert('Error: ' + error.message);
+                // showToast is already called in api.js, but we can add more context if needed
             } finally {
                 saveManualBtn.disabled = false;
                 saveManualBtn.innerHTML = 'Inject Manual Data';

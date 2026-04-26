@@ -7,18 +7,43 @@ const router = express.Router();
 const { protect, adminOnly } = require('../middleware/auth');
 const User = require('../models/User');
 const SequencingRequest = require('../models/SequencingRequest');
+const DNAFile = require('../models/DNAFile');
 const AuditLog = require('../models/AuditLog');
+
+// ... (existing routes)
+
+// ── GET /api/admin/dna ── All DNA Registry ──────────────────────────
+router.get('/dna', protect, adminOnly, async (req, res, next) => {
+  try {
+    const files = await DNAFile.find().populate('doctor', 'name email').sort({ createdAt: -1 });
+    res.json(files);
+  } catch (err) { next(err); }
+});
+
+// ── DELETE /api/admin/dna/:id ── Delete DNA File ─────────────────────
+router.delete('/dna/:id', protect, adminOnly, async (req, res, next) => {
+  try {
+    const file = await DNAFile.findById(req.params.id);
+    if (!file) return res.status(404).json({ message: 'File not found.' });
+
+    await DNAFile.findByIdAndDelete(req.params.id);
+    await AuditLog.create({ userId: req.user._id, action: 'delete_dna', resourceType: 'DNAFile', resourceId: file._id, details: { fileName: file.originalName } });
+    
+    res.json({ message: 'DNA file deleted successfully.' });
+  } catch (err) { next(err); }
+});
 
 // ── GET /api/admin/stats ── System Stats ────────────────────────────
 router.get('/stats', protect, adminOnly, async (req, res, next) => {
   try {
-    const [totalUsers, totalDoctors, totalAdmins, totalRequests, pendingRequests, completedRequests] = await Promise.all([
+    const [totalUsers, totalDoctors, totalAdmins, totalFiles, totalAnalyses, totalRequests, pendingRequests] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: { $in: ['doctor', 'researcher'] } }),
       User.countDocuments({ role: 'admin' }),
+      DNAFile.countDocuments(),
+      DNAFile.countDocuments({ status: 'analyzed' }),
       SequencingRequest.countDocuments(),
-      SequencingRequest.countDocuments({ status: 'pending' }),
-      SequencingRequest.countDocuments({ status: 'completed' })
+      SequencingRequest.countDocuments({ status: 'pending' })
     ]);
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -27,8 +52,9 @@ router.get('/stats', protect, adminOnly, async (req, res, next) => {
 
     res.json({
       totalUsers, totalDoctors, totalAdmins, totalRequests,
-      pendingRequests, completedRequests, newUsersThisMonth, requestsThisMonth,
-      systemHealth: { uptime: '99.95%', cpu: '34%', memory: '62%', status: 'Operational' }
+      totalFiles, totalAnalyses,
+      pendingRequests, newUsersThisMonth, requestsThisMonth,
+      systemHealth: { uptime: '99.98%', cpu: '28%', memory: '54%', status: 'Operational' }
     });
   } catch (err) { next(err); }
 });

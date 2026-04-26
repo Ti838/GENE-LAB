@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.downloadReport = (id) => {
-        alert('PDF Generation Engine Initializing... (Feature coming soon)');
+        showToast('PDF Generation Engine Initializing... (Feature coming soon)', 'info');
     };
 
     await loadReports();

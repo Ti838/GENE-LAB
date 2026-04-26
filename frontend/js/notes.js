@@ -53,9 +53,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!confirm('Delete this note?')) return;
                     try {
                         await api.delete(`/notes/${note._id}`);
+                        showToast('Note deleted successfully', 'success');
                         await loadNotes();
                         if (editingNoteId === note._id) clearForm();
-                    } catch (err) { alert('Delete failed: ' + err.message); }
+                    } catch (err) { /* showToast is called in api.js */ }
                 };
                 notesList.appendChild(card);
             });
@@ -76,18 +77,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveBtn.onclick = async () => {
             const title = noteTitle?.value?.trim();
             const content = noteContent?.value?.trim();
-            if (!content && !title) { alert('Please write something first.'); return; }
+            if (!content && !title) { showToast('Please write something first.', 'info'); return; }
 
             saveBtn.disabled = true;
             try {
                 if (editingNoteId) {
                     await api.put(`/notes/${editingNoteId}`, { title, content });
+                    showToast('Note updated!', 'success');
                 } else {
                     await api.post('/notes', { title: title || 'Untitled Note', content });
+                    showToast('New note saved!', 'success');
                 }
                 clearForm();
                 await loadNotes();
-            } catch (error) { alert('Save failed: ' + error.message); }
+            } catch (error) { /* handled in api.js */ }
             saveBtn.disabled = false;
         };
     }

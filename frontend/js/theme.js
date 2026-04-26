@@ -6,35 +6,57 @@
 (() => {
 	const THEME_KEY = 'genelab-theme';
 
-	function applyTheme(theme) {
-		if (!document.body) {
-			return;
+	// 1. Immediately apply theme to root element to prevent white flash
+	const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+	document.documentElement.dataset.theme = savedTheme;
+	
+	// Add preload class to body if it exists, or wait for it
+	const applyPreload = () => {
+		if (document.body) {
+			document.body.classList.add('preload');
+			document.body.dataset.theme = savedTheme;
+		} else {
+			requestAnimationFrame(applyPreload);
 		}
+	};
+	applyPreload();
 
-		document.body.dataset.theme = theme;
-		localStorage.setItem(THEME_KEY, theme);
-
+	function updateUI(theme) {
 		document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
 			button.setAttribute('aria-pressed', String(theme === 'dark' ? false : true));
 			const label = button.querySelector('[data-theme-label]');
-			if (label) {
-				label.textContent = theme === 'dark' ? 'Dark' : 'Light';
-			}
+			const icon = button.querySelector('.material-symbols-outlined');
+			
+			if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+			if (icon) icon.textContent = theme === 'dark' ? 'dark_mode' : 'light_mode';
 		});
 	}
 
 	function initTheme() {
-		const savedTheme = localStorage.getItem(THEME_KEY);
-		applyTheme(savedTheme || 'light');
+		const currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
+		document.body.dataset.theme = currentTheme;
+		updateUI(currentTheme);
+
+		// Remove preload class after a short delay to enable smooth transitions
+		setTimeout(() => {
+			document.body.classList.remove('preload');
+		}, 100);
 
 		document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
 			button.addEventListener('click', () => {
 				const nextTheme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-				applyTheme(nextTheme);
+				document.body.dataset.theme = nextTheme;
+				document.documentElement.dataset.theme = nextTheme;
+				localStorage.setItem(THEME_KEY, nextTheme);
+				updateUI(nextTheme);
 			});
 		});
 	}
 
-	document.addEventListener('DOMContentLoaded', initTheme);
-	window.genelabTheme = { applyTheme, initTheme };
+	// Wait for body to be ready to init interactive parts
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initTheme);
+	} else {
+		initTheme();
+	}
 })();

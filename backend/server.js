@@ -15,6 +15,7 @@ const requestRoutes = require('./routes/requests');
 const adminRoutes = require('./routes/admin');
 const profileRoutes = require('./routes/profile');
 const announcementRoutes = require('./routes/announcements');
+const dnaRoutes = require('./routes/dna');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/dna', dnaRoutes);
 
 // ── Health Check ─────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

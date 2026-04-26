@@ -58,11 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const response = await api.post(`/dna/analyze/${selectedFileId}`);
-                // Redirect to reports or show summary
-                alert('Analysis complete!');
-                window.location.href = 'reports.html';
+                showToast('Sequence analysis completed successfully!', 'success');
+                setTimeout(() => { window.location.href = 'reports.html'; }, 1500);
             } catch (error) {
-                alert('Analysis failed: ' + error.message);
+                // Error toast is handled in api.js, but we can add more specific info here if we want
             } finally {
                 runAnalysisBtn.disabled = false;
                 runAnalysisBtn.innerHTML = 'Run Sequence Analysis';

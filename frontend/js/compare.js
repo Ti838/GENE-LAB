@@ -80,9 +80,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 const result = await api.post('/dna/compare', { id1: selectedFiles[0], id2: selectedFiles[1] });
+                showToast('Comparison completed!', 'success');
                 showResult(result);
             } catch (error) {
-                alert('Comparison failed: ' + error.message);
+                // Error toast handled in api.js
             } finally {
                 compareBtn.disabled = false;
                 compareBtn.innerHTML = '<span class="material-symbols-outlined text-sm">compare_arrows</span> Compare Selected';
