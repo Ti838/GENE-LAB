@@ -111,11 +111,8 @@ function _createInstantWorker() {
     let tempFilePath = null;
     try {
       if (s3Key && s3Client) {
-        tempFilePath = path.join(os.tmpdir(), `${Date.now()}-${uuidv4().slice(0,8)}-${fileName || 'upload'}`);
-        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: s3Key });
-        const data = await s3Client.send(cmd);
-        await pipeline(data.Body, fs.createWriteStream(tempFilePath));
-        result = await fastapiService.runInstantAnalysisFile(tempFilePath, fileName, variantIds || []);
+        // Let FastAPI fetch the object from S3 directly by s3Key
+        result = await fastapiService.runInstantAnalysisS3(s3Key, fileName, variantIds || []);
       } else if (filePath && fs.existsSync(filePath)) {
         result = await fastapiService.runInstantAnalysisFile(filePath, fileName, variantIds || []);
       } else if (sequence) {
@@ -143,10 +140,7 @@ function _createInstantWorker() {
       await DNAFile.findByIdAndUpdate(dnaFileId, updatePayload);
     }
 
-    // Cleanup temp file if we downloaded from S3
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      try { fs.unlinkSync(tempFilePath); } catch (e) { /* ignore */ }
-    }
+    // no local temp cleanup needed when delegating S3 fetch to FastAPI
 
     await job.updateProgress(95);
 
@@ -191,11 +185,8 @@ function _createDeepWorker() {
     let tempFilePath = null;
     try {
       if (s3Key && s3Client) {
-        tempFilePath = path.join(os.tmpdir(), `${Date.now()}-${uuidv4().slice(0,8)}-${fileName || 'upload'}`);
-        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: s3Key });
-        const data = await s3Client.send(cmd);
-        await pipeline(data.Body, fs.createWriteStream(tempFilePath));
-        result = await fastapiService.runDeepAnalysisFile(tempFilePath, fileName);
+        // Let FastAPI fetch from S3 directly (reduces worker IO)
+        result = await fastapiService.runDeepAnalysisS3(s3Key, fileName);
       } else if (filePath && fs.existsSync(filePath)) {
         result = await fastapiService.runDeepAnalysisFile(filePath, fileName);
       } else if (sequence) {
@@ -241,10 +232,7 @@ function _createDeepWorker() {
       });
     }
 
-    // Cleanup temp file if we downloaded from S3
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      try { fs.unlinkSync(tempFilePath); } catch (e) { /* ignore */ }
-    }
+    // no local temp cleanup needed when delegating S3 fetch to FastAPI
 
     await AnalysisJob.findOneAndUpdate(
       { jobId },

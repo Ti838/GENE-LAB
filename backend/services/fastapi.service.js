@@ -92,6 +92,46 @@ async function runDeepAnalysisFile(filePath, fileName) {
 }
 
 /**
+ * Instruct FastAPI to fetch the file from S3 by key. FastAPI will read S3 using its own creds.
+ * @param {string} s3Key
+ * @param {string} fileName
+ */
+async function runInstantAnalysisS3(s3Key, fileName) {
+  const form = new FormData();
+  form.append('s3_key', s3Key);
+  if (fileName) form.append('filename', fileName);
+
+  try {
+    const response = await fastapiClient.post('/instant-analysis/', form, {
+      headers: { ...form.getHeaders() },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity
+    });
+    return response.data;
+  } catch (err) {
+    throw _normalizeError(err, 'Instant analysis (s3)');
+  }
+}
+
+async function runDeepAnalysisS3(s3Key, fileName) {
+  const form = new FormData();
+  form.append('s3_key', s3Key);
+  if (fileName) form.append('filename', fileName);
+
+  try {
+    const response = await fastapiClient.post('/deep-analysis/', form, {
+      headers: { ...form.getHeaders() },
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+      timeout: 200000
+    });
+    return response.data;
+  } catch (err) {
+    throw _normalizeError(err, 'Deep analysis (s3)');
+  }
+}
+
+/**
  * Sends a raw DNA sequence to the FastAPI deep (BLAST) endpoint.
  * @param {string} sequence - Raw DNA sequence
  * @param {string} [name] - Optional label
