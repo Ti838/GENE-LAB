@@ -13,6 +13,9 @@ Also handles:
 import os
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+import tempfile
+import boto3
+import os
 from fastapi.responses import Response
 
 from engines.sequence_parser import parse_file
@@ -22,11 +25,20 @@ from engines.report_generator import generate_deep_analysis_pdf
 router = APIRouter()
 
 NCBI_API_KEY = os.getenv("NCBI_API_KEY", "")
+S3_BUCKET = os.getenv('S3_BUCKET')
+S3_REGION = os.getenv('S3_REGION', 'us-east-1')
+S3_CLIENT = None
+if S3_BUCKET:
+    try:
+        S3_CLIENT = boto3.client('s3', region_name=S3_REGION)
+    except Exception:
+        S3_CLIENT = None
 
 
 @router.post("/")
 async def deep_analysis_from_file(
-    file: UploadFile = File(...),
+    file: UploadFile = File(None),
+    s3_key: Optional[str] = Form(None)
 ):
     """
     Accepts an uploaded DNA file (FASTA/FASTQ/CSV/TXT).
@@ -34,14 +46,42 @@ async def deep_analysis_from_file(
     NOTE: This call is synchronous and may take 30–180 seconds.
     For async/queued mode, use the Express.js /api/analysis/deep-analysis endpoint.
     """
-    content_bytes = await file.read()
+    # If s3_key provided, fetch from S3 into temp file
     try:
-        content = content_bytes.decode("utf-8", errors="replace")
-    except Exception:
-        raise HTTPException(status_code=400, detail="Could not decode file")
-
-    try:
-        records = parse_file(content, file.filename or "sequence.txt")
+        if s3_key:
+            if not S3_CLIENT:
+                raise HTTPException(status_code=500, detail='S3 not configured')
+            tmpf = tempfile.NamedTemporaryFile(delete=False)
+            try:
+                obj = S3_CLIENT.get_object(Bucket=S3_BUCKET, Key=s3_key)
+                body = obj['Body']
+                while True:
+                    chunk = body.read(8192)
+                    if not chunk:
+                        break
+                    tmpf.write(chunk)
+                tmpf.flush()
+                tmpf.close()
+                with open(tmpf.name, 'r', encoding='utf-8', errors='replace') as fh:
+                    content = fh.read()
+                    records = parse_file(content, tmpf.name)
+            finally:
+                try:
+                    os.unlink(tmpf.name)
+                except Exception:
+                    pass
+        else:
+            if file is None:
+                raise HTTPException(status_code=400, detail='No file uploaded')
+            content_bytes = await file.read()
+            try:
+                content = content_bytes.decode("utf-8", errors="replace")
+            except Exception:
+                raise HTTPException(status_code=400, detail="Could not decode file")
+            try:
+                records = parse_file(content, file.filename or "sequence.txt")
+            except ValueError as e:
+                raise HTTPException(status_code=422, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 

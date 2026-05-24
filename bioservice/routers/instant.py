@@ -14,6 +14,9 @@ Also handles:
 import os
 from typing import Optional, List
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+import tempfile
+import boto3
+import os
 from fastapi.responses import Response
 
 from engines.sequence_parser import parse_file, validate_sequence
@@ -24,6 +27,14 @@ from engines.report_generator import generate_instant_analysis_pdf
 router = APIRouter()
 
 NCBI_API_KEY = os.getenv("NCBI_API_KEY", "")
+S3_BUCKET = os.getenv('S3_BUCKET')
+S3_REGION = os.getenv('S3_REGION', 'us-east-1')
+S3_CLIENT = None
+if S3_BUCKET:
+    try:
+        S3_CLIENT = boto3.client('s3', region_name=S3_REGION)
+    except Exception:
+        S3_CLIENT = None
 
 
 def _run_instant_analysis(sequence: str, variant_ids: Optional[List[str]] = None) -> dict:
@@ -108,8 +119,9 @@ def _run_instant_analysis(sequence: str, variant_ids: Optional[List[str]] = None
 
 @router.post("/")
 async def instant_analysis_from_file(
-    file: UploadFile = File(...),
-    variant_ids: Optional[str] = Form(None)
+    file: UploadFile = File(None),
+    variant_ids: Optional[str] = Form(None),
+    s3_key: Optional[str] = Form(None)
 ):
     """
     Accepts an uploaded DNA file (FASTA/FASTQ/CSV/TXT).
@@ -118,17 +130,47 @@ async def instant_analysis_from_file(
     filename = file.filename or "sequence.txt"
     ext = filename.lower().rsplit('.', 1)[-1] if '.' in filename else 'txt'
 
-    # For CSV large files, stream-parse to avoid loading entire file into memory
+    # Support S3 key: fetch object and parse from temp file to avoid memory blowup
     try:
-        if ext == 'csv':
-            records = parse_csv_stream(file.file)
-        else:
-            content_bytes = await file.read()
+        if s3_key:
+            if not S3_CLIENT:
+                raise HTTPException(status_code=500, detail='S3 not configured')
+            tmpf = tempfile.NamedTemporaryFile(delete=False)
             try:
-                content = content_bytes.decode("utf-8", errors="replace")
-            except Exception:
-                raise HTTPException(status_code=400, detail="Could not decode file — ensure it is plain text")
-            records = parse_file(content, filename)
+                obj = S3_CLIENT.get_object(Bucket=S3_BUCKET, Key=s3_key)
+                body = obj['Body']
+                while True:
+                    chunk = body.read(8192)
+                    if not chunk:
+                        break
+                    tmpf.write(chunk)
+                tmpf.flush()
+                tmpf.close()
+                if tmpf.name.lower().endswith('.csv') or ext == 'csv':
+                    with open(tmpf.name, 'rb') as fh:
+                        records = parse_csv_stream(fh)
+                else:
+                    with open(tmpf.name, 'r', encoding='utf-8', errors='replace') as fh:
+                        content = fh.read()
+                        records = parse_file(content, filename)
+            finally:
+                try:
+                    os.unlink(tmpf.name)
+                except Exception:
+                    pass
+        else:
+            # For CSV large files, stream-parse to avoid loading entire file into memory
+            if file is None:
+                raise HTTPException(status_code=400, detail='No file uploaded')
+            if ext == 'csv':
+                records = parse_csv_stream(file.file)
+            else:
+                content_bytes = await file.read()
+                try:
+                    content = content_bytes.decode("utf-8", errors="replace")
+                except Exception:
+                    raise HTTPException(status_code=400, detail="Could not decode file — ensure it is plain text")
+                records = parse_file(content, filename)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
