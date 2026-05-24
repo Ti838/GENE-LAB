@@ -13,7 +13,7 @@
   }
 
   async function submitS3Csv(s3Key, s3Url, originalName) {
-    return api.post('/analysis/upload-csv', { s3Key, s3Url, originalName });
+        return api.post('/analysis/upload-csv', { s3Key, s3Url, originalName });
   }
 
   // expose globally for inline page scripts
@@ -23,6 +23,60 @@
     submitS3Csv
   };
 })();
+
+// UI helper: after upload, show queued job and start polling
+document.addEventListener('DOMContentLoaded', () => {
+    const s3Btn = document.getElementById('upload-s3-btn');
+    const outputArea = document.createElement('div');
+    outputArea.id = 'upload-job-area';
+    const parent = document.getElementById('drop-zone') || document.body;
+    parent.appendChild(outputArea);
+
+    async function showJobCard(jobId) {
+        outputArea.innerHTML = '';
+        const card = document.createElement('div');
+        card.className = 'mt-4 p-4 bg-slate-800 rounded-lg';
+        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="/pages/doctor/result.html?jobId=${jobId}" target="_blank" class="text-cyan">Open Result</a></div><div id="job-progress-${jobId}" class="mt-2 text-sm text-slate-400">Waiting...</div>`;
+        outputArea.appendChild(card);
+
+        window.GenelabPoller.pollJob(jobId, (status) => {
+            const el = document.getElementById(`job-progress-${jobId}`);
+            if (el) el.textContent = `Status: ${status.status} · Progress: ${status.progress || 0}%`;
+        }, (result) => {
+            const el = document.getElementById(`job-progress-${jobId}`);
+            if (el) el.textContent = `Completed · View detailed results`;
+        }, (err) => {
+            const el = document.getElementById(`job-progress-${jobId}`);
+            if (el) el.textContent = `Error: ${err}`;
+        }, 3000);
+    }
+
+    if (s3Btn) {
+        s3Btn.addEventListener('click', async () => {
+            const input = document.getElementById('csv-file-s3');
+            if (!input.files || input.files.length === 0) return alert('Choose a CSV file first');
+            const file = input.files[0];
+            try {
+                const presign = await window.GenelabUpload.getPresign(file.name, file.type);
+                if (!presign.url) return alert('Presign failed');
+                // show immediate progress
+                const jobArea = document.getElementById('upload-job-area');
+                jobArea.innerHTML = '<div class="p-3 bg-slate-800 rounded">Uploading to S3...</div>';
+                await window.GenelabUpload.uploadToS3(presign.url, file, file.type || 'text/csv');
+                jobArea.innerHTML = '<div class="p-3 bg-slate-800 rounded">Notifying server...</div>';
+                const resp = await window.GenelabUpload.submitS3Csv(presign.key, presign.url, file.name);
+                if (resp && resp.jobId) {
+                    showJobCard(resp.jobId);
+                } else {
+                    alert('Upload succeeded but server did not return job id');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Upload failed: ' + err.message);
+            }
+        });
+    }
+});
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.

@@ -55,6 +55,27 @@
     // Scientific summary
     const sci = document.getElementById('scientific-summary');
     sci.textContent = (data.result || data).scientific_summary || (data.result || data).scientificExplanation || '';
+    // If deep analysis, render BLAST hits
+    if ((data.result || data).analysisType === 'deep' || (data.result || data).blastResult) {
+      const hits = (data.result || data).hits || (data.result || data).blastResult?.hits || [];
+      const container = document.getElementById('deep-hits');
+      if (container) {
+        container.innerHTML = '';
+        const table = document.createElement('table');
+        table.className = 'min-w-full text-sm';
+        const head = document.createElement('thead');
+        head.innerHTML = '<tr class="text-left text-slate-400"><th>#</th><th>Accession</th><th>Identity %</th><th>E-value</th><th>Organism</th></tr>';
+        table.appendChild(head);
+        const body = document.createElement('tbody');
+        hits.slice(0, 20).forEach((h, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td class="pr-4">${i+1}</td><td class="pr-4">${h.accession || h.subject_acc || ''}</td><td class="pr-4">${h.identity_percentage || h.identity_pct || 0}%</td><td class="pr-4">${h.e_value || h.evalue || ''}</td><td>${h.organism || h.subject_tax || ''}</td>`;
+          body.appendChild(tr);
+        });
+        table.appendChild(body);
+        container.appendChild(table);
+      }
+    }
   }
 
   window.ResultsUI = { renderResultPage };
