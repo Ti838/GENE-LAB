@@ -1,3 +1,28 @@
+// upload.js — helper to upload large CSVs via S3 presigned URL and notify backend
+(function () {
+  async function getPresign(filename, contentType) {
+    return fetch(`${API_BASE_URL}/uploads/presign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename, contentType })
+    }).then(r => r.json());
+  }
+
+  async function uploadToS3(url, file, contentType) {
+    return fetch(url, { method: 'PUT', headers: { 'Content-Type': contentType }, body: file });
+  }
+
+  async function submitS3Csv(s3Key, s3Url, originalName) {
+    return api.post('/analysis/upload-csv', { s3Key, s3Url, originalName });
+  }
+
+  // expose globally for inline page scripts
+  window.GenelabUpload = {
+    getPresign,
+    uploadToS3,
+    submitS3Csv
+  };
+})();
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.

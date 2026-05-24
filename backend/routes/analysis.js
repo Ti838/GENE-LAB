@@ -304,26 +304,46 @@ router.post('/deep-analysis', protect, upload.single('file'), async (req, res, n
 router.post('/upload-csv', protect, upload.single('file'), async (req, res, next) => {
   try {
     const file = req.file;
-    if (!file) return res.status(400).json({ message: 'No CSV file provided.' });
-    if (!file.originalname.toLowerCase().endsWith('.csv')) {
+    const { s3Key, s3Url, originalName } = req.body || {};
+
+    // Support direct-S3 uploads: client uploads to S3 and posts s3Key + originalName here
+    if (!file && !s3Key) return res.status(400).json({ message: 'No CSV file provided. Upload a file or provide s3Key.' });
+    if (file && !file.originalname.toLowerCase().endsWith('.csv')) {
       return res.status(400).json({ message: 'File must be a .csv file.' });
     }
 
     // Create the DNAFile record for the CSV
-    const dnaFilePayload = {
-      originalName: file.originalname,
-      filename: file.filename || file.key || file.originalname,
-      path: file.path || (file.location ? `s3://${S3_BUCKET}/${file.key}` : file.location || file.path),
-      size: file.size,
-      mimetype: file.mimetype,
-      doctor: req.user._id,
-      status: 'analyzing',
-      analysisType: 'instant',
-      notes: 'CSV batch upload'
-    };
-    if (S3_BUCKET && file.key) {
-      dnaFilePayload.s3Key = file.key;
-      dnaFilePayload.s3Url = file.location;
+    let dnaFilePayload;
+    if (s3Key) {
+      dnaFilePayload = {
+        originalName: originalName || 'uploaded.csv',
+        filename: originalName || 'uploaded.csv',
+        path: `s3://${S3_BUCKET}/${s3Key}`,
+        size: undefined,
+        mimetype: 'text/csv',
+        doctor: req.user._id,
+        status: 'analyzing',
+        analysisType: 'instant',
+        notes: 'CSV batch upload (S3)',
+        s3Key,
+        s3Url: s3Url || (S3_BUCKET ? `https://${S3_BUCKET}.s3.${process.env.S3_REGION || 'us-east-1'}.amazonaws.com/${s3Key}` : undefined)
+      };
+    } else {
+      dnaFilePayload = {
+        originalName: file.originalname,
+        filename: file.filename || file.key || file.originalname,
+        path: file.path || (file.location ? `s3://${S3_BUCKET}/${file.key}` : file.location || file.path),
+        size: file.size,
+        mimetype: file.mimetype,
+        doctor: req.user._id,
+        status: 'analyzing',
+        analysisType: 'instant',
+        notes: 'CSV batch upload'
+      };
+      if (S3_BUCKET && file.key) {
+        dnaFilePayload.s3Key = file.key;
+        dnaFilePayload.s3Url = file.location;
+      }
     }
     const dnaFile = await DNAFile.create(dnaFilePayload);
 
@@ -337,9 +357,11 @@ router.post('/upload-csv', protect, upload.single('file'), async (req, res, next
       jobId,
       userId: req.user._id.toString(),
       dnaFileId: dnaFile._id.toString(),
-      filePath: file.path,
-      fileName: file.originalname,
-      variantIds: []
+      filePath: file?.path,
+      fileName: (file && file.originalname) || originalName || dnaFile.originalName,
+      variantIds: [],
+      s3Key: s3Key || dnaFile.s3Key || undefined,
+      s3Url: s3Url || dnaFile.s3Url || undefined
     };
 
     try {
