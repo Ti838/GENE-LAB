@@ -39,6 +39,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/poller.js"></script>
   <script src="/js/results-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
     // Read jobId from query param
     const params = new URLSearchParams(window.location.search);
@@ -47,11 +48,15 @@
       document.getElementById('status').textContent = 'No jobId specified in URL.';
     } else {
       document.getElementById('status').textContent = 'Polling job ' + jobId + '...';
+      // animate loader
+      gsap.to('#status', { opacity: 1, duration: 0.6, ease: 'power1.out' });
+
       window.GenelabPoller.pollJob(jobId, (status) => {
         document.getElementById('status').textContent = `Status: ${status.status} — Progress: ${status.progress || 0}%`;
       }, (result) => {
         document.getElementById('status').textContent = 'Completed';
         window.ResultsUI.renderResultPage(result);
+        gsap.to('#status', { opacity: 0.9, duration: 0.6 });
       }, (err) => {
         document.getElementById('status').textContent = 'Error: ' + err;
       }, 3000);

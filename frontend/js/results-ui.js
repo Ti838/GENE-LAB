@@ -45,6 +45,20 @@
     });
   }
 
+  function renderCodonChart(ctx, data) {
+    const codonObj = data.codon_analysis?.codon_frequency || (data.result && data.result.codon_analysis && data.result.codon_analysis.codon_frequency) || {};
+    const entries = Object.entries(codonObj).slice(0, 30);
+    const labels = entries.map(e => e[0]);
+    const values = entries.map(e => e[1]);
+    const cfg = {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Codon frequency', data: values, backgroundColor: '#8b5cf6' }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxRotation: 90 } } } }
+    };
+    if (window._genelab_codon_chart) window._genelab_codon_chart.destroy();
+    window._genelab_codon_chart = new Chart(ctx, cfg);
+  }
+
   function renderResultPage(data) {
     const summary = document.getElementById('result-summary');
     const mutations = document.getElementById('result-mutations');
@@ -52,6 +66,9 @@
     renderSummary(summary, data.result || data);
     renderMutations(mutations, data.result || data);
     renderNucleotideChart(chartCtx, data.result || data);
+    // codon chart element
+    const codonEl = document.getElementById('codon-chart');
+    if (codonEl) renderCodonChart(codonEl.getContext('2d'), data.result || data);
     // Scientific summary
     const sci = document.getElementById('scientific-summary');
     sci.textContent = (data.result || data).scientific_summary || (data.result || data).scientificExplanation || '';
@@ -74,6 +91,19 @@
         });
         table.appendChild(body);
         container.appendChild(table);
+        // render alignment viewer for top hit
+        const top = hits[0];
+        if (top && top.query_alignment && top.subject_alignment) {
+          const alignDiv = document.createElement('div');
+          alignDiv.className = 'mt-4 p-3 bg-slate-800 rounded';
+          alignDiv.innerHTML = '<h4 class="font-semibold mb-2">Top alignment preview</h4>';
+          const qpre = document.createElement('pre'); qpre.className = 'bg-black/10 p-2 rounded mb-1';
+          const spre = document.createElement('pre'); spre.className = 'bg-black/10 p-2 rounded';
+          qpre.textContent = top.query_alignment || top.hsp_qseq || '';
+          spre.textContent = top.subject_alignment || top.hsp_hseq || '';
+          alignDiv.appendChild(qpre); alignDiv.appendChild(spre);
+          container.appendChild(alignDiv);
+        }
       }
     }
   }
