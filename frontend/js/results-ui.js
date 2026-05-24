@@ -1,0 +1,61 @@
+// results-ui.js — render analysis results on result page
+(function () {
+  function createCard(title, value, sub) {
+    const el = document.createElement('div');
+    el.className = 'p-4 bg-slate-800 rounded-lg shadow';
+    el.innerHTML = `<div class="text-sm text-slate-400">${title}</div><div class="text-2xl font-bold mt-1">${value}</div>${sub ? `<div class="text-xs text-slate-400 mt-1">${sub}</div>` : ''}`;
+    return el;
+  }
+
+  function renderSummary(container, data) {
+    container.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'grid grid-cols-2 gap-4';
+    grid.appendChild(createCard('Status', data.status || 'completed', `Type: ${data.analysisType}`));
+    grid.appendChild(createCard('Sequence length', data.sequenceLength || data.statistics?.sequence_length || 0, 'bp'));
+    grid.appendChild(createCard('GC content', (data.gcContent || data.statistics?.gc_content || 0) + '%', ''));
+    grid.appendChild(createCard('Confidence', (data.confidence || 0) + '%', ''));
+    container.appendChild(grid);
+  }
+
+  function renderMutations(container, data) {
+    container.innerHTML = '';
+    const mutations = data.mutation_analysis?.variants || data.variants || [];
+    if (!mutations || mutations.length === 0) {
+      container.innerHTML = '<p class="italic text-slate-400">No mutations reported.</p>';
+      return;
+    }
+    mutations.slice(0, 50).forEach(v => {
+      const div = document.createElement('div');
+      div.className = 'p-3 mb-2 bg-slate-800 rounded-lg';
+      div.innerHTML = `<div class="font-semibold">${v.variant_id || v.rsid || 'variant'}</div><div class="text-sm text-slate-400">${v.gene || ''} — ${v.clinical_significance || ''} — ${v.severity || ''}</div>`;
+      container.appendChild(div);
+    });
+  }
+
+  function renderNucleotideChart(ctx, data) {
+    const freq = data.nucleotideFrequency || data.statistics?.nucleotide_frequency || {};
+    const labels = ['A','T','G','C','N'];
+    const values = labels.map(l => freq[l] || 0);
+    if (window._genelab_chart) window._genelab_chart.destroy();
+    window._genelab_chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Nucleotide count', data: values, backgroundColor: ['#06B6D4','#14B8A6','#818CF8','#A78BFA','#94A3B8'] }] },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+  }
+
+  function renderResultPage(data) {
+    const summary = document.getElementById('result-summary');
+    const mutations = document.getElementById('result-mutations');
+    const chartCtx = document.getElementById('nuc-chart').getContext('2d');
+    renderSummary(summary, data.result || data);
+    renderMutations(mutations, data.result || data);
+    renderNucleotideChart(chartCtx, data.result || data);
+    // Scientific summary
+    const sci = document.getElementById('scientific-summary');
+    sci.textContent = (data.result || data).scientific_summary || (data.result || data).scientificExplanation || '';
+  }
+
+  window.ResultsUI = { renderResultPage };
+})();

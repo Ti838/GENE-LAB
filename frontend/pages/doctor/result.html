@@ -1,4 +1,60 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Analysis Result | GeneLab</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../theme.css">
+</head>
+<body class="bg-slate-900 text-white">
+  <main class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">Analysis Result</h1>
+    <div id="status" class="mb-4">Loading...</div>
+
+    <div id="result-summary" class="mb-4"></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <canvas id="nuc-chart"></canvas>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold mb-2">Mutations</h2>
+        <div id="result-mutations"></div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold">Scientific Summary</h3>
+      <p id="scientific-summary" class="text-slate-300 mt-2"></p>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/poller.js"></script>
+  <script src="/js/results-ui.js"></script>
+  <script>
+    // Read jobId from query param
+    const params = new URLSearchParams(window.location.search);
+    const jobId = params.get('jobId');
+    if (!jobId) {
+      document.getElementById('status').textContent = 'No jobId specified in URL.';
+    } else {
+      document.getElementById('status').textContent = 'Polling job ' + jobId + '...';
+      window.GenelabPoller.pollJob(jobId, (status) => {
+        document.getElementById('status').textContent = `Status: ${status.status} — Progress: ${status.progress || 0}%`;
+      }, (result) => {
+        document.getElementById('status').textContent = 'Completed';
+        window.ResultsUI.renderResultPage(result);
+      }, (err) => {
+        document.getElementById('status').textContent = 'Error: ' + err;
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
 <!--
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.
