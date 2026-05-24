@@ -64,11 +64,16 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Multer upload instance. For serverless (Vercel) deployments, disk storage is not reliable.
+// If running on Vercel and S3 is not configured, reject file uploads with a helpful error.
 const upload = multer({
   storage,
   fileFilter,
   limits: { fileSize: 50 * 1024 * 1024 } // 50 MB max
 });
+
+const isVercel = process.env.VERCEL === '1';
+const S3_BUCKET = process.env.S3_BUCKET;
 
 // ── Helper: Create AnalysisJob record in MongoDB ─────────────────────────
 async function createJobRecord(userId, analysisType, extras = {}) {
@@ -102,6 +107,11 @@ router.post('/instant-analysis', protect, upload.single('file'), async (req, res
   try {
     const { sequence, name, variantIds } = req.body;
     const file = req.file;
+
+    // Serverless (Vercel) caution: disallow disk-based uploads when S3 not configured.
+    if (isVercel && file && !S3_BUCKET) {
+      return res.status(400).json({ message: 'File uploads are not supported on Vercel without S3 configured. Please set S3_BUCKET & AWS credentials or upload sequences as text.' });
+    }
 
     if (!file && !sequence) {
       return res.status(400).json({ message: 'Provide a DNA file (file) or raw sequence (sequence) in the request body.' });

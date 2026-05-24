@@ -20,6 +20,7 @@ const profileRoutes      = require('./routes/profile');
 const announcementRoutes = require('./routes/announcements');
 const dnaRoutes          = require('./routes/dna');
 const analysisRoutes     = require('./routes/analysis');
+const uploadsRoutes      = require('./routes/uploads');
 
 const { errorHandler } = require('./middleware/errorHandler');
 
@@ -81,6 +82,7 @@ app.use('/api/profile',       profileRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/dna',           dnaRoutes);
 app.use('/api/analysis',      analysisRoutes);
+app.use('/api/uploads',       uploadsRoutes);
 
 // ── Health Check ──────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -109,7 +111,11 @@ async function startServer() {
   await ensureMongoConnection();
   console.log('✅ MongoDB connected successfully');
 
-  if (process.env.VERCEL !== '1' && process.env.DISABLE_QUEUES !== 'true') {
+  // When running on Vercel serverless, do not initialize background queues/workers.
+  // Force-disable queues on Vercel to avoid attempting Redis/BullMQ startup in a serverless environment.
+  const isVercel = process.env.VERCEL === '1';
+  const disableQueuesEnv = process.env.DISABLE_QUEUES === 'true';
+  if (!isVercel && !disableQueuesEnv) {
     try {
       const { initQueues } = require('./services/queue.service');
       initQueues();

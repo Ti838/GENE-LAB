@@ -26,6 +26,11 @@ This guide explains how to deploy the frontend static site and Express serverles
 5. Add the environment variables in Vercel (see list above).
 6. Deploy. The frontend will be served by Vercel; serverless endpoints will respond under `/api/*`.
 
+Important: Vercel serverless caveats
+- Always set `DISABLE_QUEUES=true` in your Vercel Production environment to avoid starting Redis/BullMQ in serverless functions.
+- File uploads: Serverless functions have no persistent disk. Configure S3 (set `S3_BUCKET`, `S3_REGION`, and AWS credentials) and use the built-in S3-backed upload support. If `S3_BUCKET` is not set, the API will reject file uploads on Vercel—use text sequence input instead.
+- Do not enable `DISABLE_QUEUES=false` on Vercel unless you have a hosted Redis and external worker processes running (on Render or another host).
+
 4) Local testing before deploy
 - Build and run locally with Docker Compose (recommended):
 ```bash

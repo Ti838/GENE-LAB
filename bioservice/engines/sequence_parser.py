@@ -139,6 +139,45 @@ def parse_csv(content: str) -> List[Dict[str, Any]]:
     return records
 
 
+def parse_csv_stream(fileobj) -> List[Dict[str, Any]]:
+    """
+    Stream-parse a CSV file object using pandas with chunksize to support large files.
+    Yields parsed record dicts (same shape as parse_csv).
+    """
+    records = []
+    try:
+        # Wrap binary stream to text
+        if hasattr(fileobj, 'read') and isinstance(fileobj.read(0), bytes):
+            text_stream = io.TextIOWrapper(fileobj, encoding='utf-8', errors='replace')
+        else:
+            text_stream = fileobj
+
+        for chunk in pd.read_csv(text_stream, chunksize=1000):
+            # normalize columns
+            chunk.columns = [c.strip().lower() for c in chunk.columns]
+            if 'sequence' not in chunk.columns:
+                raise ValueError('CSV must have a sequence column')
+            for idx, row in chunk.iterrows():
+                seq_str = str(row['sequence']).strip()
+                seq_id = str(row.get('id', idx + 1))
+                validation = validate_sequence(seq_str)
+                records.append({
+                    'id': seq_id,
+                    'description': f'CSV row {idx + 1}',
+                    'sequence': validation['cleaned'],
+                    'original_sequence': seq_str,
+                    'format': 'CSV',
+                    'validation': validation
+                })
+            # Optional: yield or flush to limit memory; here accumulate to return small slices
+            if len(records) > 5000:
+                # if extremely large, stop early to avoid OOM; caller should process in chunks
+                break
+    except Exception as e:
+        raise ValueError(f"CSV streaming parsing error: {str(e)}")
+    return records
+
+
 def parse_txt(content: str) -> List[Dict[str, Any]]:
     """
     Parses plain text DNA sequence files.

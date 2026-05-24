@@ -115,15 +115,20 @@ async def instant_analysis_from_file(
     Accepts an uploaded DNA file (FASTA/FASTQ/CSV/TXT).
     Parses all sequences and runs instant analysis on the first (or primary) one.
     """
-    content_bytes = await file.read()
-    try:
-        content = content_bytes.decode("utf-8", errors="replace")
-    except Exception:
-        raise HTTPException(status_code=400, detail="Could not decode file — ensure it is plain text")
+    filename = file.filename or "sequence.txt"
+    ext = filename.lower().rsplit('.', 1)[-1] if '.' in filename else 'txt'
 
-    # Parse file
+    # For CSV large files, stream-parse to avoid loading entire file into memory
     try:
-        records = parse_file(content, file.filename or "sequence.txt")
+        if ext == 'csv':
+            records = parse_csv_stream(file.file)
+        else:
+            content_bytes = await file.read()
+            try:
+                content = content_bytes.decode("utf-8", errors="replace")
+            except Exception:
+                raise HTTPException(status_code=400, detail="Could not decode file — ensure it is plain text")
+            records = parse_file(content, filename)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
