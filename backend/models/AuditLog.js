@@ -15,5 +15,10 @@ const auditLogSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 }, { collection: 'AuditLogs' });
 
+// Audit logs indices to guarantee rapid loading of security compliance trails
+auditLogSchema.index({ userId: 1 });
+auditLogSchema.index({ action: 1 });
+auditLogSchema.index({ timestamp: -1 });
+
 module.exports = mongoose.model('AuditLog', auditLogSchema);
 

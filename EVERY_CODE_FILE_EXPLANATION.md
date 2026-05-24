@@ -12,6 +12,9 @@ Use this section first if you are new.
 - backend/
   - API server code lives here.
 
+- bioservice/
+  - FastAPI DNA analysis microservice.
+
 - backend/middleware/
   - Shared request guards and error handling.
 
@@ -32,6 +35,9 @@ Use this section first if you are new.
 
 - frontend/
   - All browser-side UI code.
+
+- docker-compose.yml
+  - Local multi-service runtime for MongoDB, Redis, backend, and bioservice.
 
 - frontend/pages/
   - HTML pages for public/admin/doctor screens.
@@ -61,6 +67,8 @@ Use this section first if you are new.
     - /api/admin -> backend/routes/admin.js
     - /api/profile -> backend/routes/profile.js
     - /api/announcements -> backend/routes/announcements.js
+    - /api/dna -> backend/routes/dna.js
+    - /api/analysis -> backend/routes/analysis.js
     - /api/health -> in-file health handler
 
 - backend/package.json
@@ -71,6 +79,12 @@ Use this section first if you are new.
 
 - backend/seed.js
   - Seeds demo users, requests, results, announcements, and audit logs.
+
+- backend/routes/dna.js
+  - DNA utility and sequence-related endpoints.
+
+- backend/routes/analysis.js
+  - Async analysis endpoints and job orchestration.
 
 ---
 
@@ -163,6 +177,12 @@ Use this section first if you are new.
 - backend/services/dna.service.js
   - Pure utility functions for sequence parsing and comparison.
   - Current direct usage in routes: not wired directly yet.
+
+- backend/services/fastapi.service.js
+  - Axios-based client for the FastAPI bio service.
+
+- backend/services/queue.service.js
+  - Redis/BullMQ queue setup, workers, and job persistence.
 
 ---
 
@@ -313,4 +333,5 @@ Use this section first if you are new.
 1. Several frontend scripts call /dna/* and /notes/* style endpoints that are not currently mounted in backend/server.js.
 2. frontend/js/analytics.js exists but is currently not included by any page.
 3. backend/services/dna.service.js exists but is not directly wired into active route handlers.
+4. The async analysis path depends on Redis, the queue service, and the FastAPI microservice.
 

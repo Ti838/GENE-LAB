@@ -6,7 +6,9 @@ Short answer: those folders are intentional placeholders for clean growth.
 ## Root level
 
 - `backend/` -> API, DB, auth, business logic
+- `bioservice/` -> FastAPI analysis microservice
 - `frontend/` -> pages, scripts, styles, static assets
+- `docker-compose.yml` -> local full-stack runtime definition
 - Docs (`*.md`) -> guides, specs, and architecture notes
 
 ## Backend folder purpose
@@ -14,9 +16,15 @@ Short answer: those folders are intentional placeholders for clean growth.
 - `middleware/` -> shared request logic (auth, error handling)
 - `models/` -> MongoDB schema files
 - `routes/` -> endpoint handlers grouped by feature
-- `services/` -> reusable domain logic (analysis/helper functions)
+- `services/` -> reusable domain logic, queue orchestration, and analysis helpers
 - `uploads/` -> uploaded files (runtime)
 - `utils/` -> small helper utilities
+
+## Bio service folder purpose
+
+- `main.py` -> FastAPI app entry point
+- `routers/` -> health and analysis endpoints
+- `engines/` -> sequence parsing, BLAST, mutation analysis, and report generation
 
 ## Frontend folder purpose
 

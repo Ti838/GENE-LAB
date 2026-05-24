@@ -16,18 +16,19 @@ router.post('/register', [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
-  body('role').isIn(['doctor', 'researcher', 'admin', 'employee']).withMessage('Invalid role')
+  body('role').isIn(['doctor', 'researcher', 'admin', 'employee']).withMessage('Invalid role'),
+  body('gender').optional().isIn(['male', 'female', 'other']).withMessage('Invalid gender')
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { name, email, password, role, organization, specialization, licenseNumber, phone } = req.body;
+    const { name, email, password, role, gender, organization, specialization, licenseNumber, phone } = req.body;
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(409).json({ message: 'Email already registered.' });
 
-    const user = await User.create({ name, email, password, role, organization, specialization, licenseNumber, phone });
+    const user = await User.create({ name, email, password, role, gender, organization, specialization, licenseNumber, phone });
 
     await AuditLog.create({ userId: user._id, action: 'register', resourceType: 'user', resourceId: user._id, details: { role }, ipAddress: req.ip });
 
@@ -35,23 +36,32 @@ router.post('/register', [
     res.status(201).json({
       message: 'Account created successfully!',
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, organization: user.organization }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, gender: user.gender, organization: user.organization }
     });
   } catch (err) { next(err); }
 });
 
 // ── POST /api/auth/login ─────────────────────────────────────────────
 router.post('/login', [
-  body('email').isEmail().normalizeEmail(),
   body('password').notEmpty()
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid email or password.' });
+    const { email, phone, password } = req.body;
+    
+    // Allow login via email OR phone number
+    let user;
+    if (email) {
+      user = await User.findOne({ email: email.toLowerCase().trim() });
+    } else if (phone) {
+      user = await User.findOne({ phone: phone.trim() });
+    } else {
+      return res.status(400).json({ message: 'Email or phone number is required.' });
+    }
+    
+    if (!user) return res.status(401).json({ message: 'Invalid credentials.' });
 
     if (user.isLocked()) {
       const remaining = Math.ceil((user.lockUntil - Date.now()) / 60000);
@@ -66,7 +76,7 @@ router.post('/login', [
         user.failedLoginAttempts = 0;
       }
       await user.save();
-      return res.status(401).json({ message: 'Invalid email or password.' });
+      return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
     if (!user.isActive) return res.status(403).json({ message: 'Account deactivated. Contact admin.' });
@@ -76,7 +86,13 @@ router.post('/login', [
     user.lastLogin = new Date();
     await user.save();
 
-    await AuditLog.create({ userId: user._id, action: 'login', resourceType: 'session', details: { email }, ipAddress: req.ip });
+    await AuditLog.create({ 
+      userId: user._id, 
+      action: 'login', 
+      resourceType: 'session', 
+      details: { email: user.email, phone: user.phone, loginMethod: email ? 'email' : 'phone' }, 
+      ipAddress: req.ip 
+    });
 
     const token = generateToken(user._id);
     res.json({

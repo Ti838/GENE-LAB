@@ -4,20 +4,24 @@
  */
 // auth.js - Login/Signup logic
 const auth = {
-    async login(email, password, roleHint = 'doctor') {
+    async login(email, phone, password, roleHint = 'doctor') {
         const rememberMe = Boolean(document.querySelector('input[name="remember-me"]')?.checked);
 
         try {
-            const data = await api.post('/auth/login', { email, password, role: roleHint });
+            const loginData = { password, role: roleHint };
+            if (email) loginData.email = email;
+            if (phone) loginData.phone = phone;
+            
+            const data = await api.post('/auth/login', loginData);
             const userRole = data.user ? data.user.role : roleHint;
             this.persistSession(data, rememberMe);
             showToast('Login successful!', 'success');
             setTimeout(() => { this.redirectByRole(userRole); }, 800);
         } catch (error) {
-            const fallbackRole = /admin/i.test(email) || roleHint === 'admin' ? 'admin' : 'doctor';
+            const fallbackRole = /admin/i.test(email || phone) || roleHint === 'admin' ? 'admin' : 'doctor';
             const fallbackUser = {
                 name: fallbackRole === 'admin' ? 'System Admin' : 'Doctor Access',
-                email,
+                email: email || phone,
                 role: fallbackRole,
                 status: 'Active',
                 joinedAt: new Date().toISOString(),
@@ -25,7 +29,7 @@ const auth = {
             };
 
             this.persistSession({
-                token: this.buildDemoToken(email),
+                token: this.buildDemoToken(email || phone),
                 ...fallbackUser
             }, rememberMe);
 
@@ -97,13 +101,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
 
+    // Login method toggle
     if (loginForm) {
+        const methodBtns = document.querySelectorAll('.login-method-btn');
+        const emailGroup = document.getElementById('email-input-group');
+        const phoneGroup = document.getElementById('phone-input-group');
+        const emailInput = document.getElementById('login-email');
+        const phoneInput = document.getElementById('login-phone');
+
+        methodBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const method = btn.dataset.method;
+                
+                methodBtns.forEach(b => {
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--text-muted)';
+                    b.style.borderColor = 'var(--border)';
+                });
+                
+                btn.style.background = 'rgba(0,212,255,0.15)';
+                btn.style.color = 'var(--cyan)';
+                btn.style.borderColor = 'var(--cyan)';
+                
+                if (method === 'email') {
+                    emailGroup.classList.remove('hidden');
+                    phoneGroup.classList.add('hidden');
+                    emailInput.focus();
+                } else {
+                    emailGroup.classList.add('hidden');
+                    phoneGroup.classList.remove('hidden');
+                    phoneInput.focus();
+                }
+            });
+        });
+
         loginForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            const email = document.getElementById('login-email')?.value || '';
+            const email = document.getElementById('login-email').value;
+            const phone = document.getElementById('login-phone').value;
             const password = document.getElementById('login-password')?.value || '';
             const roleHint = loginForm.querySelector('input[name="access-role"]:checked')?.value || 'doctor';
-            auth.login(email, password, roleHint);
+            auth.login(email, phone, password, roleHint);
         });
     }
 
@@ -115,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: document.getElementById('signup-email')?.value || '',
                 password: document.getElementById('signup-password')?.value || '',
                 phone: document.getElementById('signup-phone')?.value || '',
+                gender: document.getElementById('signup-gender')?.value || '',
                 role: signupForm.querySelector('input[name="signup-role-radio"]:checked')?.value || 'doctor',
                 specialization: document.getElementById('signup-spec')?.value || '',
                 organization: document.getElementById('signup-org')?.value || '',

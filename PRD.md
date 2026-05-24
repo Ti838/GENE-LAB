@@ -14,6 +14,7 @@ Build a secure and usable DNA sequencing workflow platform for doctors and admin
 - Fast sequencing request handling
 - Reliable result management
 - Transparent admin controls and logs
+- Async analysis support through Redis and the FastAPI bio service
 
 ## Key features
 
@@ -23,6 +24,7 @@ Build a secure and usable DNA sequencing workflow platform for doctors and admin
 - Report and notes support in doctor side
 - Announcement management
 - Admin analytics and audit visibility
+- Docker Compose local stack for MongoDB, Redis, backend, and bio service
 
 ## Non-functional expectations
 
@@ -30,6 +32,7 @@ Build a secure and usable DNA sequencing workflow platform for doctors and admin
 - Stable API behavior
 - Clear, maintainable folder structure
 - Beginner-friendly documentation
+- Clear failure handling when external bio APIs are unavailable
 
 ## Success signal
 

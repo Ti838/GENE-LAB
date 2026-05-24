@@ -1,0 +1,68 @@
+{
+  "info": {
+    "name": "GenLab API Collection",
+    "_postman_id": "genelab-collection",
+    "description": "Basic API tests for GenLab (instant, deep, CSV, status, result)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Instant Analysis (Text)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "sequence", "value": "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG", "type": "text" },
+            { "key": "name", "value": "postman_test", "type": "text" }
+          ]
+        },
+        "url": { "raw": "http://localhost:5000/api/analysis/instant-analysis", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","instant-analysis"] }
+      }
+    },
+    {
+      "name": "Instant Analysis (File)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": { "mode": "formdata", "formdata": [ { "key": "file", "type": "file", "src": "./tests/sample.fasta" } ] },
+        "url": { "raw": "http://localhost:5000/api/analysis/instant-analysis", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","instant-analysis"] }
+      }
+    },
+    {
+      "name": "Deep Analysis (Text)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": { "mode": "formdata", "formdata": [ { "key": "sequence", "value": "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG", "type": "text" } ] },
+        "url": { "raw": "http://localhost:5000/api/analysis/deep-analysis", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","deep-analysis"] }
+      }
+    },
+    {
+      "name": "Upload CSV",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": { "mode": "formdata", "formdata": [ { "key": "file", "type": "file", "src": "./tests/sample.csv" } ] },
+        "url": { "raw": "http://localhost:5000/api/analysis/upload-csv", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","upload-csv"] }
+      }
+    },
+    {
+      "name": "Get Job Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "http://localhost:5000/api/analysis/analysis-status/{{jobId}}", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","analysis-status","{{jobId}}"] }
+      }
+    },
+    {
+      "name": "Get Job Result",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "http://localhost:5000/api/analysis/analysis-result/{{jobId}}", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api","analysis","analysis-result","{{jobId}}"] }
+      }
+    }
+  ]
+}

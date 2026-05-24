@@ -201,6 +201,7 @@
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
         }
     </style>
+    <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 </head>
 <body class="selection:bg-cyan selection:text-ink min-h-screen relative overflow-hidden" data-theme="dark">
 
@@ -263,6 +264,21 @@
                                     <input type="text" id="signup-phone" placeholder="+1 555 0100" class="field-input w-full" style="padding:0.6rem 0.6rem 0.6rem 2.5rem !important;">
                                 </div>
                             </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+                            <div>
+                                <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Gender</label>
+                                <div class="relative w-full">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:20px!important;">wc</span>
+                                    <select id="signup-gender" class="field-input w-full appearance-none cursor-pointer" style="padding:0.6rem 2rem 0.6rem 2.5rem !important;">
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div></div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
                             <div>
@@ -346,10 +362,25 @@
                                 </div>
                             </label>
                         </div>
-                        <div class="relative w-full mt-4">
-                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
-                            <input type="email" id="login-email" required placeholder="Email Address" class="field-input w-full">
+                        
+                        <!-- Login Method Toggle -->
+                        <div class="flex gap-2 mt-4 mb-3">
+                            <button type="button" class="login-method-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all" data-method="email" style="background: rgba(0,212,255,0.15); color: var(--cyan); border: 1px solid var(--cyan);">Email</button>
+                            <button type="button" class="login-method-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all" data-method="phone" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border);">Phone</button>
                         </div>
+                        
+                        <!-- Email Input -->
+                        <div class="relative w-full" id="email-input-group">
+                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">mail</span>
+                            <input type="email" id="login-email" placeholder="Email Address" class="field-input w-full">
+                        </div>
+                        
+                        <!-- Phone Input (hidden by default) -->
+                        <div class="relative w-full hidden" id="phone-input-group">
+                            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">call</span>
+                            <input type="tel" id="login-phone" placeholder="Phone Number" class="field-input w-full">
+                        </div>
+                        
                         <div class="relative w-full">
                             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2" style="color:var(--text-faint);font-size:22px!important;">lock</span>
                             <input type="password" id="login-password" required placeholder="Password" class="field-input w-full">

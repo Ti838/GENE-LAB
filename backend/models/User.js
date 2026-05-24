@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 8 },
   role: { type: String, enum: ['doctor', 'researcher', 'admin', 'employee'], default: 'doctor' },
+  gender: { type: String, enum: ['male', 'female', 'other'], trim: true },
   organization: { type: String, trim: true },
   specialization: { type: String, trim: true },
   licenseNumber: { type: String, trim: true },
@@ -40,6 +41,11 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 userSchema.methods.isLocked = function () {
   return this.lockUntil && this.lockUntil > Date.now();
 };
+
+// Indexes for ultra-fast queries and organized MongoDB layout
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('User', userSchema);
 

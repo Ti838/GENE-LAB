@@ -64,5 +64,12 @@ sequencingRequestSchema.pre('save', async function (next) {
   next();
 });
 
+// Indexes for high-performance sorting and query optimization
+sequencingRequestSchema.index({ sampleId: 1 }, { unique: true });
+sequencingRequestSchema.index({ userId: 1 });
+sequencingRequestSchema.index({ patientId: 1 });
+sequencingRequestSchema.index({ status: 1 });
+sequencingRequestSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('SequencingRequest', sequencingRequestSchema);
 

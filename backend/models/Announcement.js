@@ -13,4 +13,9 @@ const announcementSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true, collection: 'Announcements' });
 
+// Speed indexing for recent active announcements
+announcementSchema.index({ authorId: 1 });
+announcementSchema.index({ isActive: 1 });
+announcementSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Announcement', announcementSchema);

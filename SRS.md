@@ -1,4 +1,4 @@
-# SRS (Software Requirements Specification)
+﻿# SRS (Software Requirements Specification)
 
 ## 1. Scope
 
@@ -13,6 +13,8 @@ GeneLab manages DNA sequencing requests from submission to report access.
 - FR5: Profile management
 - FR6: Announcement management
 - FR7: Admin audit visibility
+- FR8: Async DNA analysis job tracking
+- FR9: Bio service communication for instant and deep analysis
 
 ## 3. Non-functional requirements
 
@@ -24,10 +26,14 @@ GeneLab manages DNA sequencing requests from submission to report access.
 ## 4. Constraints
 
 - Backend stack fixed to Node.js + Express + MongoDB
+- Redis is used for queueing and job coordination
+- FastAPI bio service is part of the system architecture
 - Frontend remains multi-page vanilla setup
 
 ## 5. Assumptions
 
-- MongoDB service is available
+- MongoDB is available either locally or through Docker Compose
+- Redis is available when async analysis is enabled
 - Environment variables are configured correctly
+- External APIs may be unavailable temporarily, so analysis paths need graceful failure handling
 - Users access with modern browser

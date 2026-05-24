@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: Genelab-bioservice
+    env: docker
+    dockerfilePath: bioservice/Dockerfile
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 8000
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NCBI_API_KEY
+      - key: S3_BUCKET
+      - key: S3_REGION
+      - key: AWS_ACCESS_KEY_ID
+      - key: AWS_SECRET_ACCESS_KEY
+
+  - type: worker
+    name: Genelab-worker
+    env: docker
+    dockerfilePath: backend/Dockerfile.worker
+    startCommand: node worker.js
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: MONGO_URI
+      - key: REDIS_URL
+      - key: FASTAPI_URL
+      - key: S3_BUCKET
+      - key: S3_REGION
