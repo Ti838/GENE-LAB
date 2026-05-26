@@ -1,65 +1,128 @@
-# Quick Start Summary
+# GeneLab — Quick Start Guide
 
-This is the shortest reliable path to run GeneLab.
+**Live (No Setup Needed):** https://gene-lab-gray.vercel.app  
+**Admin Login:** `admin@genelab.ai` / `GeneLabAdmin2026!`
 
-## Fastest path: Docker Compose
+---
 
-1. Install Docker Desktop.
-2. From the project root, run:
+## Option 1 — Use the Live Platform (Instant)
+
+No installation required. Go to the live URL and log in.
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@genelab.ai` | `GeneLabAdmin2026!` |
+| Doctor | `dr.jameson@genelab.ai` | `Geneticist2026!` |
+| Researcher | `dr.chen@genelab.ai` | `Researcher2026!` |
+
+Or register a new account — email verification is automatic in the current build.
+
+---
+
+## Option 2 — Docker Compose (Full Local Stack)
+
+Runs MongoDB, Redis, Express backend, FastAPI bio service, and the BullMQ worker together.
+
+**Requirements:** Docker Desktop installed and running.
 
 ```powershell
+# From the genelab/ directory:
 docker compose up --build
 ```
 
-3. Open the API health check:
-
-```text
-http://localhost:5000/api/health
+Health checks:
+```
+http://localhost:5000/api/health   # Express API → should return {"status":"OK"}
+http://localhost:8000/health/      # FastAPI bio service
 ```
 
-If this returns `OK`, the full stack is up.
+---
 
-## Manual path: local Node + MongoDB
+## Option 3 — Manual Node.js (Backend Only)
 
-1. Start MongoDB locally.
-2. Install backend packages:
+Use this if you do not want Docker.
+
+**Requirements:** Node.js 18+ and a MongoDB connection (local or Atlas).
+
+### Step 1 — Install dependencies
 
 ```powershell
-cd backend
 npm install
 ```
 
-3. Create `backend/.env`:
+### Step 2 — Create `backend/.env`
 
 ```env
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/genelab
-JWT_SECRET=your_long_secret_key
+JWT_SECRET=your_secure_random_key_min_32_chars
+JWT_EXPIRY=24h
+NODE_ENV=development
 FASTAPI_URL=http://localhost:8000
 REDIS_URL=redis://localhost:6379
+DISABLE_QUEUES=true
 ```
 
-4. Start backend:
+> Set `DISABLE_QUEUES=true` if you do not have Redis running locally.
+
+### Step 3 — Start the backend
 
 ```powershell
+cd backend
 npm run dev
 ```
 
-5. Optional seed:
+### Step 4 — Open the frontend
+
+Open `frontend/pages/login.html` in your browser, or use a local static server:
+
+```powershell
+npx serve frontend
+```
+
+### Step 5 — Seed the database (optional)
 
 ```powershell
 node seed.js
 ```
 
-## Frontend
+This creates default admin, doctor, and researcher accounts.
 
-Open files from `frontend/pages/` in a browser or static server:
+---
 
-- `index.html`
-- `login.html`
-- `doctor/*.html`
-- `admin/*.html`
+## Vercel Re-deploy (if you change code)
 
-## Important note
+```powershell
+git add .
+git commit -m "describe your change"
+git push origin main
+npx vercel --prod --yes
+```
 
-The backend needs MongoDB. Redis powers the job queue. The FastAPI bio service handles DNA analysis work.
+> Always use the CLI for deploys — GitHub auto-deploy is not reliable for this project.
+
+---
+
+## Key URLs (Local)
+
+| Service | URL |
+|---------|-----|
+| Express API | http://localhost:5000/api/health |
+| Admin Dashboard | http://localhost:5000/pages/admin/dashboard.html |
+| Doctor Dashboard | http://localhost:5000/pages/doctor/dashboard.html |
+| FastAPI Bio Service | http://localhost:8000/docs |
+
+---
+
+## What each service does
+
+| Service | Role |
+|---------|------|
+| Express API | Auth, user management, DNA file metadata, notes, requests, admin |
+| MongoDB | All persistent data storage |
+| FastAPI | DNA sequence analysis (BLAST, nucleotide frequency, PDF reports) |
+| Redis + BullMQ | Async job queue for heavy analysis work |
+
+---
+
+*GeneLab v2.0.0 | Updated: 2026-05-26*
