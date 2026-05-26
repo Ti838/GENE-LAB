@@ -43,6 +43,16 @@ const promClient = require('prom-client');
 
 const app = express();
 
+// ── Health Check (Must be above MongoDB connection middleware to ensure uptime checking) ──
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'GeneLab API is running',
+    timestamp: new Date().toISOString(),
+    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
 // Keep the database connection alive for both local Node and serverless Vercel runs.
 app.use(async (req, res, next) => {
   try {
@@ -106,7 +116,10 @@ app.use('/api/notes',         notesRoutes);
 
 // ── Metrics endpoint for Prometheus scraping ─────────────────────────────
 try {
-  promClient.collectDefaultMetrics({ timeout: 5000 });
+  const isVercel = process.env.VERCEL === '1';
+  if (!isVercel) {
+    promClient.collectDefaultMetrics({ timeout: 5000 });
+  }
   const { protect, adminOnly } = require('./middleware/auth');
   app.get('/metrics', protect, adminOnly, async (req, res) => {
     res.set('Content-Type', promClient.register.contentType);
@@ -117,15 +130,7 @@ try {
   console.warn('Prometheus metrics not enabled:', e.message);
 }
 
-// ── Health Check ──────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'GeneLab API is running',
-    timestamp: new Date().toISOString(),
-    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-  });
-});
+
 
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
