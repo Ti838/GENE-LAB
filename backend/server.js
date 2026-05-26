@@ -174,7 +174,7 @@ async function startServer() {
   });
 }
 
-if (require.main === module && process.env.VERCEL !== '1') {
+if (!process.env.VERCEL) {
   startServer().catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
     process.exit(1);
