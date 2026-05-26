@@ -36,6 +36,7 @@ const dnaRoutes          = require('./routes/dna');
 const analysisRoutes     = require('./routes/analysis');
 const coreRoutes         = require('./routes/core');
 const uploadsRoutes      = require('./routes/uploads');
+const notesRoutes        = require('./routes/notes');
 
 const { errorHandler } = require('./middleware/errorHandler');
 const promClient = require('prom-client');
@@ -101,6 +102,7 @@ app.use('/api/dna',           dnaRoutes);
 app.use('/api/analysis',      analysisRoutes);
 app.use('/api/core',          coreRoutes);
 app.use('/api/uploads',       uploadsRoutes);
+app.use('/api/notes',         notesRoutes);
 
 // ── Metrics endpoint for Prometheus scraping ─────────────────────────────
 try {
