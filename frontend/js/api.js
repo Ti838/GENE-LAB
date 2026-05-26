@@ -28,9 +28,23 @@ const api = {
                 data = { message: text };
             }
         }
-        if (!response.ok) {
+                if (!response.ok) {
             const errorMsg = data.message || 'Something went wrong';
-            if (window.showToast) window.showToast(errorMsg, 'error');
+            if (response.status === 401) {
+                // Automatically clear invalid/expired token and redirect to login
+                localStorage.removeItem('genelab_token');
+                localStorage.removeItem('genelab_user');
+                sessionStorage.removeItem('genelab_token');
+                sessionStorage.removeItem('genelab_user');
+                
+                if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
+                setTimeout(() => {
+                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/admin/');
+                    window.location.href = isSubDir ? '../login.html' : 'login.html';
+                }, 1500);
+            } else {
+                if (window.showToast) window.showToast(errorMsg, 'error');
+            }
             throw new Error(errorMsg);
         }
         return data;
