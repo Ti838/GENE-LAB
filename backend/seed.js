@@ -11,6 +11,7 @@ const SequencingRequest = require('./models/SequencingRequest');
 const Result = require('./models/Result');
 const Announcement = require('./models/Announcement');
 const AuditLog = require('./models/AuditLog');
+const DNAFile = require('./models/DNAFile');
 
 async function seed() {
   const MONGO_URI = process.env.MONGO_URI;
@@ -19,7 +20,7 @@ async function seed() {
     console.error('❌ MONGO_URI not found in .env');
     process.exit(1);
   }
-
+ 
   console.log('📡 Connecting to:', MONGO_URI.split('@')[1] || 'LocalDB');
   
   try {
@@ -33,7 +34,8 @@ async function seed() {
       SequencingRequest.deleteMany({}),
       Result.deleteMany({}),
       Announcement.deleteMany({}),
-      AuditLog.deleteMany({})
+      AuditLog.deleteMany({}),
+      DNAFile.deleteMany({})
     ]);
 
     // ── CREATE PROFESSIONAL USERS ────────────────────────────────────────
@@ -202,6 +204,106 @@ async function seed() {
     }
 
     console.log('✅ Sequencing requests and results generated.');
+
+    // ── CREATE RICH DNA SEQUENCE FILES AND CLINICAL RESULTS ────────────────
+    console.log('🧬 Seeding beautiful DNA sequence files and scientific analysis results...');
+    await DNAFile.create([
+      {
+        originalName: 'BRCA1_Mutation_Panel.fastq',
+        filename: '1716382104-brca1.fastq',
+        path: 'internal',
+        size: 102400,
+        mimetype: 'text/fastq',
+        doctor: doctor1._id,
+        status: 'analyzed',
+        analysisType: 'instant',
+        sequenceLength: 180,
+        gcContent: 0.42,
+        atContent: 0.58,
+        nucleotideFrequency: { A: 48, T: 52, G: 40, C: 40, N: 0 },
+        nucleotidePercentage: { A: 0.27, T: 0.29, G: 0.22, C: 0.22, N: 0 },
+        molecularWeightDa: 55432,
+        codonAnalysis: {
+          totalCodons: 60,
+          proteinLength: 58,
+          startCodonCount: 1,
+          stopCodonCount: 1,
+          openReadingFramesDetected: 2,
+          aminoAcidSequencePreview: 'MDFSALRVEEVQNVINAMQKILES...',
+          codonFrequency: { ATG: 1, TTT: 2 }
+        },
+        mutations: ['BRCA1: c.68_69delAG (Pathogenic)', 'BRCA1: c.5266dupC (Pathogenic)'],
+        hasAnomalies: true,
+        variantsAnalyzed: 2,
+        highSeverityCount: 2,
+        diseaseAssociations: ['Hereditary Breast and Ovarian Cancer Syndrome'],
+        clinicalSummary: 'Highly significant clinical finding of pathogenic variants in BRCA1. Immediate referral for clinical cancer genomics counseling is recommended.',
+        variants: [
+          {
+            variantId: 'rs80357872',
+            gene: 'BRCA1',
+            clinicalSignificance: 'Pathogenic',
+            severity: 'HIGH',
+            diseaseAssociations: ['Hereditary Breast and Ovarian Cancer Syndrome'],
+            caddPhredScore: 34,
+            populationFrequency: 0.0002,
+            rsid: 'rs80357872',
+            chromosome: '17',
+            position: 43044295
+          }
+        ],
+        scientificSummary: 'Targeted NGS sequencing identified a classic pathogenic frameshift variant in exon 11 of the BRCA1 gene.',
+        confidence: 0.99,
+        topRepeats: [{ kmer: 'ATG', count: 4, frequency: 0.02 }],
+        sampleType: 'Whole Genome',
+        notes: 'Priority clinical diagnostics screening.'
+      },
+      {
+        originalName: 'E_Coli_LacZ_Sequence.fasta',
+        filename: '1716382105-ecoli.fasta',
+        path: 'internal',
+        size: 54200,
+        mimetype: 'text/fasta',
+        doctor: doctor1._id,
+        status: 'analyzed',
+        analysisType: 'deep',
+        sequenceLength: 180,
+        gcContent: 0.52,
+        atContent: 0.48,
+        nucleotideFrequency: { A: 40, T: 40, G: 50, C: 50, N: 0 },
+        nucleotidePercentage: { A: 0.22, T: 0.22, G: 0.28, C: 0.28, N: 0 },
+        molecularWeightDa: 56124,
+        blastResult: {
+          status: 'completed',
+          rid: 'LOCAL-ECOLI77',
+          totalHits: 1,
+          topOrganism: 'Escherichia coli (Bacteria)',
+          topIdentity: 100,
+          topAccession: 'NC_000913.3',
+          topEvalue: 0.00001,
+          organismsIdentified: ['Escherichia coli (Bacteria)'],
+          scientificExplanation: 'High-speed local pairwise alignment matched 100% with the reference segment of Escherichia coli K-12 lacZ gene.',
+          hits: []
+        },
+        scientificSummary: 'Alignment results match perfectly with bacterial reference database.',
+        confidence: 1.0,
+        sampleType: 'Whole Exome',
+        notes: 'Control reference indexing check.'
+      },
+      {
+        originalName: 'EGFR_Tumor_Biopsy.fasta',
+        filename: '1716382106-egfr.fasta',
+        path: 'internal',
+        size: 76800,
+        mimetype: 'text/fasta',
+        doctor: doctor2._id,
+        status: 'analyzing',
+        analysisType: 'instant',
+        sampleType: 'Targeted Panel',
+        notes: 'Somatic profiling for lung biopsy.'
+      }
+    ]);
+    console.log('✅ Rich DNA Files and Scientific Analysis results successfully seeded!');
 
     console.log('\n🚀 SEEDING COMPLETE');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
