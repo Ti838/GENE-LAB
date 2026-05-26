@@ -60,6 +60,15 @@ const auth = {
 
         try {
             const data = await api.post('/auth/register', payload);
+            
+            if (data.debugVerificationLink) {
+                showToast('Demo Mode: Auto-redirecting to verify email...', 'warning');
+                setTimeout(() => {
+                    window.location.href = data.debugVerificationLink;
+                }, 2000);
+                return;
+            }
+            
             showToast(data.message || 'Account created! Please check your email.', 'success');
             setTimeout(() => { window.location.href = 'login.html'; }, 4000);
         } catch (error) {

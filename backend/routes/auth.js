@@ -59,11 +59,12 @@ router.post('/register', [
 
     // Send verification email
     const hostUrl = getHostUrl(req);
-    await sendVerificationEmail(user.email, user.name, verificationToken, hostUrl);
+    const emailResult = await sendVerificationEmail(user.email, user.name, verificationToken, hostUrl);
 
     res.status(201).json({
       message: 'Account created successfully! Please check your email to verify your account before logging in.',
       requiresVerification: true,
+      debugVerificationLink: !process.env.RESEND_API_KEY ? emailResult.link : undefined,
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) { next(err); }
