@@ -181,9 +181,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ============================
     if (path.includes('admin/data.html')) {
         const dataBody = document.getElementById('dna-data-body');
+        let currentRegistryFiles = [];
+
         async function loadDNAData() {
             try {
                 const files = await api.get('/admin/dna');
+                currentRegistryFiles = files || [];
                 if (!dataBody) return;
                 dataBody.innerHTML = '';
                 files.forEach(file => {
@@ -208,6 +211,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             } catch (error) { console.error(error); }
         }
+
+        window.exportDataRegistry = () => {
+            if (!currentRegistryFiles || currentRegistryFiles.length === 0) {
+                showToast('No registry data available to export', 'info');
+                return;
+            }
+            let csv = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+            csv += 'Sequence ID,Owner / Node,Status,Timestamp\n';
+            currentRegistryFiles.forEach(file => {
+                const id = file._id.substr(-8).toUpperCase();
+                const owner = file.doctor?.name || 'Unknown';
+                const status = file.status;
+                const date = new Date(file.createdAt).toLocaleString().replace(/,/g, '');
+                csv += `"${id}","${owner}","${status}","${date}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `genelab_dna_registry_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Registry exported successfully!', 'success');
+        };
+
         window.deleteDNAFile = async (id, name) => {
             if (!confirm(`Delete file "${name}"?`)) return;
             try { 
