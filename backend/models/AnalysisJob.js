@@ -49,7 +49,7 @@ const analysisJobSchema = new mongoose.Schema({
   completedAt: { type: Date },
 }, {
   timestamps: true,
-  collection: 'AnalysisJobs'
+  collection: 'analysis_jobs'
 });
 
 // Advanced indexing for optimized queue tracking and history lookups

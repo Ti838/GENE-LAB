@@ -7,6 +7,7 @@
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 const FASTAPI_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8000';
 
@@ -16,6 +17,28 @@ const fastapiClient = axios.create({
   timeout: 200_000,  // 200s — BLAST can take a while
   headers: { 'Accept': 'application/json' }
 });
+
+// Simple retry wrapper for POST requests (exponential backoff)
+async function _postWithRetry(path, data, opts = {}, retries = 3, delay = 1000, factor = 2) {
+  let attempt = 0;
+  let curDelay = delay;
+  while (attempt < retries) {
+    try {
+      logger.info('fastapi.post.attempt', { path, attempt });
+      return await fastapiClient.post(path, data, opts);
+    } catch (err) {
+      attempt += 1;
+      logger.warn('fastapi.post.error', { path, attempt, message: err.message });
+      if (attempt >= retries) {
+        logger.error('fastapi.post.failed', { path, attempts: attempt, message: err.message });
+        throw err;
+      }
+      // small backoff
+      await new Promise((res) => setTimeout(res, curDelay));
+      curDelay = Math.min(curDelay * factor, 60_000);
+    }
+  }
+}
 
 /**
  * Sends a DNA file to the FastAPI instant analysis endpoint.
@@ -32,7 +55,7 @@ async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
   }
 
   try {
-    const response = await fastapiClient.post('/instant-analysis/', form, {
+    const response = await _postWithRetry('/instant-analysis/', form, {
       headers: { ...form.getHeaders() },
       maxBodyLength: Infinity,
       maxContentLength: Infinity
@@ -59,7 +82,7 @@ async function runInstantAnalysisText(sequence, name = 'manual_sequence', varian
   }
 
   try {
-    const response = await fastapiClient.post('/instant-analysis/from-text', form, {
+    const response = await _postWithRetry('/instant-analysis/from-text', form, {
       headers: { ...form.getHeaders() }
     });
     return response.data;
@@ -79,7 +102,7 @@ async function runDeepAnalysisFile(filePath, fileName) {
   form.append('file', fs.createReadStream(filePath), { filename: fileName });
 
   try {
-    const response = await fastapiClient.post('/deep-analysis/', form, {
+    const response = await _postWithRetry('/deep-analysis/', form, {
       headers: { ...form.getHeaders() },
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
@@ -102,7 +125,7 @@ async function runInstantAnalysisS3(s3Key, fileName) {
   if (fileName) form.append('filename', fileName);
 
   try {
-    const response = await fastapiClient.post('/instant-analysis/', form, {
+    const response = await _postWithRetry('/instant-analysis/', form, {
       headers: { ...form.getHeaders() },
       maxBodyLength: Infinity,
       maxContentLength: Infinity
@@ -119,7 +142,7 @@ async function runDeepAnalysisS3(s3Key, fileName) {
   if (fileName) form.append('filename', fileName);
 
   try {
-    const response = await fastapiClient.post('/deep-analysis/', form, {
+    const response = await _postWithRetry('/deep-analysis/', form, {
       headers: { ...form.getHeaders() },
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
@@ -143,7 +166,7 @@ async function runDeepAnalysisText(sequence, name = 'manual_sequence') {
   form.append('name', name);
 
   try {
-    const response = await fastapiClient.post('/deep-analysis/from-text', form, {
+    const response = await _postWithRetry('/deep-analysis/from-text', form, {
       headers: { ...form.getHeaders() },
       timeout: 200_000
     });
@@ -160,7 +183,7 @@ async function runDeepAnalysisText(sequence, name = 'manual_sequence') {
  */
 async function getInstantAnalysisPDF(analysisResult) {
   try {
-    const response = await fastapiClient.post('/instant-analysis/report', analysisResult, {
+    const response = await _postWithRetry('/instant-analysis/report', analysisResult, {
       headers: { 'Content-Type': 'application/json' },
       responseType: 'arraybuffer'
     });
@@ -177,7 +200,7 @@ async function getInstantAnalysisPDF(analysisResult) {
  */
 async function getDeepAnalysisPDF(blastResult) {
   try {
-    const response = await fastapiClient.post('/deep-analysis/report', blastResult, {
+    const response = await _postWithRetry('/deep-analysis/report', blastResult, {
       headers: { 'Content-Type': 'application/json' },
       responseType: 'arraybuffer'
     });
@@ -227,6 +250,8 @@ module.exports = {
   runInstantAnalysisText,
   runDeepAnalysisFile,
   runDeepAnalysisText,
+  runInstantAnalysisS3,
+  runDeepAnalysisS3,
   getInstantAnalysisPDF,
   getDeepAnalysisPDF,
   checkFastAPIHealth

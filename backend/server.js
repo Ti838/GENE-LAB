@@ -3,6 +3,20 @@
  * Copyright (c) 2026 GeneLab. All rights reserved.
  */
 require('dotenv').config();
+// Initialize Sentry (optional)
+if (process.env.SENTRY_DSN) {
+  try {
+    const Sentry = require('@sentry/node');
+    Sentry.init({ dsn: process.env.SENTRY_DSN });
+    console.log('🔒 Sentry initialized');
+    // Capture unhandled rejections
+    process.on('unhandledRejection', (reason) => {
+      Sentry.captureException(reason instanceof Error ? reason : new Error(String(reason)));
+    });
+  } catch (e) {
+    console.warn('Sentry init failed:', e.message);
+  }
+}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -20,9 +34,11 @@ const profileRoutes      = require('./routes/profile');
 const announcementRoutes = require('./routes/announcements');
 const dnaRoutes          = require('./routes/dna');
 const analysisRoutes     = require('./routes/analysis');
+const coreRoutes         = require('./routes/core');
 const uploadsRoutes      = require('./routes/uploads');
 
 const { errorHandler } = require('./middleware/errorHandler');
+const promClient = require('prom-client');
 
 const app = express();
 
@@ -82,7 +98,20 @@ app.use('/api/profile',       profileRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/dna',           dnaRoutes);
 app.use('/api/analysis',      analysisRoutes);
+app.use('/api/core',          coreRoutes);
 app.use('/api/uploads',       uploadsRoutes);
+
+// ── Metrics endpoint for Prometheus scraping ─────────────────────────────
+try {
+  promClient.collectDefaultMetrics({ timeout: 5000 });
+  app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', promClient.register.contentType);
+    res.send(await promClient.register.metrics());
+  });
+  console.log('📈 /metrics endpoint enabled');
+} catch (e) {
+  console.warn('Prometheus metrics not enabled:', e.message);
+}
 
 // ── Health Check ──────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

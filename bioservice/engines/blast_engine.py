@@ -8,6 +8,8 @@ import time
 import requests
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Optional
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from ..utils import logger
 
 BLAST_BASE_URL = "https://blast.ncbi.nlm.nih.gov/blast/Blast.cgi"
 
@@ -18,6 +20,8 @@ MAX_WAIT_SECONDS = 180
 POLL_INTERVAL = 10  # seconds between polls
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=2, max=20),
+    retry=retry_if_exception_type((requests.exceptions.RequestException, RuntimeError)))
 def submit_blast_job(sequence: str, db: str = "nt", program: str = "blastn", ncbi_api_key: str = "") -> Optional[str]:
     """
     Submits a BLAST search to NCBI and returns the RID (Request ID).
@@ -42,22 +46,22 @@ def submit_blast_job(sequence: str, db: str = "nt", program: str = "blastn", ncb
     if ncbi_api_key:
         params["api_key"] = ncbi_api_key
 
-    try:
-        resp = requests.post(BLAST_BASE_URL, data=params, timeout=30)
-        resp.raise_for_status()
+    logger.info('blast.submit', database=db, program=program)
+    resp = requests.post(BLAST_BASE_URL, data=params, timeout=30)
+    resp.raise_for_status()
 
-        # Extract RID from the response text
-        rid = None
-        for line in resp.text.split("\n"):
-            if line.startswith("    RID = "):
-                rid = line.split("=")[1].strip()
-                break
+    # Extract RID from the response text
+    rid = None
+    for line in resp.text.split("\n"):
+        if line.startswith("    RID = "):
+            rid = line.split("=")[1].strip()
+            break
 
-        return rid
-    except Exception as e:
-        raise RuntimeError(f"BLAST submission failed: {str(e)}")
+    return rid
 
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=5, max=30),
+    retry=retry_if_exception_type((requests.exceptions.RequestException, TimeoutError, RuntimeError)))
 def poll_blast_results(rid: str, ncbi_api_key: str = "") -> str:
     """
     Polls NCBI BLAST until the job is complete.
@@ -79,6 +83,7 @@ def poll_blast_results(rid: str, ncbi_api_key: str = "") -> str:
         if ncbi_api_key:
             params["api_key"] = ncbi_api_key
 
+        logger.info('blast.poll', rid=rid, elapsed=elapsed)
         resp = requests.get(BLAST_BASE_URL, params=params, timeout=30)
         resp.raise_for_status()
         text = resp.text

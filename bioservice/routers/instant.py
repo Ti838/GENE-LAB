@@ -19,7 +19,7 @@ import boto3
 import os
 from fastapi.responses import Response
 
-from engines.sequence_parser import parse_file, validate_sequence
+from engines.sequence_parser import parse_file, validate_sequence, parse_csv_stream
 from engines.dna_analyzer import analyze_sequence, sequence_statistics, codon_analysis
 from engines.mutation_analyzer import analyze_mutations
 from engines.report_generator import generate_instant_analysis_pdf
@@ -127,7 +127,7 @@ async def instant_analysis_from_file(
     Accepts an uploaded DNA file (FASTA/FASTQ/CSV/TXT).
     Parses all sequences and runs instant analysis on the first (or primary) one.
     """
-    filename = file.filename or "sequence.txt"
+    filename = (file.filename if file else None) or "sequence.txt"
     ext = filename.lower().rsplit('.', 1)[-1] if '.' in filename else 'txt'
 
     # Support S3 key: fetch object and parse from temp file to avoid memory blowup

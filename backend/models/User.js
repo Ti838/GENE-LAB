@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
   lockUntil: { type: Date },
   lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now }
-}, { timestamps: true, collection: 'Users' });
+}, { timestamps: true, collection: 'users' });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

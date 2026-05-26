@@ -1,0 +1,62 @@
+name: CI — Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL of the deployed app (https://...)'
+        required: true
+      auth_token:
+        description: 'Optional Bearer token for authenticated endpoints'
+        required: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run health checks
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url }}
+          AUTH_TOKEN: ${{ github.event.inputs.auth_token }}
+        run: |
+          set -euo pipefail
+          echo "Checking backend health at $BASE_URL/api/health"
+          curl -fSL "$BASE_URL/api/health" -o /dev/null
+
+          echo "Checking bioservice health at $BASE_URL/health"
+          curl -fSL "$BASE_URL/health" -o /dev/null || true
+
+          echo "Attempting presign upload endpoint (may require auth)"
+          hdr="-H 'Content-Type: application/json'"
+          if [ -n "$AUTH_TOKEN" ]; then
+            hdr="$hdr -H 'Authorization: Bearer $AUTH_TOKEN'"
+          fi
+          # Example presign payload — adjust keys if your API differs
+          payload='{"filename":"smoke.txt","contentType":"text/plain"}'
+          resp=$(curl -sS -w "%{http_code}" -o /tmp/_resp.json -X POST $hdr "$BASE_URL/api/uploads/presign" -d "$payload")
+          if [ "$resp" != "200" ] && [ "$resp" != "201" ]; then
+            echo "Presign endpoint returned HTTP $resp"
+            cat /tmp/_resp.json || true
+            exit 2
+          fi
+          echo "Presign endpoint OK"
+          # Extract presign URL and key
+          PRESIGN_URL=$(jq -r '.url' /tmp/_resp.json)
+          PRESIGN_KEY=$(jq -r '.key' /tmp/_resp.json)
+          if [ -z "$PRESIGN_URL" ] || [ "$PRESIGN_URL" = "null" ]; then
+            echo "Presign payload missing url"
+            cat /tmp/_resp.json || true
+            exit 3
+          fi
+
+          echo "Uploading small test payload to S3 via presign URL"
+          echo "smoke" > /tmp/smoke.txt
+          curl -sS -X PUT -H "Content-Type: text/plain" --upload-file /tmp/smoke.txt "$PRESIGN_URL" -o /tmp/_put_resp.txt || true
+          echo "Notifying backend of uploaded key"
+          notify_payload=$(jq -n --arg k "$PRESIGN_KEY" --arg u "$PRESIGN_URL" --arg n "smoke.txt" '{s3Key: $k, s3Url: $u, originalName: $n}')
+          notify_resp=$(curl -sS -w "%{http_code}" -o /tmp/_notify.json -X POST $hdr "$BASE_URL/api/analysis/upload-csv" -d "$notify_payload") || true
+          echo "Upload notify HTTP: $notify_resp"
+          cat /tmp/_notify.json || true

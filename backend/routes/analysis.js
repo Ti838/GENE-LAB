@@ -18,6 +18,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 // Optional S3-backed uploads
+const { v4: uuidv4 } = require('uuid');
 const S3_BUCKET = process.env.S3_BUCKET;
 let multerStorage = null;
 if (S3_BUCKET) {
@@ -35,7 +36,6 @@ if (S3_BUCKET) {
     }
   });
 }
-const { v4: uuidv4 } = require('uuid');
 const { protect } = require('../middleware/auth');
 const AnalysisJob = require('../models/AnalysisJob');
 const DNAFile = require('../models/DNAFile');
@@ -73,7 +73,6 @@ const upload = multer({
 });
 
 const isVercel = process.env.VERCEL === '1';
-const S3_BUCKET = process.env.S3_BUCKET;
 
 // ── Helper: Create AnalysisJob record in MongoDB ─────────────────────────
 async function createJobRecord(userId, analysisType, extras = {}) {
@@ -190,8 +189,6 @@ router.post('/instant-analysis', protect, upload.single('file'), async (req, res
       const result = await runSyncFallback('instant', file?.path, file?.originalname, sequence, name, varIds);
       // Save result
       if (dnaFileId) {
-        const { default: qSvc } = await import('./queue.service.js').catch(() => ({ default: null }));
-        // Use the mapping helper directly
         const updateData = _mapInstantResultToDNAFile(result, jobId);
         await DNAFile.findByIdAndUpdate(dnaFileId, updateData);
       }

@@ -36,18 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
         outputArea.innerHTML = '';
         const card = document.createElement('div');
         card.className = 'mt-4 p-4 bg-slate-800 rounded-lg';
-        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="/pages/doctor/result.html?jobId=${jobId}" target="_blank" class="text-cyan">Open Result</a></div><div id="job-progress-${jobId}" class="mt-2 text-sm text-slate-400">Waiting...</div>`;
+        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="/pages/doctor/result.html?jobId=${jobId}" target="_blank" class="text-cyan">Open Result</a></div><div class="mt-2"><div id="job-progress-text-${jobId}" class="text-sm text-slate-400">Waiting...</div><div class="w-full bg-white/5 h-2 rounded mt-2"><div id="job-progress-bar-${jobId}" class="h-2 bg-cyan rounded" style="width:0%"></div></div></div>`;
         outputArea.appendChild(card);
 
         window.GenelabPoller.pollJob(jobId, (status) => {
-            const el = document.getElementById(`job-progress-${jobId}`);
-            if (el) el.textContent = `Status: ${status.status} · Progress: ${status.progress || 0}%`;
+            const textEl = document.getElementById(`job-progress-text-${jobId}`);
+            const barEl = document.getElementById(`job-progress-bar-${jobId}`);
+            if (textEl) textEl.textContent = `Status: ${status.status} · Progress: ${status.progress || 0}%`;
+            if (barEl) barEl.style.width = `${status.progress || 0}%`;
         }, (result) => {
-            const el = document.getElementById(`job-progress-${jobId}`);
-            if (el) el.textContent = `Completed · View detailed results`;
+            const textEl = document.getElementById(`job-progress-text-${jobId}`);
+            const barEl = document.getElementById(`job-progress-bar-${jobId}`);
+            if (textEl) textEl.textContent = `Completed · View detailed results`;
+            if (barEl) barEl.style.width = `100%`;
         }, (err) => {
-            const el = document.getElementById(`job-progress-${jobId}`);
-            if (el) el.textContent = `Error: ${err}`;
+            const textEl = document.getElementById(`job-progress-text-${jobId}`);
+            if (textEl) textEl.textContent = `Error: ${err}`;
         }, 3000);
     }
 

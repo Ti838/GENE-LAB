@@ -111,7 +111,7 @@ const dnaFileSchema = new mongoose.Schema({
   notes:      { type: String },
   errorMessage: { type: String }
 
-}, { timestamps: true, collection: 'DNAFiles' });
+}, { timestamps: true, collection: 'dna_sequences' });
 
 // High-speed indices for querying files and analysis status
 dnaFileSchema.index({ doctor: 1 });

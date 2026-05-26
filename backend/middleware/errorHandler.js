@@ -2,8 +2,11 @@
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.
  */
+const loggerService = require('../services/logger.service');
+
 const errorHandler = (err, req, res, next) => {
-  console.error('❌ Error:', err.message);
+  // Log all errors to database system_logs collection
+  loggerService.error(err, req.baseUrl || 'express', req);
 
   // Mongoose Validation Error
   if (err.name === 'ValidationError') {

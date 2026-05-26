@@ -7,6 +7,8 @@ Fetches disease associations, clinical significance, and mutation severity.
 import requests
 import time
 from typing import List, Dict, Any, Optional
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from ..utils import logger
 
 MYVARIANT_BASE_URL = "https://myvariant.info/v1"
 
@@ -35,6 +37,8 @@ def get_severity(clinical_sig: str) -> str:
     return "UNKNOWN"
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type((requests.exceptions.RequestException,)))
 def lookup_variant(variant_id: str) -> Optional[Dict[str, Any]]:
     """
     Fetches variant annotation from MyVariant.info by rsID or HGVS notation.
@@ -48,19 +52,17 @@ def lookup_variant(variant_id: str) -> Optional[Dict[str, Any]]:
         "assembly": "hg38"
     }
 
-    try:
-        resp = requests.get(url, params=params, timeout=15)
-        if resp.status_code == 404:
-            return None
-        resp.raise_for_status()
-        data = resp.json()
-        return _format_variant(data, variant_id)
-    except requests.exceptions.Timeout:
-        return {"error": "MyVariant.info timeout", "variant_id": variant_id}
-    except Exception as e:
-        return {"error": str(e), "variant_id": variant_id}
+    logger.info('myvariant.lookup', variant_id=variant_id)
+    resp = requests.get(url, params=params, timeout=15)
+    if resp.status_code == 404:
+        return None
+    resp.raise_for_status()
+    data = resp.json()
+    return _format_variant(data, variant_id)
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=12),
+    retry=retry_if_exception_type((requests.exceptions.RequestException,)))
 def query_variants(rsids: List[str]) -> List[Dict[str, Any]]:
     """
     Batch-queries multiple rsIDs from MyVariant.info using the POST endpoint.
@@ -75,13 +77,11 @@ def query_variants(rsids: List[str]) -> List[Dict[str, Any]]:
         "fields": "dbsnp,clinvar,cadd,gnomad_exome,dbnsfp"
     }
 
-    try:
-        resp = requests.post(url, json=payload, timeout=30)
-        resp.raise_for_status()
-        results = resp.json()
-        return [_format_variant(v, v.get("_id", "")) for v in results if not v.get("notfound")]
-    except Exception as e:
-        return [{"error": str(e)}]
+    logger.info('myvariant.query', count=len(payload.get('ids', [])))
+    resp = requests.post(url, json=payload, timeout=30)
+    resp.raise_for_status()
+    results = resp.json()
+    return [_format_variant(v, v.get("_id", "")) for v in results if not v.get("notfound")]
 
 
 def _format_variant(data: Dict, variant_id: str) -> Dict[str, Any]:

@@ -156,6 +156,17 @@ function _createInstantWorker() {
       }
     );
 
+    // Save in CacheStore (async)
+    try {
+      const cacheService = require('./cache.service');
+      const cleanSeq = sequence || result.validation?.cleaned || '';
+      if (cleanSeq) {
+        await cacheService.setCachedResult(cleanSeq, 'instant', result, userId, dnaFileId);
+      }
+    } catch (cacheErr) {
+      console.warn('⚠️ Cache store failed in worker:', cacheErr.message);
+    }
+
     await job.updateProgress(100);
     return result;
 
@@ -182,17 +193,36 @@ function _createDeepWorker() {
     await job.updateProgress(10);
 
     let result;
-    let tempFilePath = null;
+    const { bypassBLAST, userId } = job.data;
     try {
-      if (s3Key && s3Client) {
-        // Let FastAPI fetch from S3 directly (reduces worker IO)
-        result = await fastapiService.runDeepAnalysisS3(s3Key, fileName);
-      } else if (filePath && fs.existsSync(filePath)) {
-        result = await fastapiService.runDeepAnalysisFile(filePath, fileName);
-      } else if (sequence) {
-        result = await fastapiService.runDeepAnalysisText(sequence, sequenceName || 'manual');
+      if (bypassBLAST) {
+        const alignmentService = require('./alignment.service');
+        result = alignmentService.alignLocally(sequence || '');
       } else {
-        throw new Error('No file path or sequence provided to deep analysis worker');
+        try {
+          if (filePath && fs.existsSync(filePath)) {
+            result = await fastapiService.runDeepAnalysisFile(filePath, fileName);
+          } else if (sequence) {
+            result = await fastapiService.runDeepAnalysisText(sequence, sequenceName || 'manual');
+          } else {
+            throw new Error('No file path or sequence provided to deep analysis worker');
+          }
+        } catch (apiErr) {
+          console.warn('⚠️ Deep BLAST API failed, falling back to local Smith-Waterman alignment:', apiErr.message);
+          const alignmentService = require('./alignment.service');
+          result = alignmentService.alignLocally(sequence || '');
+        }
+      }
+
+      // Save in CacheStore (async)
+      try {
+        const cacheService = require('./cache.service');
+        const cleanSeq = sequence || result.sequence || '';
+        if (cleanSeq) {
+          await cacheService.setCachedResult(cleanSeq, 'deep', result, userId, dnaFileId);
+        }
+      } catch (cacheErr) {
+        console.warn('⚠️ Cache store failed in worker:', cacheErr.message);
       }
     } catch (err) {
       await AnalysisJob.findOneAndUpdate(
