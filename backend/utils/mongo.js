@@ -9,7 +9,23 @@ async function ensureMongoConnection() {
 
   if (!connectionPromise) {
     const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/genelab';
-    connectionPromise = mongoose.connect(mongoUri).then(() => mongoose.connection);
+    
+    // Add fast-fail timeouts to prevent serverless function from hanging on firewall block
+    const options = {
+      connectTimeoutMS: 8000,
+      socketTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 8000
+    };
+
+    connectionPromise = mongoose.connect(mongoUri, options)
+      .then(() => mongoose.connection)
+      .catch(err => {
+        // Reset cached promise on failure to allow retry on next request
+        connectionPromise = null;
+        global.__GENELAB_MONGO_CONNECTION__ = null;
+        throw err;
+      });
+      
     global.__GENELAB_MONGO_CONNECTION__ = connectionPromise;
   }
 
