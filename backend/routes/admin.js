@@ -64,19 +64,24 @@ router.get('/users', protect, adminOnly, async (req, res, next) => {
   try {
     const { search, role, status, page = 1, limit = 20 } = req.query;
     const filter = {};
-    if (role) filter.role = role;
+    if (role && ['doctor', 'researcher', 'admin', 'employee'].includes(role)) filter.role = role;
     if (status === 'active') filter.isActive = true;
     if (status === 'inactive') filter.isActive = false;
-    if (search) filter.$or = [{ name: new RegExp(search, 'i') }, { email: new RegExp(search, 'i') }, { organization: new RegExp(search, 'i') }];
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [{ name: new RegExp(escaped, 'i') }, { email: new RegExp(escaped, 'i') }, { organization: new RegExp(escaped, 'i') }];
+    }
 
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     const total = await User.countDocuments(filter);
     const users = await User.find(filter)
-      .select('-password')
+      .select('-password -verificationToken -verificationTokenExpires')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
-    res.json({ users, total, page: Number(page), totalPages: Math.ceil(total / limit) });
+    res.json({ users, total, page: safePage, totalPages: Math.ceil(total / safeLimit) });
   } catch (err) { next(err); }
 });
 

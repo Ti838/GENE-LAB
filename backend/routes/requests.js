@@ -16,22 +16,33 @@ router.get('/', protect, async (req, res, next) => {
     const { status, page = 1, limit = 10, search } = req.query;
     const filter = { userId: req.user._id };
     if (status) filter.status = status;
-    if (search) filter.$or = [{ sampleId: new RegExp(search, 'i') }, { clinicalIndication: new RegExp(search, 'i') }];
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [{ sampleId: new RegExp(escaped, 'i') }, { clinicalIndication: new RegExp(escaped, 'i') }];
+    }
 
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
     const total = await SequencingRequest.countDocuments(filter);
     const requests = await SequencingRequest.find(filter)
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
-    res.json({ requests, total, page: Number(page), totalPages: Math.ceil(total / limit) });
+    res.json({ requests, total, page: safePage, totalPages: Math.ceil(total / safeLimit) });
   } catch (err) { next(err); }
 });
 
 // ── POST /api/requests ── Create new request ───────────────────────
 router.post('/', protect, async (req, res, next) => {
   try {
-    const request = await SequencingRequest.create({ ...req.body, userId: req.user._id });
+    // Whitelist allowed fields to prevent mass assignment attacks
+    const allowed = ['sampleType', 'specimenType', 'patientId', 'patientAge', 'biologicalSex',
+      'clinicalIndication', 'analysisType', 'priorityLevel', 'diseasePanels', 'collectionDate', 'notes'];
+    const safeData = {};
+    allowed.forEach(field => { if (req.body[field] !== undefined) safeData[field] = req.body[field]; });
+
+    const request = await SequencingRequest.create({ ...safeData, userId: req.user._id, status: 'pending' });
 
     await AuditLog.create({ userId: req.user._id, action: 'create_request', resourceType: 'SequencingRequest', resourceId: request._id, details: { sampleId: request.sampleId } });
 

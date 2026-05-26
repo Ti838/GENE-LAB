@@ -88,7 +88,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // ── Static Uploads (optional — serves uploaded files if needed) ───────────
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Uploads are served through authenticated API routes, NOT static serving.
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth',          authRoutes);
@@ -104,11 +105,12 @@ app.use('/api/uploads',       uploadsRoutes);
 // ── Metrics endpoint for Prometheus scraping ─────────────────────────────
 try {
   promClient.collectDefaultMetrics({ timeout: 5000 });
-  app.get('/metrics', async (req, res) => {
+  const { protect, adminOnly } = require('./middleware/auth');
+  app.get('/metrics', protect, adminOnly, async (req, res) => {
     res.set('Content-Type', promClient.register.contentType);
     res.send(await promClient.register.metrics());
   });
-  console.log('📈 /metrics endpoint enabled');
+  console.log('📈 /metrics endpoint enabled (admin-only)');
 } catch (e) {
   console.warn('Prometheus metrics not enabled:', e.message);
 }
@@ -119,9 +121,7 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     message: 'GeneLab API is running',
     timestamp: new Date().toISOString(),
-    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    fastapiUrl: process.env.FASTAPI_URL || 'http://localhost:8000',
-    redisUrl: process.env.REDIS_URL ? 'configured' : 'default (localhost:6379)'
+    dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
