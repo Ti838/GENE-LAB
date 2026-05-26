@@ -18,6 +18,22 @@ const auth = {
             showToast('Login successful!', 'success');
             setTimeout(() => { this.redirectByRole(userRole); }, 800);
         } catch (error) {
+            const serverErrors = [
+                'invalid credentials',
+                'email address is not verified',
+                'account locked',
+                'account deactivated',
+                'email or phone number is required'
+            ];
+            
+            const errMsg = error.message ? error.message.toLowerCase() : '';
+            const isServerError = serverErrors.some(msg => errMsg.includes(msg));
+
+            if (isServerError) {
+                // Do not fallback to demo for real server auth failures
+                return; 
+            }
+
             const fallbackRole = /admin/i.test(email || phone) || roleHint === 'admin' ? 'admin' : 'doctor';
             const fallbackUser = {
                 name: fallbackRole === 'admin' ? 'System Admin' : 'Doctor Access',
@@ -33,7 +49,7 @@ const auth = {
                 ...fallbackUser
             }, rememberMe);
 
-            showToast('Demo login active.', 'info');
+            showToast('Demo login active (Backend offline).', 'info');
             setTimeout(() => { this.redirectByRole(fallbackRole); }, 800);
         }
     },
@@ -43,9 +59,9 @@ const auth = {
         };
 
         try {
-            await api.post('/auth/register', payload);
-            showToast('Account created! Redirecting to login...', 'success');
-            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+            const data = await api.post('/auth/register', payload);
+            showToast(data.message || 'Account created! Please check your email.', 'success');
+            setTimeout(() => { window.location.href = 'login.html'; }, 4000);
         } catch (error) {
             const savedUsers = JSON.parse(localStorage.getItem('genelab_demo_users') || '[]');
             savedUsers.push({

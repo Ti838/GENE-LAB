@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, trim: true },
   profilePicture: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
-  isEmailVerified: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
+  verificationTokenExpires: { type: Date },
   failedLoginAttempts: { type: Number, default: 0 },
   lockUntil: { type: Date },
   lastLogin: { type: Date },
@@ -43,7 +45,6 @@ userSchema.methods.isLocked = function () {
 };
 
 // Indexes for ultra-fast queries and organized MongoDB layout
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 

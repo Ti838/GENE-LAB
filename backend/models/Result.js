@@ -43,7 +43,6 @@ const resultSchema = new mongoose.Schema({
 }, { timestamps: true, collection: 'Results' });
 
 // Indexes to speed up lookups and foreign key joins
-resultSchema.index({ requestId: 1 });
 resultSchema.index({ userId: 1 });
 
 module.exports = mongoose.model('Result', resultSchema);
