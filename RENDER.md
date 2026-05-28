@@ -18,12 +18,12 @@ This document shows how to deploy the `bioservice` (FastAPI) and the `worker` (B
 - Choose **Docker** as the environment.
 - Set the **Dockerfile Path** to `backend/Dockerfile.worker`.
 - Set the **Start Command** (if needed): `node worker.js` (the Dockerfile.worker CMD already does this).
-- Add environment variables: `MONGO_URI` (Atlas), `REDIS_URL` (Upstash or Redis Cloud), `FASTAPI_URL` (URL of bioservice on Render), and S3 envs if you use S3 for uploads (`S3_BUCKET`, `S3_REGION`, and AWS credentials via Render secrets).
+- Add environment variables: `MONGO_URI` (Atlas), `REDIS_URL` (Upstash or Redis Cloud), `FASTAPI_URL` (URL of bioservice on Render), and Firebase envs if the process needs to read or generate file metadata (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_STORAGE_BUCKET`).
 - Deploy.
 
 4) Notes
 - If you choose Upstash for Redis, use the provided `REDIS_REST_URL` or `REDIS_URL` and credentials — the worker expects a normal Redis connection string.
-- For S3 usage, either configure AWS credentials in Render or use an IAM role if available. The app uses `@aws-sdk/client-s3` and will read the usual AWS env vars (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`).
+- For Firebase Storage, configure the Firebase Admin variables above in any deployment target that uploads or reads files.
 - For production, ensure `MONGO_URI` points to Atlas and that Atlas allows access from Render's IP ranges or set a network peering / VPC as required.
 
 5) Testing after deploy

@@ -10,6 +10,8 @@ const dnaFileSchema = new mongoose.Schema({
   originalName: { type: String, required: true },
   filename:     { type: String, required: true },
   path:         { type: String, required: true },
+  storagePath:  { type: String },
+  fileUrl:      { type: String },
   size:         { type: Number },
   mimetype:     { type: String },
 

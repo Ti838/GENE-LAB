@@ -5,6 +5,11 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     const profileForm = document.getElementById('doctor-profile-form');
+
+const API_BASE_URL = window.__GENELAB_API_BASE_URL__
+    || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000/api'
+        : '/api');
     const profilePhotoInput = document.querySelector('[data-profile-photo-input]');
     const profilePhotoPreview = document.querySelector('[data-profile-photo-preview]');
     const profilePhotoIcon = document.querySelector('[data-profile-photo-icon]');
@@ -47,8 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (createdDate) createdDate.textContent = new Date(user.createdAt).toLocaleDateString();
 
             // Profile photo
-            if (user.profilePhoto) {
-                profilePhotoPreview.src = user.profilePhoto;
+            if (user.profilePicture) {
+                profilePhotoPreview.src = user.profilePicture;
                 togglePhotoUI(true);
             } else {
                 togglePhotoUI(false);
@@ -104,10 +109,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                     togglePhotoUI(true);
                 };
                 reader.readAsDataURL(file);
-                
-                // Note: Real upload would go here via API
-                // For now we simulate the successful update
-                showToast('Profile photo preview updated!', 'info');
+
+                const formData = new FormData();
+                formData.append('profilePhoto', file);
+
+                const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
+                const response = await fetch(`${API_BASE_URL}/profile/photo`, {
+                    method: 'PUT',
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Profile photo upload failed.');
+                }
+
+                if (data.user) {
+                    localStorage.setItem('genelab_user', JSON.stringify(data.user));
+                    sessionStorage.setItem('genelab_user', JSON.stringify(data.user));
+                }
+
+                showToast('Profile photo updated successfully!', 'success');
             } catch (error) {
                 showToast('Preview failed: ' + error.message, 'error');
             }

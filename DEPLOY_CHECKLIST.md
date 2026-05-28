@@ -38,8 +38,8 @@ GitHub: https://github.com/Ti838/GENE-LAB
   Use `render.yaml` from the repo root  
   Set `FASTAPI_URL` in Vercel once deployed
 
-- [ ] **AWS S3** — Add `S3_BUCKET`, `S3_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`  
-  For persistent file storage beyond `/tmp` on Vercel
+- [ ] **Firebase Storage** — Add `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_STORAGE_BUCKET`  
+  For profile photos, DNA files, and report uploads on Vercel
 
 - [ ] **Sentry** — Add `SENTRY_DSN` for production error monitoring
 
@@ -75,10 +75,10 @@ npx vercel --prod --yes
 | `FASTAPI_URL` | Optional | URL of deployed bio service |
 | `REDIS_URL` | Optional | From Upstash or Redis Cloud |
 | `DISABLE_QUEUES` | Optional | `true` if no Redis |
-| `S3_BUCKET` | Optional | AWS S3 bucket name |
-| `S3_REGION` | Optional | e.g. `us-east-1` |
-| `AWS_ACCESS_KEY_ID` | Optional | AWS credential |
-| `AWS_SECRET_ACCESS_KEY` | Optional | AWS credential |
+| `FIREBASE_PROJECT_ID` | Optional | Firebase project ID |
+| `FIREBASE_CLIENT_EMAIL` | Optional | Firebase service account email |
+| `FIREBASE_PRIVATE_KEY` | Optional | Firebase service account private key |
+| `FIREBASE_STORAGE_BUCKET` | Optional | Firebase Storage bucket name |
 | `SENTRY_DSN` | Optional | From sentry.io |
 | `NCBI_API_KEY` | Optional | For higher BLAST rate limits |
 

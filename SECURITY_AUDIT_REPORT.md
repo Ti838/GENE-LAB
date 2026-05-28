@@ -241,7 +241,7 @@ if (!isVercel) {
 ### 5.4 Static File Security — PASS
 
 - The `/uploads` directory is not publicly served
-- All file access is handled through time-limited S3 presigned URLs (15-minute expiry)
+- All file access is handled through Firebase Storage-backed URLs and backend-controlled downloads
 
 ### 5.5 Environment Variables — PASS
 
@@ -254,7 +254,10 @@ if (!isVercel) {
 | `MONGO_URI` | Vercel Environment |
 | `JWT_SECRET` | Vercel Environment |
 | `RESEND_API_KEY` | Vercel Environment |
-| `AWS_ACCESS_KEY_ID` | Vercel Environment |
+| `FIREBASE_PROJECT_ID` | Vercel Environment |
+| `FIREBASE_CLIENT_EMAIL` | Vercel Environment |
+| `FIREBASE_PRIVATE_KEY` | Vercel Environment |
+| `FIREBASE_STORAGE_BUCKET` | Vercel Environment |
 | `SENTRY_DSN` | Vercel Environment |
 
 ---

@@ -23,14 +23,16 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js" defer></script>
     <script src="../js/theme.js" defer></script>
     <script src="../js/app.js" defer></script>
     <script src="../js/api.js" defer></script>
     <script src="../js/auth.js" defer></script>
     <script src="../js/dna-background.js" defer></script>
     <style>
-        html, body { height: 100dvh; overflow: hidden !important; }
-        body { min-height: 100dvh !important; display: block; padding: 0; }
+        html, body { min-height: 100dvh; }
+        body { min-height: 100dvh !important; display: block; padding: 0; overflow-x: hidden; overflow-y: auto; }
 
         /* Show DNA on login */
         #dna-canvas { z-index: -1; }
@@ -200,6 +202,58 @@
             background: rgba(0, 212, 255, 0.1);
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
         }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .google-auth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            min-height: 52px;
+        }
+
+        .google-auth-icon {
+            display: inline-flex;
+            width: 18px;
+            height: 18px;
+            flex: none;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .modal-shell {
+            width: min(100%, 520px);
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(15, 23, 42, 0.92);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        }
     </style>
     <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 </head>
@@ -329,6 +383,20 @@
                             </div>
                         </div>
                         <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-2">Create Account</button>
+
+                        <div class="auth-divider my-4">or continue with</div>
+
+                        <button type="button" class="google-auth-btn js-google-signin-btn w-full rounded-[14px] border border-white/15 bg-white/8 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan/60 hover:bg-cyan/10">
+                            <span class="google-auth-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" role="img" aria-label="Google">
+                                    <path fill="#EA4335" d="M12 10.2v3.95h5.62c-.24 1.27-1 2.35-2.14 3.08l3.46 2.68c2.01-1.86 3.16-4.59 3.16-7.84 0-.76-.07-1.49-.2-2.2H12z"/>
+                                    <path fill="#34A853" d="M6.48 14.29l-.72.55-2.55 1.98C4.82 20.29 8.13 22 12 22c2.67 0 4.92-.88 6.56-2.4l-3.46-2.68c-.95.64-2.16 1.02-3.46 1.02-2.65 0-4.9-1.79-5.7-4.2z"/>
+                                    <path fill="#FBBC05" d="M3.21 7.68A9.97 9.97 0 0 0 2 12c0 1.05.25 2.05.71 2.82l3.49-2.72c-.2-.6-.31-1.24-.31-1.9s.11-1.3.31-1.9L3.21 7.68z"/>
+                                    <path fill="#4285F4" d="M12 5.88c1.45 0 2.76.5 3.79 1.47l2.84-2.84C16.9 2.85 14.68 2 12 2 8.13 2 4.82 3.71 3.21 7.68l3.49 2.72C7.1 7.68 9.35 5.88 12 5.88z"/>
+                                </svg>
+                            </span>
+                            Sign up with Google
+                        </button>
                     </form>
                 </div>
             </div>
@@ -389,9 +457,23 @@
                             <label class="flex items-center gap-2 cursor-pointer select-none">
                                 <input type="checkbox" name="remember-me" class="w-3.5 h-3.5 rounded text-cyan"> Remember me
                             </label>
-                            <a href="#" class="hover:text-cyan transition-colors">Forgot password?</a>
+                            <a href="#" id="forgot-password-link" class="hover:text-cyan transition-colors">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide mt-4">Sign In</button>
+
+                        <div class="auth-divider my-4">or continue with</div>
+
+                        <button type="button" id="google-signin-btn" class="google-auth-btn js-google-signin-btn w-full rounded-[14px] border border-white/15 bg-white/8 px-4 py-3 text-sm font-semibold text-white transition-all hover:border-cyan/60 hover:bg-cyan/10">
+                            <span class="google-auth-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" role="img" aria-label="Google">
+                                    <path fill="#EA4335" d="M12 10.2v3.95h5.62c-.24 1.27-1 2.35-2.14 3.08l3.46 2.68c2.01-1.86 3.16-4.59 3.16-7.84 0-.76-.07-1.49-.2-2.2H12z"/>
+                                    <path fill="#34A853" d="M6.48 14.29l-.72.55-2.55 1.98C4.82 20.29 8.13 22 12 22c2.67 0 4.92-.88 6.56-2.4l-3.46-2.68c-.95.64-2.16 1.02-3.46 1.02-2.65 0-4.9-1.79-5.7-4.2z"/>
+                                    <path fill="#FBBC05" d="M3.21 7.68A9.97 9.97 0 0 0 2 12c0 1.05.25 2.05.71 2.82l3.49-2.72c-.2-.6-.31-1.24-.31-1.9s.11-1.3.31-1.9L3.21 7.68z"/>
+                                    <path fill="#4285F4" d="M12 5.88c1.45 0 2.76.5 3.79 1.47l2.84-2.84C16.9 2.85 14.68 2 12 2 8.13 2 4.82 3.71 3.21 7.68l3.49 2.72C7.1 7.68 9.35 5.88 12 5.88z"/>
+                                </svg>
+                            </span>
+                            Continue with Google
+                        </button>
                     </form>
                 </div>
             </div>
@@ -453,6 +535,44 @@
             </div>
         </div>
     </main>
+
+    <div id="forgot-password-overlay" class="modal-backdrop hidden">
+        <div id="forgot-password-modal" class="modal-shell hidden">
+            <div class="flex items-center justify-between border-b border-white/10 px-6 py-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-white">Reset access</h3>
+                    <p class="text-xs text-slate-300">We will send a reset link to your inbox.</p>
+                </div>
+                <button id="close-reset-modal" type="button" class="rounded-full p-2 text-slate-300 transition hover:bg-white/10 hover:text-white">
+                    <span class="material-symbols-outlined" style="font-size:20px!important;">close</span>
+                </button>
+            </div>
+
+            <form id="forgot-password-form" class="px-6 py-4 space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Account email</label>
+                    <input id="forgot-password-email" type="email" placeholder="name@genelab.com" class="field-input w-full">
+                </div>
+                <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide">Send reset link</button>
+            </form>
+
+            <form id="reset-password-form" class="px-6 pb-6 pt-2 space-y-4 border-t border-white/10">
+                <div>
+                    <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Reset token</label>
+                    <input id="reset-password-token" type="text" placeholder="Paste token from email or use deep link" class="field-input w-full">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">New password</label>
+                    <input id="reset-password-new" type="password" placeholder="New password" class="field-input w-full">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-semibold mb-1 ml-1" style="color:var(--text-faint)">Confirm password</label>
+                    <input id="reset-password-confirm" type="password" placeholder="Confirm password" class="field-input w-full">
+                </div>
+                <button type="submit" class="btn-premium btn-cyan w-full rounded-[14px] font-bold tracking-wide">Update password</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

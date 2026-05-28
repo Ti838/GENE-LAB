@@ -4,6 +4,7 @@
  */
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { getFirebaseAdminAuth } = require('../services/firebaseAdmin');
 
 const protect = async (req, res, next) => {
   try {
@@ -12,8 +13,26 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    let user = null;
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      user = await User.findById(decoded.id).select('-password');
+    } catch (jwtError) {
+      const firebaseAuth = getFirebaseAdminAuth();
+      if (!firebaseAuth) {
+        throw jwtError;
+      }
+
+      const firebaseDecoded = await firebaseAuth.verifyIdToken(token);
+      user = await User.findOne({
+        $or: [
+          { firebaseUid: firebaseDecoded.uid },
+          { email: firebaseDecoded.email?.toLowerCase() }
+        ]
+      }).select('-password');
+    }
+
     if (!user) return res.status(401).json({ message: 'User not found. Token invalid.' });
     if (!user.isActive) return res.status(403).json({ message: 'Account is deactivated.' });
     req.user = user;
@@ -23,15 +42,14 @@ const protect = async (req, res, next) => {
   }
 };
 
-const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') return next();
-  return res.status(403).json({ message: 'Admin access only.' });
+const authorizeRoles = (...roles) => (req, res, next) => {
+  if (req.user && roles.includes(req.user.role)) return next();
+  return res.status(403).json({ message: 'Insufficient access privileges.' });
 };
 
-const doctorOnly = (req, res, next) => {
-  if (req.user && (req.user.role === 'doctor' || req.user.role === 'researcher')) return next();
-  return res.status(403).json({ message: 'Doctor/Researcher access only.' });
-};
+const adminOnly = authorizeRoles('admin');
 
-module.exports = { protect, adminOnly, doctorOnly };
+const doctorOnly = authorizeRoles('doctor', 'researcher', 'admin');
+
+module.exports = { protect, adminOnly, doctorOnly, authorizeRoles };
 

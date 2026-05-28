@@ -9,7 +9,6 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { protect } = require('../middleware/auth');
 const DNAFile = require('../models/DNAFile');
@@ -17,30 +16,10 @@ const AnalysisJob = require('../models/AnalysisJob');
 const queueService = require('../services/queue.service');
 const fastapiService = require('../services/fastapi.service');
 const dnaService = require('../services/dna.service');
-
-// ── Multer config ─────────────────────────────────────────────────────────
-const UPLOADS_DIR = process.env.VERCEL === '1'
-  ? path.join('/tmp', 'uploads')
-  : path.join(__dirname, '..', 'uploads');
-
-if (!fs.existsSync(UPLOADS_DIR)) {
-  try {
-    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  } catch (err) {
-    console.warn('⚠️ Failed to create uploads directory:', err.message);
-  }
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${uuidv4().slice(0, 8)}${ext}`);
-  }
-});
+const { uploadBufferToFirebase, downloadTextFromUrl } = require('../services/firebaseStorage');
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.fasta', '.fa', '.fna', '.fastq', '.fq', '.csv', '.txt', '.ffn', '.faa'];
@@ -57,13 +36,29 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
 
+    const sequence = dnaService.parseSequence(req.file.buffer.toString('utf8'));
+    const storageResult = await uploadBufferToFirebase({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      folder: 'dna-files',
+      ownerId: req.user._id.toString(),
+      metadata: {
+        userId: req.user._id.toString(),
+        purpose: 'dna-file'
+      }
+    });
+
     const dnaFile = await DNAFile.create({
       originalName: req.file.originalname,
-      filename:     req.file.filename,
-      path:         req.file.path,
+      filename:     storageResult.storagePath,
+      path:         storageResult.downloadUrl,
+      storagePath:  storageResult.storagePath,
+      fileUrl:      storageResult.downloadUrl,
       size:         req.file.size,
       mimetype:     req.file.mimetype,
       doctor:       req.user._id,
+      sequence,
       status:       'uploaded'
     });
 
@@ -161,7 +156,8 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
       jobId,
       userId:       req.user._id.toString(),
       dnaFileId:    file._id.toString(),
-      filePath:     file.path !== 'internal' ? file.path : undefined,
+      filePath:     file.path && file.path !== 'internal' && file.path.startsWith('/') ? file.path : undefined,
+      fileUrl:      file.fileUrl || (file.path && /^https?:\/\//.test(file.path) ? file.path : undefined),
       fileName:     file.originalName,
       sequence:     file.sequence || undefined,
       sequenceName: file.originalName,
@@ -181,8 +177,12 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
       console.warn('Queue fallback for /analyze/:id:', queueErr.message);
       let result;
       try {
-        if (file.path !== 'internal' && fs.existsSync(file.path)) {
-          result = await fastapiService.runInstantAnalysisFile(file.path, file.originalName, []);
+        if (file.sequence) {
+          result = await fastapiService.runInstantAnalysisText(file.sequence, file.originalName, []);
+        } else if (file.fileUrl || (file.path && /^https?:\/\//.test(file.path))) {
+          const sequenceText = await downloadTextFromUrl(file.fileUrl || file.path);
+          const parsedSequence = dnaService.parseSequence(sequenceText);
+          result = await fastapiService.runInstantAnalysisText(parsedSequence, file.originalName, []);
         } else if (file.sequence) {
           result = await fastapiService.runInstantAnalysisText(file.sequence, file.originalName, []);
         } else {
@@ -224,13 +224,13 @@ router.post('/compare', protect, async (req, res, next) => {
     let seq1 = file1.sequence || '';
     let seq2 = file2.sequence || '';
 
-    // If file is on disk, read up to 100k chars
-    if (!seq1 && file1.path && file1.path !== 'internal' && fs.existsSync(file1.path)) {
-      const raw = fs.readFileSync(file1.path, 'utf-8');
+    // If file is remote, download and parse it
+    if (!seq1 && (file1.fileUrl || /^https?:\/\//.test(file1.path || ''))) {
+      const raw = await downloadTextFromUrl(file1.fileUrl || file1.path);
       seq1 = dnaService.parseSequence(raw).slice(0, 100_000);
     }
-    if (!seq2 && file2.path && file2.path !== 'internal' && fs.existsSync(file2.path)) {
-      const raw = fs.readFileSync(file2.path, 'utf-8');
+    if (!seq2 && (file2.fileUrl || /^https?:\/\//.test(file2.path || ''))) {
+      const raw = await downloadTextFromUrl(file2.fileUrl || file2.path);
       seq2 = dnaService.parseSequence(raw).slice(0, 100_000);
     }
 
@@ -262,9 +262,7 @@ router.delete('/file/:id', protect, async (req, res, next) => {
     if (!file) return res.status(404).json({ message: 'File not found.' });
 
     // Remove from disk if applicable
-    if (file.path && file.path !== 'internal' && fs.existsSync(file.path)) {
-      fs.unlinkSync(file.path);
-    }
+    // Firebase Storage objects are retained by design; database record deletion is enough here.
     await DNAFile.deleteOne({ _id: file._id });
     res.json({ message: 'File deleted.' });
   } catch (err) { next(err); }

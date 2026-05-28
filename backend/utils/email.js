@@ -165,4 +165,58 @@ async function sendVerificationEmail(email, name, token, hostUrl) {
   }
 }
 
-module.exports = { sendVerificationEmail };
+async function sendPasswordResetEmail(email, name, token, hostUrl) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const resetLink = `${hostUrl}/login?resetToken=${encodeURIComponent(token)}`;
+
+  if (!apiKey) {
+    console.warn('⚠️ RESEND_API_KEY is not defined in environment variables. Password reset email skipped.');
+    return { success: false, reason: 'missing_api_key', link: resetLink };
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Reset Your GeneLab Password</title>
+    </head>
+    <body style="font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#f8fafc;margin:0;padding:32px;">
+      <div style="max-width:600px;margin:0 auto;background:#111827;border:1px solid #334155;border-radius:18px;padding:32px;">
+        <h1 style="margin:0 0 16px;font-size:24px;color:#7dd3fc;">Reset your password</h1>
+        <p style="color:#cbd5e1;line-height:1.6;">Hello ${name}, use the button below to reset your GeneLab account password. This link expires in 1 hour.</p>
+        <p style="margin:28px 0;">
+          <a href="${resetLink}" style="display:inline-block;background:#06b6d4;color:#04111a;text-decoration:none;padding:14px 24px;border-radius:10px;font-weight:700;">Reset Password</a>
+        </p>
+        <p style="color:#94a3b8;font-size:13px;word-break:break-all;">If the button does not work, copy this link: <a href="${resetLink}" style="color:#7dd3fc;">${resetLink}</a></p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const response = await axios.post(
+      'https://api.resend.com/emails',
+      {
+        from: process.env.EMAIL_FROM || 'GeneLab AI <onboarding@resend.dev>',
+        to: [email],
+        subject: 'Reset your GeneLab password',
+        html: htmlContent
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return { success: true, data: response.data, link: resetLink };
+  } catch (error) {
+    const errorDetails = error.response ? error.response.data : error.message;
+    console.error('❌ Failed to send password reset email via Resend:', errorDetails);
+    return { success: false, error: errorDetails };
+  }
+}
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };
