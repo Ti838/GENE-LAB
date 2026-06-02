@@ -51,7 +51,7 @@ GeneLab is a production-grade, cloud-deployed SaaS platform for clinical DNA seq
 ## Project Layout
 
 ```text
-genelab/
+.
 ├── api/                    # Vercel serverless entry points
 │   ├── index.js            # Main Express handler
 │   └── [...path].js        # Catch-all route handler

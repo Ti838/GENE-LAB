@@ -118,23 +118,75 @@
             </div>
 
             <!-- ═══ Chart + Activity ═══ -->
-            <div class="grid grid-cols-3 gap-6">
-                <div class="col-span-2 glass-panel p-8 rounded-[24px]" data-animate="panel">
-                    <div class="flex justify-between items-center mb-6 pb-5" style="border-bottom:1px solid var(--border)">
-                        <h3 class="text-xl font-display font-bold">Recent Genomic Flux</h3>
-                        <div class="flex gap-2">
-                            <div class="btn-premium px-3 py-1.5 rounded-lg text-[9px] cursor-pointer">WEEKLY</div>
-                            <div class="btn-premium btn-cyan px-3 py-1.5 rounded-lg text-[9px] cursor-pointer">MONTHLY</div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                        <div class="flex justify-between items-center mb-6 pb-5" style="border-bottom:1px solid var(--border)">
+                            <div>
+                                <h3 class="text-xl font-display font-bold">Genomic Processing Flux</h3>
+                                <p class="text-xs text-slate-400 mt-1">Sequence analysis volume over time</p>
+                            </div>
+                            <div class="flex gap-2 bg-black/20 p-1 rounded-xl">
+                                <button class="btn-premium px-4 py-2 rounded-lg text-[10px] cursor-pointer border-none" data-timeframe="weekly">WEEKLY</button>
+                                <button class="btn-premium btn-cyan px-4 py-2 rounded-lg text-[10px] cursor-pointer border-none" data-timeframe="monthly">MONTHLY</button>
+                            </div>
+                        </div>
+                        <div class="h-80 w-full"><canvas id="trendChart"></canvas></div>
+                    </div>
+
+                    <!-- Recent Patients / DNA Files Widget -->
+                    <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-display font-bold">Recent Clinical Data</h3>
+                            <button class="text-xs font-bold text-cyan flex items-center gap-1 hover:underline" onclick="location.href='reports.html'">
+                                VIEW ALL <span class="material-symbols-outlined" style="font-size:14px!important;">arrow_forward</span>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="text-[10px] uppercase tracking-widest text-slate-500 border-b border-white/5">
+                                        <th class="pb-3 font-extrabold">File Name</th>
+                                        <th class="pb-3 font-extrabold">Date Added</th>
+                                        <th class="pb-3 font-extrabold">Status</th>
+                                        <th class="pb-3 font-extrabold text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-dna-table" class="divide-y divide-white/5">
+                                    <!-- Populated by JS -->
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-slate-500 text-sm italic">Loading recent data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="h-72 w-full"><canvas id="trendChart"></canvas></div>
                 </div>
-                <div class="glass-panel p-8 rounded-[24px]" data-animate="panel">
-                    <h3 class="text-xl font-display font-bold mb-6">System Activity</h3>
-                    <div id="system-activity-logs" class="space-y-5">
-                        <p class="text-sm italic" style="color:var(--text-faint)">Loading activity...</p>
+
+                <div class="space-y-6">
+                    <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-violet/10 flex items-center justify-center text-violet">
+                                <span class="material-symbols-outlined">notifications_active</span>
+                            </div>
+                            <h3 class="text-xl font-display font-bold">System Pulse</h3>
+                        </div>
+                        <div id="system-activity-logs" class="space-y-4">
+                            <p class="text-sm italic" style="color:var(--text-faint)">Loading activity...</p>
+                        </div>
+                        <button class="w-full mt-8 py-4 border border-white/10 text-[10px] font-extrabold uppercase tracking-[0.2em] rounded-2xl transition-all hover:bg-white/5 hover:border-white/20" style="color:var(--text-muted)">Access Full Audit</button>
                     </div>
-                    <button class="w-full mt-6 py-3.5 border text-xs font-bold uppercase tracking-widest rounded-xl transition-all hover:border-cyan/40" style="border-color:var(--border);color:var(--text-muted)">Full System Logs</button>
+
+                    <div class="glass-panel p-8 rounded-[32px] bg-gradient-to-br from-cyan/5 to-transparent border-cyan/20" data-animate="panel">
+                        <h4 class="text-sm font-bold mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan animate-pulse"></span>
+                            AI Insights
+                        </h4>
+                        <p class="text-xs leading-relaxed text-slate-400 mb-6">
+                            Your recent analysis of <span class="text-white font-bold">SEQ-4921</span> shows a 94.2% match with known cardiovascular biomarkers.
+                        </p>
+                        <button class="w-full py-3 rounded-xl bg-cyan/10 text-cyan text-xs font-bold hover:bg-cyan hover:text-ink transition-all">Review Deep Analysis</button>
+                    </div>
                 </div>
             </div>
         </main>

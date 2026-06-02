@@ -45,8 +45,8 @@ const auth = {
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem('genelab_token', data.token);
         storage.setItem('genelab_user', JSON.stringify(data.user || data));
-        localStorage.setItem('genelab_token', data.token);
-        localStorage.setItem('genelab_user', JSON.stringify(data.user || data));
+        // Also ensure local storage has the role for future session recovery if needed
+        localStorage.setItem('genelab_last_role', data.user?.role || 'doctor');
     },
 
     redirectByRole(role) {
@@ -64,21 +64,35 @@ const auth = {
         if (email) payload.email = email;
         if (phone) payload.phone = phone;
 
-        const response = await api.post('/auth/login', payload);
-        this.persistSession(response, rememberMe);
-        showToast(response.message || 'Login successful!', 'success');
-        setTimeout(() => { this.redirectByRole(response.user?.role || 'doctor'); }, 700);
+        try {
+            const response = await api.post('/auth/login', payload);
+            this.persistSession(response, rememberMe);
+            showToast(response.message || 'Welcome back to GeneLab!', 'success');
+            setTimeout(() => { this.redirectByRole(response.user?.role || 'doctor'); }, 800);
+        } catch (error) {
+            // Error toast is handled by api.js, but we can add specific handling here if needed
+            throw error;
+        }
     },
 
     async signup(userData) {
         const response = await api.post('/auth/register', userData);
 
         if (response.requiresVerification) {
-            showToast(response.message || 'Account created. Check your inbox to verify your email.', 'success');
+            showToast('Account created! Please check your email for verification.', 'success');
+            // If debug link exists (local dev), log it to console for easier testing
+            if (response.debugVerificationLink) {
+                console.info('Dev Verification Link:', response.debugVerificationLink);
+            }
+            // Transition back to login panel after a delay to encourage sign-in after verification
+            setTimeout(() => {
+                const container = document.getElementById('container');
+                if (container) container.classList.remove('right-panel-active');
+            }, 3000);
             return response;
         }
 
-        showToast(response.message || 'Account created successfully.', 'success');
+        showToast('Account created successfully. You can now sign in.', 'success');
         return response;
     },
 

@@ -76,48 +76,102 @@
                 </div>
             </header>
 
-            <div class="grid grid-cols-4 gap-5 mb-10">
-                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[24px]">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Total Doctors</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
+                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[32px] border-l-4 border-l-cyan">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Total Providers</p>
+                        <span class="material-symbols-outlined text-cyan opacity-40">medical_services</span>
+                    </div>
                     <p class="text-4xl font-display font-extrabold" data-metric="totalDoctors">0</p>
+                    <p class="text-[10px] text-teal font-bold mt-2 flex items-center gap-1">
+                        <span class="material-symbols-outlined !text-[12px]">trending_up</span> 4 new this month
+                    </p>
                 </div>
-                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[24px]">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Genetic Files</p>
+                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[32px] border-l-4 border-l-violet">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Genetic Library</p>
+                        <span class="material-symbols-outlined text-violet opacity-40">folder_open</span>
+                    </div>
                     <p class="text-4xl font-display font-extrabold" data-metric="totalFiles">0</p>
+                    <p class="text-[10px] text-slate-500 font-bold mt-2">Active storage: 4.2 GB</p>
                 </div>
-                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[24px]">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Analysis Count</p>
+                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[32px] border-l-4 border-l-teal">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Compute Jobs</p>
+                        <span class="material-symbols-outlined text-teal opacity-40">memory</span>
+                    </div>
                     <p class="text-4xl font-display font-extrabold text-teal" data-metric="totalAnalyses">0</p>
+                    <p class="text-[10px] text-teal font-bold mt-2">99.8% Success Rate</p>
                 </div>
-                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[24px]">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style="color:var(--text-faint)">Recent Logs</p>
+                <div data-animate="panel" class="glass-panel glass-card p-7 rounded-[32px] border-l-4 border-l-coral">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">System Events</p>
+                        <span class="material-symbols-outlined text-coral opacity-40">notifications</span>
+                    </div>
                     <p class="text-4xl font-display font-extrabold text-coral" data-metric="recentLogsCount">0</p>
+                    <p class="text-[10px] text-coral font-bold mt-2">Requires review: 2</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-6 mb-10">
-                <div class="col-span-2 glass-panel p-8 rounded-[24px]" data-animate="panel">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-display font-bold">System Activity Logs</h3>
-                        <a href="logs.html" class="text-xs font-bold text-cyan uppercase tracking-widest hover:underline">View All Logs</a>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                        <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+                            <div>
+                                <h3 class="text-xl font-display font-bold">Enterprise Activity Stream</h3>
+                                <p class="text-xs text-slate-500 mt-1">Real-time system audit trails</p>
+                            </div>
+                            <a href="logs.html" class="text-[10px] font-extrabold text-cyan uppercase tracking-widest px-4 py-2 rounded-lg bg-cyan/5 hover:bg-cyan/10 transition-all">Audit Center</a>
+                        </div>
+                        <div id="recent-logs" class="space-y-3">
+                            <p class="italic text-center p-4" style="color:var(--text-faint)">Streaming telemetry data...</p>
+                        </div>
                     </div>
-                    <div id="recent-logs" class="space-y-4">
-                        <p class="italic text-center p-4" style="color:var(--text-faint)">Streaming telemetry data...</p>
+
+                    <!-- System Health & Services -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                            <h3 class="text-lg font-display font-bold mb-6 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-teal">check_circle</span> Service Registry
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-xs font-bold">Core API</span>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-tighter">Operational</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-xs font-bold">BioService (ML)</span>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-tighter">Operational</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-xs font-bold">Sequence Queue</span>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-tighter">Operational</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-8 rounded-[32px]" data-animate="panel">
+                            <h3 class="text-lg font-display font-bold mb-6 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-cyan">database</span> Storage Analytics
+                            </h3>
+                            <div class="h-44 w-full"><canvas id="storageChart"></canvas></div>
+                        </div>
                     </div>
                 </div>
-                <div class="flex flex-col gap-6">
-                    <div class="glass-panel p-8 rounded-[24px] flex-1" data-animate="panel">
-                        <h3 class="text-xl font-display font-bold mb-6">Announcements</h3>
-                        <div id="announcements-list" class="space-y-4">
+
+                <div class="space-y-6">
+                    <div class="glass-panel p-8 rounded-[32px] h-full flex flex-col" data-animate="panel">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="w-10 h-10 rounded-xl bg-violet/10 flex items-center justify-center text-violet">
+                                <span class="material-symbols-outlined">campaign</span>
+                            </div>
+                            <h3 class="text-xl font-display font-bold">Broadcasts</h3>
+                        </div>
+                        <div id="announcements-list" class="space-y-4 flex-1">
                             <p class="italic text-center p-4 text-xs" style="color:var(--text-faint)">No recent announcements.</p>
                         </div>
-                        <button onclick="showAnnouncementModal()" class="btn-premium btn-ghost w-full py-3 mt-6 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined" style="font-size:16px!important;">add_comment</span> Post New
+                        <button onclick="showAnnouncementModal()" class="btn-premium btn-cyan w-full py-4 mt-8 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-2 uppercase tracking-widest">
+                            <span class="material-symbols-outlined">add</span> Create Message
                         </button>
-                    </div>
-                    <div class="glass-panel p-8 rounded-[24px]" data-animate="panel">
-                        <h3 class="text-xl font-display font-bold mb-4">Data Distribution</h3>
-                        <div class="h-48 w-full"><canvas id="storageChart"></canvas></div>
                     </div>
                 </div>
             </div>

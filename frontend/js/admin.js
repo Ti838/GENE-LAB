@@ -72,15 +72,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const userName = log.userId?.name || 'System';
 
                         const row = document.createElement('div');
-                        row.className = 'flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-cyan/20 transition-all';
+                        row.className = 'flex gap-3 items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan/20 transition-all';
                         row.innerHTML = `
-                            <span class="material-symbols-outlined ${color}">${icon}</span>
+                            <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                <span class="material-symbols-outlined !text-[18px] ${color}">${icon}</span>
+                            </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-white uppercase text-[11px] tracking-wider">${log.action.replace('_', ' ')}</p>
-                                <p class="text-[10px] text-slate-500 font-mono truncate">${userName} performed this action</p>
+                                <p class="text-[11px] font-bold text-white uppercase tracking-wider">${log.action.replace('_', ' ')}</p>
+                                <p class="text-[9px] text-slate-500 font-medium truncate">${userName}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[10px] text-slate-600 font-mono">${time}</p>
+                                <p class="text-[9px] text-slate-600 font-mono">${time}</p>
                             </div>
                         `;
                         logsContainer.appendChild(row);
@@ -258,17 +260,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const data = await api.get('/announcements');
             annList.innerHTML = '';
-            data.announcements.slice(0, 3).forEach(ann => {
-                const priorityColors = { high: 'text-coral', medium: 'text-violet-400', low: 'text-teal' };
+            const list = data.announcements || [];
+            if (list.length === 0) {
+                annList.innerHTML = '<p class="italic text-center p-4 text-xs opacity-50">No recent broadcasts.</p>';
+                return;
+            }
+            list.slice(0, 3).forEach(ann => {
+                const priorityColors = { high: 'bg-coral/20 text-coral', medium: 'bg-violet/20 text-violet', low: 'bg-teal/20 text-teal' };
                 const div = document.createElement('div');
-                div.className = 'p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2';
+                div.className = 'p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3 relative group';
                 div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <span class="text-[9px] font-bold ${priorityColors[ann.priority]} uppercase tracking-widest">${ann.priority} priority</span>
-                        <button onclick="deleteAnnouncement('${ann._id}')" class="text-slate-600 hover:text-coral transition"><span class="material-symbols-outlined" style="font-size:16px!important;">delete</span></button>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[8px] font-extrabold ${priorityColors[ann.priority] || 'bg-slate-500/20 text-slate-400'} px-2 py-0.5 rounded uppercase tracking-tighter">${ann.priority} priority</span>
+                        <button onclick="deleteAnnouncement('${ann._id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-coral"><span class="material-symbols-outlined !text-[14px]">delete</span></button>
                     </div>
-                    <p class="text-xs font-bold text-white">${ann.title}</p>
-                    <p class="text-[10px] text-slate-500 line-clamp-1">${ann.content}</p>
+                    <div>
+                        <p class="text-[11px] font-bold text-white mb-1">${ann.title}</p>
+                        <p class="text-[10px] text-slate-500 leading-relaxed line-clamp-2">${ann.content}</p>
+                    </div>
                 `;
                 annList.appendChild(div);
             });

@@ -48,7 +48,7 @@ GitHub: https://github.com/Ti838/GENE-LAB
 ## Re-deploy steps (if you change code)
 
 ```powershell
-# From the genelab/ directory:
+# From the root directory:
 git add .
 git commit -m "your message"
 git push origin main
