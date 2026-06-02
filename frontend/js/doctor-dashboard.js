@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!container) return;
         container.innerHTML = '';
         
-        const sorted = [...files].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
+        const sorted = [...files].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
         if (sorted.length === 0) {
             container.innerHTML = '<p class="text-sm opacity-40 text-center py-4">No recent activity.</p>';
             return;
@@ -90,36 +90,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         sorted.forEach(f => {
             const time = new Date(f.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const div = document.createElement('div');
-            div.className = 'flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-cyan/30 transition-all cursor-pointer';
+            div.className = 'flex gap-3 items-center p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan/20 transition-all cursor-pointer';
             div.innerHTML = `
-                <span class="material-symbols-outlined ${f.status === 'analyzed' ? 'text-teal' : 'text-cyan'}">
-                    ${f.status === 'analyzed' ? 'check_circle' : 'pending'}
-                </span>
-                <div class="flex-1">
-                    <p class="text-sm font-bold text-white">${f.status === 'analyzed' ? 'Analysis Complete' : 'DNA Uploaded'}</p>
-                    <p class="text-[10px] text-slate-500 font-mono">${f.originalName} • ${time}</p>
+                <div class="w-8 h-8 rounded-lg ${f.status === 'analyzed' ? 'bg-teal/10 text-teal' : 'bg-cyan/10 text-cyan'} flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-[18px]">
+                        ${f.status === 'analyzed' ? 'verified' : 'upload_file'}
+                    </span>
                 </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] font-bold text-white truncate">${f.status === 'analyzed' ? 'Analysis Ready' : 'Sequence Staged'}</p>
+                    <p class="text-[9px] text-slate-500 font-mono truncate">${f.originalName}</p>
+                </div>
+                <span class="text-[9px] text-slate-600 font-bold">${time}</span>
             `;
             container.appendChild(div);
         });
+
+        // Populate the new table
+        const tableBody = document.getElementById('recent-dna-table');
+        if (tableBody) {
+            tableBody.innerHTML = '';
+            sorted.forEach(f => {
+                const row = document.createElement('tr');
+                row.className = 'group hover:bg-white/[0.02] transition-colors';
+                const date = new Date(f.createdAt).toLocaleDateString();
+                const statusBadge = f.status === 'analyzed'
+                    ? '<span class="px-2 py-0.5 rounded bg-teal/10 text-teal text-[9px] font-bold uppercase">Analyzed</span>'
+                    : '<span class="px-2 py-0.5 rounded bg-cyan/10 text-cyan text-[9px] font-bold uppercase">Pending</span>';
+
+                row.innerHTML = `
+                    <td class="py-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-slate-500 group-hover:text-cyan transition-colors">description</span>
+                            <span class="text-xs font-bold text-slate-200">${f.originalName}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 text-[11px] text-slate-500 font-medium">${date}</td>
+                    <td class="py-4">${statusBadge}</td>
+                    <td class="py-4 text-right">
+                        <button class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            <span class="material-symbols-outlined !text-[16px]">visibility</span>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
     }
 
     // Event Listeners for Filters
-    document.querySelectorAll('.btn-premium').forEach(btn => {
-        if (btn.textContent.trim() === 'WEEKLY') {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.btn-premium').forEach(b => b.classList.remove('btn-cyan'));
-                btn.classList.add('btn-cyan');
-                refreshDashboard('weekly');
-            });
-        }
-        if (btn.textContent.trim() === 'MONTHLY') {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.btn-premium').forEach(b => b.classList.remove('btn-cyan'));
-                btn.classList.add('btn-cyan');
-                refreshDashboard('monthly');
-            });
-        }
+    document.querySelectorAll('[data-timeframe]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-timeframe]').forEach(b => b.classList.remove('btn-cyan'));
+            btn.classList.add('btn-cyan');
+            refreshDashboard(btn.dataset.timeframe);
+        });
     });
 
     // Initial Load
