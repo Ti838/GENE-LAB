@@ -26,7 +26,7 @@ Runs MongoDB, Redis, Express backend, FastAPI bio service, and the BullMQ worker
 **Requirements:** Docker Desktop installed and running.
 
 ```powershell
-# From the genelab/ directory:
+# From the root directory:
 docker compose up --build
 ```
 
