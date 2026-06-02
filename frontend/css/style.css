@@ -201,3 +201,185 @@ body[data-theme='dark'] #dna-container {
     font-size: 0.78rem;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   HERO DNA SHOWCASE
+───────────────────────────────────────────────────────────────── */
+.dna-helix-stage {
+  position: relative;
+  min-height: 620px;
+  border-radius: 34px;
+  overflow: hidden;
+  isolation: isolate;
+  perspective: 1700px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(0, 212, 255, 0.14) 0%, transparent 32%),
+    radial-gradient(circle at 20% 20%, rgba(6, 214, 160, 0.10) 0%, transparent 24%),
+    linear-gradient(145deg, rgba(5, 15, 28, 0.98) 0%, rgba(4, 11, 20, 0.92) 55%, rgba(8, 22, 40, 0.96) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 80px rgba(0,0,0,0.45);
+}
+
+.dna-helix-stage::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.18), transparent 38%),
+    radial-gradient(circle at 62% 42%, rgba(124, 58, 237, 0.14), transparent 26%),
+    radial-gradient(circle at 38% 58%, rgba(6, 255, 160, 0.10), transparent 24%);
+  filter: blur(26px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.dna-helix-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, transparent 18%, rgba(255,255,255,0.06) 34%, transparent 46%),
+    radial-gradient(circle at 50% 50%, transparent 0 45%, rgba(3, 11, 20, 0.25) 78%, rgba(3, 11, 20, 0.55) 100%);
+  pointer-events: none;
+}
+
+.dna-helix {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(0) rotateX(68deg) rotateZ(-10deg);
+  will-change: transform;
+  backface-visibility: hidden;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.18));
+}
+
+.dna-rung {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(78%, 360px);
+  height: 18px;
+  transform-style: preserve-3d;
+  transform:
+    translate(-50%, -50%)
+    rotateZ(calc(var(--index) * 13deg))
+    translateY(calc(var(--index) * 9px - 240px))
+    translateZ(calc(var(--index) * 7px - 170px));
+  animation: dna-rung-breathe 6s ease-in-out infinite;
+  animation-delay: calc(var(--index) * -0.08s);
+}
+
+.dna-node {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.15),
+    0 0 12px currentColor,
+    0 0 26px currentColor;
+}
+
+.dna-node::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.34);
+  filter: blur(1px);
+}
+
+.dna-node.tone-cyan { color: var(--cyan); background: radial-gradient(circle at 35% 30%, #d8fbff 0%, var(--cyan) 35%, #067c9c 100%); }
+.dna-node.tone-violet { color: var(--violet); background: radial-gradient(circle at 35% 30%, #efe7ff 0%, var(--violet) 35%, #4a2ea0 100%); }
+.dna-node.tone-teal { color: var(--teal); background: radial-gradient(circle at 35% 30%, #ddfff4 0%, var(--teal) 35%, #0a9b75 100%); }
+.dna-node.tone-lime { color: var(--lime); background: radial-gradient(circle at 35% 30%, #f1ffd0 0%, var(--lime) 35%, #5d8d00 100%); }
+.dna-node.tone-coral { color: var(--coral); background: radial-gradient(circle at 35% 30%, #ffe0e0 0%, var(--coral) 35%, #a82e2e 100%); }
+
+.dna-node:first-child { left: 14%; }
+.dna-node:last-child { right: 14%; }
+
+.dna-link {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62%;
+  height: 3px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.70), rgba(255,255,255,0.02));
+  box-shadow: 0 0 16px rgba(255,255,255,0.16);
+}
+
+.dna-helix-stage .dna-helix::before,
+.dna-helix-stage .dna-helix::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 88%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.55) 18%, rgba(124, 58, 237, 0.36) 50%, rgba(6, 255, 160, 0.55) 82%, transparent 100%);
+  filter: blur(10px);
+  opacity: 0.36;
+}
+
+.dna-helix-stage .dna-helix::after {
+  width: 7px;
+  opacity: 0.18;
+  filter: blur(20px);
+}
+
+@keyframes dna-rung-breathe {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
+.dna-stage-overlay {
+  position: absolute;
+  inset: auto 22px 22px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dna-stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(3, 11, 20, 0.55);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(16px);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.dna-stage-chip .dna-stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #fff 0%, var(--cyan) 35%, var(--violet) 100%);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.55);
+}
+
+.dna-stage-meta {
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.dna-stage-meta strong {
+  display: block;
+  color: var(--text);
+  font-size: 1rem;
+}

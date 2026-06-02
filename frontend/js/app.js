@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const dnaCanvas = document.getElementById('dna-canvas');
-  if (dnaCanvas && !dnaCanvas.dataset.ready) {
-    buildHelix(dnaCanvas, hasGsap && !reducedMotion);
-    dnaCanvas.dataset.ready = 'true';
+  const dnaMount = document.querySelector('[data-dna-helix]') || document.getElementById('dna-canvas');
+  if (dnaMount && !dnaMount.dataset.ready) {
+    buildHelix(dnaMount, hasGsap && !reducedMotion);
+    dnaMount.dataset.ready = 'true';
   }
 
   const particleField = document.getElementById('particle-field');
@@ -55,12 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPointerParallax(hasGsap && !reducedMotion);
 });
 
-function buildHelix(canvas, animate) {
-  canvas.innerHTML = '';
+function buildHelix(mount, animate) {
+  mount.innerHTML = '';
   const helix = document.createElement('div');
   helix.className = 'dna-helix';
   const tones = ['tone-cyan', 'tone-violet', 'tone-teal', 'tone-lime', 'tone-coral'];
-  for (let index = 0; index < 42; index += 1) {
+  const rungCount = 54;
+  const rotationDuration = 24;
+  const tiltDuration = 5.5;
+  const swayDuration = 7.5;
+
+  for (let index = 0; index < rungCount; index += 1) {
     const rung = document.createElement('div');
     rung.className = 'dna-rung';
     rung.style.setProperty('--index', index.toString());
@@ -73,11 +78,13 @@ function buildHelix(canvas, animate) {
     rung.append(left, bridge, right);
     helix.appendChild(rung);
   }
-  canvas.appendChild(helix);
+  mount.appendChild(helix);
 
   if (animate) {
-    gsap.to(helix, { rotationY: 360, duration: 28, repeat: -1, ease: 'none', transformOrigin: 'center center' });
-    gsap.to(helix, { rotationX: 6, duration: 4.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    gsap.to(helix, { rotationY: 360, duration: rotationDuration, repeat: -1, ease: 'none', transformOrigin: 'center center' });
+    gsap.to(helix, { rotationX: 12, duration: tiltDuration, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    gsap.to(helix, { rotationZ: 3, duration: swayDuration, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    gsap.to(helix, { y: -16, duration: 3.6, repeat: -1, yoyo: true, ease: 'sine.inOut' });
   }
 }
 

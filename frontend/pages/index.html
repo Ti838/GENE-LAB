@@ -275,8 +275,22 @@
                 </div>
             </div>
 
-            <!-- Right side: empty for DNA canvas to show through -->
-            <div class="hidden lg:block"></div>
+            <!-- Right side: dedicated DNA motion showcase -->
+            <div class="hidden lg:flex justify-center items-center relative" aria-hidden="true">
+                <div class="dna-helix-stage glass-panel w-full max-w-[620px]" data-animate="panel">
+                    <div data-dna-helix class="absolute inset-0" aria-hidden="true"></div>
+                    <div class="dna-stage-overlay">
+                        <div class="dna-stage-chip">
+                            <span class="dna-stage-dot"></span>
+                            3D DNA motion preview
+                        </div>
+                        <div class="dna-stage-meta">
+                            <strong>Watch the helix</strong>
+                            Smooth rotation, glow, and depth inspired by cinematic biotech visuals.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
