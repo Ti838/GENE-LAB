@@ -9,7 +9,7 @@ import requests
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from ..utils import logger
+from utils import logger
 
 BLAST_BASE_URL = "https://blast.ncbi.nlm.nih.gov/blast/Blast.cgi"
 
