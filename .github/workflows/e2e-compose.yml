@@ -13,10 +13,10 @@ jobs:
       - name: Validate docker-compose syntax
         run: |
           docker version
-          docker compose -f ./genelab/docker-compose.yml config
+          docker compose -f ./docker-compose.yml config
       - name: Build images and start services
         run: |
-          docker compose -f ./genelab/docker-compose.yml up -d --build
+          docker compose -f ./docker-compose.yml up -d --build
       - name: Wait for backend health
         run: |
           for i in $(seq 1 30); do
