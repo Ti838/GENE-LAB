@@ -4,7 +4,7 @@
  */
 // api.js - Central API helper with DELETE support
 const API_BASE_URL = window.__GENELAB_API_BASE_URL__
-    || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname
         ? 'http://localhost:5000/api'
         : '/api');
 const api = {

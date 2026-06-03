@@ -14,6 +14,7 @@
 
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -453,31 +454,131 @@ router.get('/analysis-result/:jobId', protect, async (req, res, next) => {
 
 // ────────────────────────────────────────────────────────────────────────────
 // GET /api/analysis/download-report/:jobId
-// Returns a PDF report download
+// Returns a PDF report download (supports both jobId and DNAFile ID)
 // ────────────────────────────────────────────────────────────────────────────
 router.get('/download-report/:jobId', protect, async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const jobData = await queueService.getJobResult(jobId);
 
-    if (!jobData) return res.status(404).json({ message: 'Job not found.' });
-    if (jobData.status !== 'completed') {
-      return res.status(202).json({ message: 'Analysis not yet complete.', status: jobData.status });
+    // 1. Try to find the DNAFile directly by its ID or by its analysisJobId
+    let dnaFile = null;
+    if (mongoose.Types.ObjectId.isValid(jobId)) {
+      dnaFile = await DNAFile.findOne({ _id: jobId, doctor: req.user._id }).lean();
+    }
+    if (!dnaFile) {
+      dnaFile = await DNAFile.findOne({ analysisJobId: jobId, doctor: req.user._id }).lean();
     }
 
     let pdfBuffer;
-    if (jobData.analysisType === 'instant') {
-      pdfBuffer = await fastapiService.getInstantAnalysisPDF(jobData.result);
+    let originalName = 'report';
+
+    if (dnaFile) {
+      if (dnaFile.status !== 'analyzed') {
+        return res.status(202).json({ message: 'Analysis not yet complete.', status: dnaFile.status });
+      }
+      originalName = dnaFile.originalName;
+
+      // Reconstruct FastAPI payload from DNAFile document
+      const analysisType = dnaFile.analysisType || 'instant';
+      const mappedResult = _mapDNAFileToFastAPIResult(dnaFile);
+
+      if (analysisType === 'instant') {
+        pdfBuffer = await fastapiService.getInstantAnalysisPDF(mappedResult);
+      } else {
+        pdfBuffer = await fastapiService.getDeepAnalysisPDF(mappedResult);
+      }
     } else {
-      pdfBuffer = await fastapiService.getDeepAnalysisPDF(jobData.result);
+      // Fallback to original AnalysisJob lookup
+      const jobData = await queueService.getJobResult(jobId);
+      if (!jobData) return res.status(404).json({ message: 'Report/Job not found.' });
+      if (jobData.status !== 'completed') {
+        return res.status(202).json({ message: 'Analysis not yet complete.', status: jobData.status });
+      }
+
+      originalName = jobData.inputFileName || 'report';
+      if (jobData.analysisType === 'instant') {
+        pdfBuffer = await fastapiService.getInstantAnalysisPDF(jobData.result);
+      } else {
+        pdfBuffer = await fastapiService.getDeepAnalysisPDF(jobData.result);
+      }
     }
 
+    const safeName = originalName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_");
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="genelab_report_${jobId.slice(0, 8)}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="genelab_report_${safeName}.pdf"`);
     res.setHeader('Content-Length', pdfBuffer.length);
     return res.send(pdfBuffer);
   } catch (err) { next(err); }
 });
+
+// Helper: Reconstruct FastAPI response payload structure from DNAFile model fields
+function _mapDNAFileToFastAPIResult(file) {
+  if (file.analysisType === 'deep' || file.blastResult?.rid) {
+    const blast = file.blastResult || {};
+    return {
+      rid: blast.rid,
+      total_hits: blast.totalHits || 0,
+      top_organism: blast.topOrganism,
+      top_identity: blast.topIdentity || 0,
+      top_accession: blast.topAccession,
+      top_evalue: blast.topEvalue,
+      organisms_identified: blast.organismsIdentified || [],
+      scientific_explanation: blast.scientificExplanation || file.scientificSummary || '',
+      hits: (blast.hits || []).map(h => ({
+        accession: h.accession,
+        identity_percentage: h.identity_percentage || h.identityPercentage || 0,
+        e_value: h.e_value || h.eValue || 0,
+        bit_score: h.bit_score || h.bitScore || 0,
+        organism: h.organism
+      }))
+    };
+  } else {
+    const stats = {
+      sequence_length: file.sequenceLength || 0,
+      gc_content: file.gcContent > 0 && file.gcContent <= 1 ? file.gcContent * 100 : (file.gcContent || 0),
+      at_content: file.atContent > 0 && file.atContent <= 1 ? file.atContent * 100 : (file.atContent || 0),
+      nucleotide_frequency: file.nucleotideFrequency || {},
+      nucleotide_percentage: file.nucleotidePercentage || {},
+      gc_skew: file.gcSkew || 0,
+      at_skew: file.atSkew || 0,
+      molecular_weight_estimate_da: file.molecularWeightDa || 0
+    };
+    const codon = file.codonAnalysis ? {
+      total_codons: file.codonAnalysis.totalCodons || 0,
+      protein_length: file.codonAnalysis.proteinLength || 0,
+      start_codon_count: file.codonAnalysis.startCodonCount || 0,
+      stop_codon_count: file.codonAnalysis.stopCodonCount || 0,
+      open_reading_frames_detected: file.codonAnalysis.openReadingFramesDetected || 0,
+      amino_acid_sequence: file.codonAnalysis.aminoAcidSequencePreview || '',
+      codon_frequency: file.codonAnalysis.codonFrequency || {}
+    } : {};
+    const mutation = {
+      variants_analyzed: file.variantsAnalyzed || 0,
+      high_severity_count: file.highSeverityCount || 0,
+      disease_associations: file.diseaseAssociations || [],
+      clinical_summary: file.clinicalSummary || '',
+      variants: (file.variants || []).map(v => ({
+        variant_id: v.variantId || v.rsid || '',
+        gene: v.gene || '',
+        clinical_significance: v.clinicalSignificance || '',
+        severity: v.severity || '',
+        disease_associations: v.diseaseAssociations || [],
+        cadd_phred_score: v.caddPhredScore || 0,
+        population_frequency: v.populationFrequency || 0,
+        rsid: v.rsid || '',
+        chromosome: v.chromosome || '',
+        position: v.position || 0
+      }))
+    };
+    return {
+      statistics: stats,
+      codon_analysis: codon,
+      mutation_analysis: mutation,
+      scientific_summary: file.scientificSummary || '',
+      confidence: file.confidence || 1.0
+    };
+  }
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // GET /api/analysis/my-jobs

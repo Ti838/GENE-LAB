@@ -50,12 +50,19 @@ const auth = {
     },
 
     redirectByRole(role) {
+        // Determine base path depending on where we are
+        const isAtPages = window.location.pathname.includes('/pages/login');
+        const base = isAtPages ? '' : 'pages/';
+
         if (role === 'admin') {
-            window.location.href = 'admin/dashboard.html';
+            window.location.href = base + 'admin/dashboard.html';
             return;
         }
-
-        window.location.href = 'doctor/dashboard.html';
+        if (role === 'researcher') {
+            window.location.href = base + 'doctor/dashboard.html';
+            return;
+        }
+        window.location.href = base + 'doctor/dashboard.html';
     },
 
     async login(email, phone, password) {
@@ -92,15 +99,20 @@ const auth = {
         const provider = new window.firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
+        // Read whichever role the user has selected in the form tiles
+        const selectedRole = document.querySelector('input[name="signup-role-radio"]:checked')?.value
+            || document.querySelector('input[name="access-role"]:checked')?.value
+            || 'doctor';
+
         auth.setButtonLoading(button, true, 'Connecting...');
         try {
             const result = await firebaseAuth.signInWithPopup(provider);
             const idToken = await result.user.getIdToken();
-            const response = await api.post('/auth/google', { idToken });
+            const response = await api.post('/auth/google', { idToken, role: selectedRole });
             const rememberMe = Boolean(document.querySelector('input[name="remember-me"]')?.checked);
             this.persistSession(response, rememberMe);
             showToast(response.message || 'Google sign-in successful!', 'success');
-            setTimeout(() => { this.redirectByRole(response.user?.role || 'doctor'); }, 700);
+            setTimeout(() => { this.redirectByRole(response.user?.role || selectedRole); }, 700);
         } catch (error) {
             const message = error.code === 'auth/popup-closed-by-user'
                 ? 'Google sign-in was cancelled.'
@@ -160,10 +172,17 @@ function openPasswordResetModal(resetToken = '') {
     const modal = document.getElementById('forgot-password-modal');
     const modalOverlay = document.getElementById('forgot-password-overlay');
     const tokenInput = document.getElementById('reset-password-token');
+    const forgotForm = document.getElementById('forgot-password-form');
+    const resetForm = document.getElementById('reset-password-form');
     if (!modal || !modalOverlay) return;
 
-    if (tokenInput && resetToken) {
-        tokenInput.value = resetToken;
+    if (resetToken) {
+        if (tokenInput) tokenInput.value = resetToken;
+        if (forgotForm) forgotForm.classList.add('hidden');
+        if (resetForm) resetForm.classList.remove('hidden');
+    } else {
+        if (forgotForm) forgotForm.classList.remove('hidden');
+        if (resetForm) resetForm.classList.add('hidden');
     }
 
     modal.classList.remove('hidden');
@@ -198,32 +217,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const emailInput = document.getElementById('login-email');
         const phoneInput = document.getElementById('login-phone');
 
-        methodBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const method = btn.dataset.method;
+        if (methodBtns.length > 0) {
+            methodBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const method = btn.dataset.method;
 
-                methodBtns.forEach(b => {
-                    b.style.background = 'transparent';
-                    b.style.color = 'var(--text-muted)';
-                    b.style.borderColor = 'var(--border)';
+                    methodBtns.forEach(b => {
+                        b.style.background = 'transparent';
+                        b.style.color = 'var(--text-muted)';
+                        b.style.borderColor = 'var(--border)';
+                    });
+
+                    btn.style.background = 'rgba(0,212,255,0.15)';
+                    btn.style.color = 'var(--cyan)';
+                    btn.style.borderColor = 'var(--cyan)';
+
+                    if (method === 'email') {
+                        if (emailGroup) emailGroup.classList.remove('hidden');
+                        if (phoneGroup) phoneGroup.classList.add('hidden');
+                        if (emailInput) emailInput.focus();
+                    } else {
+                        if (emailGroup) emailGroup.classList.add('hidden');
+                        if (phoneGroup) phoneGroup.classList.remove('hidden');
+                        if (phoneInput) phoneInput.focus();
+                    }
                 });
-
-                btn.style.background = 'rgba(0,212,255,0.15)';
-                btn.style.color = 'var(--cyan)';
-                btn.style.borderColor = 'var(--cyan)';
-
-                if (method === 'email') {
-                    emailGroup.classList.remove('hidden');
-                    phoneGroup.classList.add('hidden');
-                    emailInput.focus();
-                } else {
-                    emailGroup.classList.add('hidden');
-                    phoneGroup.classList.remove('hidden');
-                    phoneInput.focus();
-                }
             });
-        });
+        }
 
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -231,8 +252,21 @@ document.addEventListener('DOMContentLoaded', () => {
             auth.setButtonLoading(submitBtn, true, 'Signing in...');
 
             try {
-                const email = document.getElementById('login-email').value.trim();
-                const phone = document.getElementById('login-phone').value.trim();
+                let email = '';
+                let phone = '';
+
+                if (emailInput && !phoneInput) {
+                    const inputVal = emailInput.value.trim();
+                    if (inputVal.includes('@')) {
+                        email = inputVal;
+                    } else {
+                        phone = inputVal;
+                    }
+                } else {
+                    if (emailInput) email = emailInput.value.trim();
+                    if (phoneInput) phone = phoneInput.value.trim();
+                }
+
                 const password = document.getElementById('login-password')?.value || '';
                 await auth.login(email, phone, password);
             } catch (error) {

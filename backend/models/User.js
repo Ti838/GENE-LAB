@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   role: { type: String, enum: ['doctor', 'researcher', 'admin', 'employee'], default: 'doctor' },
   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
-  firebaseUid: { type: String, trim: true, index: true },
+  firebaseUid: { type: String, trim: true },
   gender: { type: String, enum: ['male', 'female', 'other'], trim: true },
   organization: { type: String, trim: true },
   specialization: { type: String, trim: true },

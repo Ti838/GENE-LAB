@@ -5,20 +5,20 @@ Handles instant analysis (BioPython + MyVariant.info) and
 deep analysis (NCBI BLAST API).
 """
 
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Response  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 import os
 
 # Optional monitoring and Sentry
 try:
-    import sentry_sdk
-    from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+    import sentry_sdk  # type: ignore
+    from sentry_sdk.integrations.asgi import SentryAsgiMiddleware  # type: ignore
 except Exception:
     sentry_sdk = None
     SentryAsgiMiddleware = None
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST  # type: ignore
 
-from routers import instant, deep, health
+from routers import instant, deep, health  # type: ignore
 
 app = FastAPI(
     title="GenLab AI Bioinformatics Service",

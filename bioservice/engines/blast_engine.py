@@ -5,11 +5,11 @@ Polls for completion, then parses and returns structured alignment results.
 """
 
 import time
-import requests
+import requests  # type: ignore
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List, Optional
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from ..utils import logger
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type  # type: ignore
+from utils import logger  # type: ignore
 
 BLAST_BASE_URL = "https://blast.ncbi.nlm.nih.gov/blast/Blast.cgi"
 

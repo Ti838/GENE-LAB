@@ -4,11 +4,11 @@ Uses the MyVariant.info REST API to interpret genetic variants/SNPs.
 Fetches disease associations, clinical significance, and mutation severity.
 """
 
-import requests
+import requests  # type: ignore
 import time
 from typing import List, Dict, Any, Optional
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from ..utils import logger
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type  # type: ignore
+from utils import logger  # type: ignore
 
 MYVARIANT_BASE_URL = "https://myvariant.info/v1"
 

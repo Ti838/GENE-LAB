@@ -32,6 +32,9 @@ const serializeUser = (user) => ({
 });
 
 const getHostUrl = (req) => {
+  if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== '*') {
+    return process.env.FRONTEND_URL.replace(/\/$/, '');
+  }
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   return `${protocol}://${req.get('host')}`;
 };

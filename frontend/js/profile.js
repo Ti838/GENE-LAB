@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const profileForm = document.getElementById('doctor-profile-form');
 
 const API_BASE_URL = window.__GENELAB_API_BASE_URL__
-    || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname
         ? 'http://localhost:5000/api'
         : '/api');
     const profilePhotoInput = document.querySelector('[data-profile-photo-input]');

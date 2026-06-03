@@ -53,6 +53,33 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setupPointerParallax(hasGsap && !reducedMotion);
+
+  // Dynamically customize UI vocabulary for Researchers
+  const userJson = localStorage.getItem('genelab_user');
+  if (userJson) {
+    try {
+      const user = JSON.parse(userJson);
+      if (user.role === 'researcher') {
+        if (document.title.includes('Doctor')) {
+          document.title = document.title.replace('Doctor', 'Researcher');
+        }
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        let node;
+        while (node = walker.nextNode()) {
+          const parentTag = node.parentElement ? node.parentElement.tagName.toUpperCase() : '';
+          if (parentTag === 'SCRIPT' || parentTag === 'STYLE') continue;
+          if (node.nodeValue.includes('Doctor')) {
+            node.nodeValue = node.nodeValue.replace(/Doctor/g, 'Researcher');
+          }
+          if (node.nodeValue.includes('doctor')) {
+            node.nodeValue = node.nodeValue.replace(/doctor/g, 'researcher');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not customize role branding:', e);
+    }
+  }
 });
 
 function buildHelix(mount, animate) {

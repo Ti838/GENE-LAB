@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { ensureMongoConnection } = require('./utils/mongo');
 const { initQueues } = require('./services/queue.service');
 

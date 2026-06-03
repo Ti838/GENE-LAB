@@ -139,6 +139,26 @@
             </div>
         </main>
     </div>
+
+    <!-- === SYSTEM ACTIVITY LOGS MODAL === -->
+    <div id="logs-modal-overlay" class="forgot-password-overlay hidden">
+        <div id="logs-modal" class="forgot-password-card w-full max-w-2xl hidden" style="width: 600px;">
+            <button id="close-logs-modal" type="button" class="admin-modal-close">✕</button>
+            <div class="admin-modal-header mb-6 flex items-center gap-3">
+                <div class="admin-modal-icon w-9 h-9 rounded-lg bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-cyan" style="font-size:18px!important">terminal</span>
+                </div>
+                <div>
+                    <p class="admin-modal-label text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Audit Control</p>
+                    <h2 class="admin-modal-title text-xl font-display font-extrabold text-white">Full System Log Stream</h2>
+                </div>
+            </div>
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-4 font-mono text-xs text-slate-300 space-y-2.5 max-h-[350px] overflow-y-auto" id="logs-stream-container" style="background: rgba(0, 0, 0, 0.4); border-color: var(--border);">
+                <!-- Logs are injected dynamically -->
+            </div>
+            <p class="admin-modal-footer text-center mt-6 text-[9px] font-bold uppercase tracking-[0.2em]" style="color:var(--text-faint)">SYSTEM SECURITY LOG AUDIT TRAIL</p>
+        </div>
+    </div>
     <script src="../../js/charts.js" defer></script>
     <script src="../../js/doctor-dashboard.js" defer></script>
 </body>
