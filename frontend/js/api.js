@@ -39,7 +39,7 @@ const api = {
                 
                 if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
                 setTimeout(() => {
-                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/admin/');
+                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
                     window.location.href = isSubDir ? '../login.html' : 'login.html';
                 }, 1500);
             } else {

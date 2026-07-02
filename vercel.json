@@ -36,7 +36,7 @@
     { "source": "/login", "destination": "/frontend/pages/login.html" },
     { "source": "/login.html", "destination": "/frontend/pages/login.html" },
     { "source": "/doctor/(.*)", "destination": "/frontend/pages/doctor/$1" },
-    { "source": "/admin/(.*)", "destination": "/frontend/pages/admin/$1" },
+    { "source": "/console/(.*)", "destination": "/frontend/pages/console/$1" },
     { "source": "/pages/(.*)", "destination": "/frontend/pages/$1" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ]

@@ -6,96 +6,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
 
     // ============================
-    // ADMIN DASHBOARD - Metrics & Charts
+    // ADMIN DASHBOARD - Metrics & Charts (Handled inline in dashboard.html to prevent duplication)
     // ============================
-    if (path.includes('admin/dashboard.html')) {
-        try {
-            const data = await api.get('/admin/stats');
-            
-            // 1. Update stat cards
-            const statEls = document.querySelectorAll('[data-metric]');
-            statEls.forEach(el => {
-                const key = el.dataset.metric;
-                if (data[key] !== undefined) el.textContent = data[key].toLocaleString();
-            });
-
-            // 2. Update Storage Chart with real data
-            if (window.genelabCharts) {
-                // Calculation for distribution: Analyzed vs Pending
-                const analyzed = data.totalAnalyses || 0;
-                const pending = Math.max(0, (data.totalFiles || 0) - analyzed);
-                
-                // If there's a nucleotideChart ID on dashboard, we can repurpose or use storageChart
-                const storageCtx = document.getElementById('storageChart');
-                if (storageCtx && typeof Chart !== 'undefined') {
-                    const isLight = document.body?.dataset.theme === 'light';
-                    new Chart(storageCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Analyzed', 'Pending'],
-                            datasets: [{
-                                data: [analyzed, pending],
-                                backgroundColor: ['#06ffa0', '#00d4ff'],
-                                borderWidth: 0,
-                                hoverOffset: 10
-                            }]
-                        },
-                        options: {
-                            cutout: '75%',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { color: isLight ? '#5b6c84' : '#8d9bb5', font: { size: 10, weight: 'bold' }, padding: 20 }
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // 3. Recent logs
-            const logsContainer = document.getElementById('recent-logs');
-            if (logsContainer) {
-                const logsData = await api.get('/admin/audit-logs?limit=5');
-                logsContainer.innerHTML = '';
-                if (!logsData.logs || logsData.logs.length === 0) {
-                    logsContainer.innerHTML = '<p class="text-sm italic opacity-50 text-center p-6">No recent logs found.</p>';
-                } else {
-                    logsData.logs.forEach(log => {
-                        const iconMap = { 'login': 'login', 'register': 'person_add', 'update_user': 'manage_accounts', 'delete_user': 'person_remove', 'approve_request': 'check_circle', 'reject_request': 'cancel' };
-                        const colorMap = { 'login': 'text-cyan', 'register': 'text-teal', 'delete_user': 'text-coral', 'update_user': 'text-violet-400' };
-                        const icon = iconMap[log.action] || 'history';
-                        const color = colorMap[log.action] || 'text-cyan';
-                        const time = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        const userName = log.userId?.name || 'System';
-
-                        const row = document.createElement('div');
-                        row.className = 'flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-cyan/20 transition-all';
-                        row.innerHTML = `
-                            <span class="material-symbols-outlined ${color}">${icon}</span>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-white uppercase text-[11px] tracking-wider">${log.action.replace('_', ' ')}</p>
-                                <p class="text-[10px] text-slate-500 font-mono truncate">${userName} performed this action</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] text-slate-600 font-mono">${time}</p>
-                            </div>
-                        `;
-                        logsContainer.appendChild(row);
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Dashboard metrics error:', error);
-        }
-    }
 
     // ============================
     // USER MANAGEMENT (Doctors/Employees)
     // ============================
-    if (path.includes('admin/doctors.html')) {
+    if (path.includes('console/doctors.html')) {
         const tableBody = document.getElementById('doctors-table-body');
         const searchInput = document.getElementById('doctor-search');
         let allUsers = [];
@@ -179,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ============================
     // DNA DATA REGISTRY
     // ============================
-    if (path.includes('admin/data.html')) {
+    if (path.includes('console/data.html')) {
         const dataBody = document.getElementById('dna-data-body');
         let currentRegistryFiles = [];
 
@@ -248,6 +165,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ============================
+    // ACTIVITY LOGS
+    // ============================
+    if (path.includes('console/logs.html')) {
+        const logsBody = document.getElementById('logs-body');
+        
+        async function loadLogs() {
+            try {
+                const logsData = await api.get('/admin/audit-logs?limit=100');
+                if (!logsBody) return;
+                logsBody.innerHTML = '';
+                
+                if (!logsData.logs || logsData.logs.length === 0) {
+                    logsBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center italic" style="color:var(--text-faint)">No activity logs recorded.</td></tr>';
+                    return;
+                }
+                
+                logsData.logs.forEach(log => {
+                    const time = new Date(log.timestamp).toLocaleString();
+                    const who = log.userId?.name || 'System';
+                    const role = log.userId?.role || 'system';
+                    const action = log.action || 'unknown';
+                    const details = log.details || '-';
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-white/5 transition';
+                    row.style = 'border-bottom:1px solid var(--border)';
+                    row.innerHTML = `
+                        <td class="p-4 text-xs font-mono text-slate-500">${time}</td>
+                        <td class="p-4 text-sm font-bold text-white">${who}</td>
+                        <td class="p-4 text-xs uppercase font-bold text-[10px] tracking-widest" style="color:var(--text-faint)">${role}</td>
+                        <td class="p-4 text-xs font-mono uppercase text-teal font-bold">${action.replace(/_/g, ' ')}</td>
+                        <td class="p-4 text-xs text-slate-300 max-w-xs truncate" title="${details}">${details}</td>
+                    `;
+                    logsBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Audit logs load error:', error);
+                if (logsBody) logsBody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-coral italic">Failed to load system audit ledger.</td></tr>';
+            }
+        }
+        await loadLogs();
+    }
+
+    // ============================
     // ANNOUNCEMENTS
     // ============================
     const annList = document.getElementById('announcements-list');
@@ -301,7 +262,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    if (path.includes('admin/dashboard.html')) {
-        loadAnnouncements();
-    }
 });

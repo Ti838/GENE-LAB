@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════
+   GeneLab — Print Stylesheet
+   Applied via @media print on all analytics/dashboard pages.
+   Produces a clean, professional PDF / paper output.
+═══════════════════════════════════════════════════════════════ */
+
+@media print {
+    /* ── Page setup ── */
+    @page {
+        size: A4 portrait;
+        margin: 18mm 14mm 18mm 14mm;
+    }
+
+    /* ── Reset backgrounds & shadows ── */
+    *,
+    *::before,
+    *::after {
+        background: #ffffff !important;
+        color: #0a1e30 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ── Hide non-essential elements ── */
+    aside,
+    #dna-canvas,
+    #dna-overlay,
+    .btn-premium,
+    button,
+    nav,
+    [data-theme-toggle],
+    .toast-container,
+    .forgot-password-overlay,
+    #announcement-modal,
+    #logs-modal-overlay,
+    .info-chip {
+        display: none !important;
+    }
+
+    /* ── Remove fixed / flex layout, let content flow ── */
+    body {
+        background: #ffffff !important;
+        min-height: unset !important;
+        font-family: 'IBM Plex Sans', Arial, sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.55 !important;
+    }
+
+    /* ── Wrapper: remove sidebar offset ── */
+    .relative.z-10.flex.min-h-screen {
+        display: block !important;
+    }
+
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ── Print header ── */
+    main > header {
+        border-bottom: 2px solid #0a1e30 !important;
+        padding-bottom: 12pt !important;
+        margin-bottom: 16pt !important;
+        page-break-after: avoid !important;
+    }
+
+    main > header h1 {
+        font-size: 18pt !important;
+        color: #0a1e30 !important;
+        font-weight: 900 !important;
+    }
+
+    main > header p {
+        font-size: 9pt !important;
+        color: #4a7a9b !important;
+    }
+
+    /* ── GeneLab print logo line ── */
+    main > header::before {
+        content: "GENELAB AI — CONFIDENTIAL ANALYTICS REPORT";
+        display: block;
+        font-size: 7pt;
+        font-weight: 800;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #4a7a9b !important;
+        margin-bottom: 8pt;
+    }
+
+    main > header::after {
+        content: "Generated: " attr(data-print-date);
+        display: block;
+        font-size: 8pt;
+        color: #4a7a9b !important;
+        margin-top: 4pt;
+    }
+
+    /* ── Section badge ── */
+    .section-badge {
+        font-size: 7pt !important;
+        color: #4a7a9b !important;
+        border: none !important;
+        background: none !important;
+    }
+
+    /* ── Glass panels → clean white cards ── */
+    .glass-panel,
+    .glass-card,
+    [class*="rounded-[24px]"],
+    [class*="rounded-[20px]"] {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6pt !important;
+        backdrop-filter: none !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 12pt !important;
+    }
+
+    /* ── KPI / stat cards: 2-column grid for print ── */
+    .grid.grid-cols-2,
+    .grid.grid-cols-4,
+    [class*="grid-cols-4"],
+    [class*="xl:grid-cols-4"] {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10pt !important;
+    }
+
+    /* ── Charts: single column ── */
+    [class*="grid-cols-3"],
+    [class*="grid-cols-2"],
+    [class*="xl:grid-cols-3"],
+    [class*="xl:grid-cols-2"] {
+        display: block !important;
+    }
+
+    [class*="col-span-2"] {
+        width: 100% !important;
+    }
+
+    /* ── Chart canvases — limit height for print ── */
+    canvas {
+        max-height: 180pt !important;
+        max-width: 100% !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 4pt !important;
+        padding: 6pt !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* ── Tables ── */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 8.5pt !important;
+        page-break-inside: auto !important;
+    }
+
+    thead {
+        background: #f1f5f9 !important;
+        display: table-header-group !important;
+    }
+
+    th {
+        background: #f1f5f9 !important;
+        color: #0a1e30 !important;
+        font-weight: 800 !important;
+        font-size: 7pt !important;
+        letter-spacing: 0.12em !important;
+        text-transform: uppercase !important;
+        padding: 6pt 8pt !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    td {
+        padding: 5pt 8pt !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #1e293b !important;
+        font-size: 8.5pt !important;
+    }
+
+    tr:nth-child(even) td {
+        background: #f8fafc !important;
+    }
+
+    tr { page-break-inside: avoid !important; }
+
+    /* ── Status/badge chips in table ── */
+    [class*="rounded-full"],
+    span[style*="border-radius"] {
+        background: transparent !important;
+        border: 1px solid #94a3b8 !important;
+        color: #1e293b !important;
+        padding: 2pt 5pt !important;
+        border-radius: 3pt !important;
+        font-size: 7pt !important;
+    }
+
+    /* ── Text overrides ── */
+    [class*="text-cyan"],
+    [class*="text-teal"],
+    [class*="text-violet"],
+    [class*="text-coral"],
+    [style*="color:var(--"] {
+        color: #0a1e30 !important;
+    }
+
+    [class*="text-faint"],
+    [style*="color:var(--text-faint)"],
+    [style*="color:var(--text-muted)"] {
+        color: #4a7a9b !important;
+    }
+
+    h3 {
+        font-size: 11pt !important;
+        color: #0a1e30 !important;
+        font-weight: 800 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding-bottom: 4pt !important;
+        margin-bottom: 8pt !important;
+    }
+
+    /* ── Progress bars → text fallback ── */
+    [id$="-progress"] {
+        display: none !important;
+    }
+
+    /* ── Page breaks ── */
+    [data-animate="panel"] {
+        page-break-inside: avoid !important;
+    }
+
+    /* ── Print footer ── */
+    body::after {
+        content: "GeneLab AI • Confidential Medical Analytics • Do Not Distribute Without Authorization";
+        display: block;
+        position: fixed;
+        bottom: 8mm;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 7pt;
+        color: #94a3b8 !important;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 4pt;
+    }
+}
