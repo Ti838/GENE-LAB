@@ -1,15 +1,17 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+  "buildCommand": "npm run build",
+  "outputDirectory": "frontend",
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 10
     },
-    {
-      "src": "frontend/**/*",
-      "use": "@vercel/static"
+    "api/[...path].js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ],
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -37,15 +39,5 @@
     { "source": "/admin/(.*)", "destination": "/frontend/pages/admin/$1" },
     { "source": "/pages/(.*)", "destination": "/frontend/pages/$1" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
-  ],
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    },
-    "api/[...path].js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  ]
 }
