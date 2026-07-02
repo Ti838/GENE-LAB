@@ -32,11 +32,20 @@ const serializeUser = (user) => ({
 });
 
 const getHostUrl = (req) => {
+  const host = req.get('host') || '';
+  // For local development redirect backend port 5000 to frontend port 3000
+  if (host.includes('localhost:5000') || host.includes('127.0.0.1:5000')) {
+    return 'http://localhost:3000';
+  }
   if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== '*') {
-    return process.env.FRONTEND_URL.replace(/\/$/, '');
+    const url = process.env.FRONTEND_URL.replace(/\/$/, '');
+    if (url.includes('localhost:5000') || url.includes('127.0.0.1:5000')) {
+      return 'http://localhost:3000';
+    }
+    return url;
   }
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-  return `${protocol}://${req.get('host')}`;
+  return `${protocol}://${host}`;
 };
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -341,8 +350,9 @@ router.post('/reset-password', [
 router.get('/verify-email', async (req, res, next) => {
   try {
     const { token } = req.query;
+    const hostUrl = getHostUrl(req);
     if (!token) {
-      return res.status(400).send(getErrorHtml('Verification token is missing.'));
+      return res.status(400).send(getErrorHtml('Verification token is missing.', hostUrl));
     }
 
     const user = await User.findOne({
@@ -351,7 +361,7 @@ router.get('/verify-email', async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(400).send(getErrorHtml('Invalid or expired verification token. Please request a new verification email.'));
+      return res.status(400).send(getErrorHtml('Invalid or expired verification token. Please request a new verification email.', hostUrl));
     }
 
     user.isEmailVerified = true;
@@ -361,7 +371,7 @@ router.get('/verify-email', async (req, res, next) => {
 
     await logSecurityEvent(user._id, 'verify_email', 'user', { email: user.email }, req);
 
-    res.send(getSuccessHtml(user.name));
+    res.send(getSuccessHtml(user.name, hostUrl));
   } catch (err) {
     next(err);
   }
@@ -420,7 +430,8 @@ router.get('/firebase-config', (req, res) => {
   });
 });
 
-function getSuccessHtml(name) {
+function getSuccessHtml(name, hostUrl) {
+  const redirectUrl = `${hostUrl}/pages/login.html`;
   return `
     <!DOCTYPE html>
     <html>
@@ -469,7 +480,7 @@ function getSuccessHtml(name) {
         }
       </style>
       <script>
-        setTimeout(function() { window.location.href = '/login'; }, 5000);
+        setTimeout(function() { window.location.href = '${redirectUrl}'; }, 5000);
       </script>
     </head>
     <body>
@@ -477,14 +488,15 @@ function getSuccessHtml(name) {
         <div class="icon">✅</div>
         <h1>Verification Successful</h1>
         <p>Congratulations ${name}! Your email has been successfully verified. You will be redirected to the login page shortly.</p>
-        <a href="/login" class="btn">Go to Login Now</a>
+        <a href="${redirectUrl}" class="btn">Go to Login Now</a>
       </div>
     </body>
     </html>
   `;
 }
 
-function getErrorHtml(message) {
+function getErrorHtml(message, hostUrl) {
+  const redirectUrl = `${hostUrl}/pages/login.html`;
   return `
     <!DOCTYPE html>
     <html>
@@ -526,17 +538,17 @@ function getErrorHtml(message) {
           font-weight: 600;
         }
       </style>
-    </head>
+      </head>
     <body>
       <div class="card">
         <div class="icon">❌</div>
         <h1>Verification Failed</h1>
         <p>${message}</p>
-        <a href="/login" class="btn">Return to Login</a>
+        <a href="${redirectUrl}" class="btn">Return to Login</a>
       </div>
     </body>
     </html>
   `;
 }
 
-module.exports = router;
+module.exports = router;

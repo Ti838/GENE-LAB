@@ -55,7 +55,7 @@ const auth = {
         const base = isAtPages ? '' : 'pages/';
 
         if (role === 'admin') {
-            window.location.href = base + 'admin/dashboard.html';
+            window.location.href = base + 'console/dashboard.html';
             return;
         }
         if (role === 'researcher') {
@@ -155,7 +155,7 @@ const auth = {
 
         showToast('Logged out successfully.', 'info');
 
-        const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/admin/');
+        const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
         const target = isSubDir ? '../login.html' : 'login.html';
 
         setTimeout(() => {

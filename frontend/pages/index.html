@@ -166,6 +166,24 @@
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-12px) rotate(1deg); }
         }
+        
+        /* Theme toggle display rules */
+        body[data-theme="dark"] .show-light { display: none !important; }
+        body[data-theme="light"] .show-dark { display: none !important; }
+
+        /* Theme responsive overlay styles */
+        .dna-stage-overlay-custom {
+            background: linear-gradient(0deg, rgba(3, 11, 20, 0.95) 0%, rgba(3, 11, 20, 0.4) 70%, transparent 100%);
+        }
+        body[data-theme="light"] .dna-stage-overlay-custom {
+            background: linear-gradient(0deg, rgba(220, 232, 244, 0.95) 0%, rgba(220, 232, 244, 0.4) 70%, transparent 100%);
+        }
+        .dna-stage-title-custom {
+            color: #ffffff !important;
+        }
+        body[data-theme="light"] .dna-stage-title-custom {
+            color: #0a1e30 !important;
+        }
     </style>
     <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
 </head>
@@ -275,22 +293,6 @@
                 </div>
             </div>
 
-            <!-- Right side: dedicated DNA motion showcase -->
-            <div class="hidden lg:flex justify-center items-center relative" aria-hidden="true">
-                <div class="dna-helix-stage glass-panel w-full max-w-[620px]" data-animate="panel">
-                    <div data-dna-helix class="absolute inset-0" aria-hidden="true"></div>
-                    <div class="dna-stage-overlay">
-                        <div class="dna-stage-chip">
-                            <span class="dna-stage-dot"></span>
-                            3D DNA motion preview
-                        </div>
-                        <div class="dna-stage-meta">
-                            <strong>Watch the helix</strong>
-                            Smooth rotation, glow, and depth inspired by cinematic biotech visuals.
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
