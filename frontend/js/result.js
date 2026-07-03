@@ -140,8 +140,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ── Nucleotide Chart ─────────────────────────────────────────────────
         const freqSrc = src.nucleotideFrequency || src.nucleotide_frequency
             || src.statistics?.nucleotide_frequency || null;
-        if (window.initNucleotideChart && freqSrc) {
-            window.initNucleotideChart(freqSrc);
+        if (window.genelabCharts && window.genelabCharts.updateNucleotides && freqSrc) {
+            const labels = ['A', 'T', 'G', 'C'];
+            const values = labels.map(l => freqSrc[l] || 0);
+            window.genelabCharts.updateNucleotides(values);
         }
 
         // ── Scientific Summary ───────────────────────────────────────────────
