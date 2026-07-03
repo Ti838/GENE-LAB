@@ -153,6 +153,224 @@
                 </div>
             </div>
 
+            <!-- GENELAB INTERACTIVE TRANSLATION REPORT -->
+            <div id="translation-report-card" class="glass-panel p-8 rounded-[24px] mb-8 hidden" data-animate="panel">
+                <div class="flex items-center justify-between border-b pb-4 mb-6 flex-wrap gap-4" style="border-color:var(--border)">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-lime animate-pulse-slow" style="font-size:32px!important;">clinical_research</span>
+                            <h2 class="text-2xl font-display font-extrabold text-white">Translation Report</h2>
+                        </div>
+                        <p class="text-xs text-[var(--text-muted)] mt-1 font-mono">GENELAB AUTO-TRANSLATION PIPELINE V2.4.0</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span id="tr-badge-quality" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-lime/10 text-lime border border-lime/20 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]" style="font-size:12px!important;">verified</span> Quality: High
+                        </span>
+                        <span id="tr-badge-orf" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan/10 text-cyan border border-cyan/20 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]" style="font-size:12px!important;">settings_ethernet</span> Frame: +1
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Bento grid of stats and summaries -->
+                <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Column 1: Translation quality & ORF Analysis -->
+                    <div class="p-6 rounded-2xl border" style="background:var(--bg-glass);border-color:var(--border)">
+                        <h4 class="text-sm font-display font-bold mb-4 flex items-center gap-1.5 text-cyan">
+                            <span class="material-symbols-outlined text-sm">check_circle</span> ORF & Translation Status
+                        </h4>
+                        <ul class="space-y-3 text-xs text-slate-300">
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Translation Status</span>
+                                <span class="font-mono font-bold text-lime">COMPLETED</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Start Codon Verification</span>
+                                <span id="tr-start-codon-status" class="font-mono font-bold text-teal">Valid (ATG)</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Stop Codon Termination</span>
+                                <span id="tr-stop-codon-status" class="font-mono font-bold text-coral">Valid (TGA)</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1">
+                                <span>Open Reading Frame</span>
+                                <span id="tr-orf-detail" class="font-mono text-slate-400">—</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 2: Protein Statistics -->
+                    <div class="p-6 rounded-2xl border" style="background:var(--bg-glass);border-color:var(--border)">
+                        <h4 class="text-sm font-display font-bold mb-4 flex items-center gap-1.5 text-violet">
+                            <span class="material-symbols-outlined text-sm">equalizer</span> Protein Statistics
+                        </h4>
+                        <ul class="space-y-3 text-xs text-slate-300">
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Estimated Mol. Weight</span>
+                                <span id="tr-mol-wt" class="font-mono font-bold text-white">—</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Isoelectric Point (pI)</span>
+                                <span id="tr-pi" class="font-mono font-bold text-white">—</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1 border-b" style="border-color:rgba(255,255,255,0.05)">
+                                <span>Hydrophobicity Ratio</span>
+                                <span id="tr-hydro-ratio" class="font-mono font-bold text-white">—</span>
+                            </li>
+                            <li class="flex justify-between items-center py-1">
+                                <span>Instability Index</span>
+                                <span id="tr-instability" class="font-mono font-bold text-white">—</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Interpretation & AI Insight -->
+                    <div class="p-6 rounded-2xl border flex flex-col justify-between" style="background:var(--bg-glass);border-color:var(--border)">
+                        <div>
+                            <h4 class="text-sm font-display font-bold mb-3 flex items-center gap-1.5 text-lime">
+                                <span class="material-symbols-outlined text-sm">psychology</span> Biological & AI Interpretation
+                            </h4>
+                            <p id="tr-bio-summary" class="text-xs leading-relaxed text-slate-400 mb-4">
+                                Short peptide construct matching eukaryotic signaling peptides or synthetic variants.
+                            </p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-cyan/5 border border-cyan/15">
+                            <div class="flex items-center gap-1 text-[10px] font-bold text-cyan uppercase tracking-wider mb-1">
+                                <span class="material-symbols-outlined text-xs">auto_awesome</span> AI Insight
+                            </div>
+                            <p id="tr-ai-insight" class="text-[11px] leading-relaxed text-slate-300 font-medium">
+                                Analyzed sequence presents high stability and neutral surface charge distribution. Perfect for bio-compatibility assays.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two-Column layout for interactive table and detailed inspector -->
+                <div class="grid lg:grid-cols-5 gap-6">
+                    <!-- Column 1 & 2 & 3: Amino Acid Interpretation Table -->
+                    <div class="lg:col-span-3 border rounded-2xl overflow-hidden flex flex-col justify-between" style="border-color:var(--border)">
+                        <div>
+                            <div class="p-4 bg-slate-900/60 border-b flex justify-between items-center" style="border-color:var(--border)">
+                                <h4 class="text-sm font-display font-bold text-white flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-xs">table_chart</span> Amino Acid Interpretation Table
+                                </h4>
+                                <span class="text-[10px] text-slate-400 font-mono">Click a row to inspect residue</span>
+                            </div>
+                            <div class="overflow-x-auto max-h-[360px] overflow-y-auto" style="scrollbar-width:thin">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-[10px] uppercase font-bold tracking-widest text-slate-500 bg-slate-950/40 border-b border-slate-800" style="border-color:var(--border)">
+                                            <th class="p-3 pl-4">Pos</th>
+                                            <th class="p-3">Codon</th>
+                                            <th class="p-3">AA</th>
+                                            <th class="p-3">Name</th>
+                                            <th class="p-3">Classification</th>
+                                            <th class="p-3 pr-4 text-right">Essential</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tr-table-body" class="divide-y text-xs text-slate-300" style="border-color:var(--border)">
+                                        <!-- Rows populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="p-3.5 bg-slate-950/20 border-t text-[10px] text-slate-500 font-mono" style="border-color:var(--border)">
+                            Showing full length standard translation map.
+                        </div>
+                    </div>
+
+                    <!-- Column 4 & 5: Detailed Amino Acid Inspector Card -->
+                    <div class="lg:col-span-2 border rounded-2xl flex flex-col justify-between overflow-hidden" style="border-color:var(--border); background:rgba(255,255,255,0.02)">
+                        <div>
+                            <div class="p-4 bg-slate-900/60 border-b" style="border-color:var(--border)">
+                                <h4 class="text-sm font-display font-bold text-white flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-xs text-violet">manage_search</span> Amino Acid Inspector
+                                </h4>
+                            </div>
+                            
+                            <div id="inspector-display" class="p-6">
+                                <!-- Default state -->
+                                <div id="inspector-placeholder" class="text-center py-12 text-slate-500">
+                                    <span class="material-symbols-outlined text-4xl mb-2 animate-bounce-slow">touch_app</span>
+                                    <p class="text-xs">Select any amino acid in the table to inspect its properties, codon, biological function, and nutritional importance.</p>
+                                </div>
+
+                                <!-- Active state (hidden by default) -->
+                                <div id="inspector-content" class="hidden space-y-5">
+                                    <div class="flex items-center gap-4">
+                                        <div id="ins-letter-circle" class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-display font-extrabold text-white border-2">
+                                            M
+                                        </div>
+                                        <div>
+                                            <h3 id="ins-name" class="text-xl font-display font-extrabold text-white">Methionine</h3>
+                                            <p id="ins-code3" class="text-xs font-mono text-slate-400">Met / Codon: ATG</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3 text-[11px]">
+                                        <div class="p-3 rounded-xl border bg-slate-950/40" style="border-color:var(--border)">
+                                            <p class="text-slate-500 font-bold uppercase tracking-wider text-[9px] mb-0.5">Classification</p>
+                                            <p id="ins-class" class="font-semibold text-slate-300">Hydrophobic (non-polar)</p>
+                                        </div>
+                                        <div class="p-3 rounded-xl border bg-slate-950/40" style="border-color:var(--border)">
+                                            <p class="text-slate-500 font-bold uppercase tracking-wider text-[9px] mb-0.5">Nutritional Class</p>
+                                            <p id="ins-nutrition" class="font-semibold text-slate-300">Essential</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="border-t pt-3" style="border-color:rgba(255,255,255,0.05)">
+                                            <p class="text-slate-500 font-bold uppercase tracking-wider text-[9px] mb-1">Amino Acid Properties</p>
+                                            <p id="ins-properties" class="text-xs leading-relaxed text-slate-300">Sulfur-containing, start signal of protein synthesis, MW 149.2 Da.</p>
+                                        </div>
+                                        <div class="border-t pt-3" style="border-color:rgba(255,255,255,0.05)">
+                                            <p class="text-slate-500 font-bold uppercase tracking-wider text-[9px] mb-1">Biological Function & Role</p>
+                                            <p id="ins-function" class="text-xs leading-relaxed text-slate-300">Initiates protein translation, protein structure stability, and acts as precursor to cysteine.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Inspector footer -->
+                        <div id="inspector-footer" class="p-4 bg-slate-950/30 border-t text-[10px] text-slate-500" style="border-color:var(--border)">
+                            Interactive inspector maps exact nucleotide codon coordinates.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expandable Mutation and Disease Section -->
+                <div id="tr-mutation-association-panel" class="mt-8 border-t pt-6 hidden" style="border-color:var(--border)">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Mutation Analysis Card -->
+                        <div class="p-5 rounded-2xl border" style="background:var(--bg-glass);border-color:rgba(239,68,68,0.2)">
+                            <h4 class="text-sm font-display font-bold mb-3 flex items-center gap-1.5 text-coral">
+                                <span class="material-symbols-outlined text-sm">warning</span> Mutation Analysis
+                            </h4>
+                            <div id="tr-mutation-list" class="space-y-2 text-xs text-slate-300">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Disease Association Card -->
+                        <div class="p-5 rounded-2xl border" style="background:var(--bg-glass);border-color:rgba(139,92,246,0.2)">
+                            <h4 class="text-sm font-display font-bold mb-3 flex items-center gap-1.5 text-violet">
+                                <span class="material-symbols-outlined text-sm">medical_services</span> Pathogenic Disease Association
+                            </h4>
+                            <div id="tr-disease-list" class="space-y-2 text-xs text-slate-300">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Disclaimer (UniProt/NCBI style) -->
+                <div class="mt-8 pt-4 border-t text-[10px] text-slate-500 leading-relaxed text-justify" style="border-color:rgba(255,255,255,0.05)">
+                    <strong class="text-slate-400">CLINICAL DISCLAIMER:</strong> This report is automatically generated using computed in-silico translation models based on the standard genetic code (e.g. NCBI translation table 1). It is provided for scientific research and clinical decision-support purposes only. All computational predictions, translation quality statuses, peptide statistics, and variant annotations must be validated using accredited molecular diagnostic procedures (e.g. Sanger sequencing or validated NGS assays) prior to clinical diagnosis or therapeutic decisions. GeneLab™ does not assume responsibility for interpretations derived from these computerized data streams.
+                </div>
+            </div>
+
             <div class="glass-panel p-7 rounded-[24px] mb-8" data-animate="panel">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-display font-bold">Scientific Summary</h3>
