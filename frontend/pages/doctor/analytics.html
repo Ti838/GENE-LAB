@@ -372,7 +372,7 @@
             if (allFiles.length === 0) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
-                td.colSpan = 5;
+                td.colSpan = 6;
                 td.className = 'text-center p-6 italic';
                 td.style.color = 'var(--text-muted)';
                 td.textContent = 'No files found.';
@@ -381,34 +381,54 @@
             } else {
                 allFiles.forEach(f => {
                     const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border)';
+                    
+                    if (f.status === 'analyzed') {
+                        tr.className = 'hover:bg-white/5 cursor-pointer transition';
+                        tr.addEventListener('click', () => {
+                            window.location.href = `result.html?id=${f._id}`;
+                        });
+                    } else {
+                        tr.className = 'hover:bg-white/5 transition';
+                    }
 
                     const tdName = document.createElement('td');
-                    tdName.className = 'font-medium';
+                    tdName.className = 'px-5 py-4 font-medium truncate max-w-[200px]';
                     tdName.textContent = f.originalName || 'Unnamed File';
 
                     const tdStatus = document.createElement('td');
+                    tdStatus.className = 'px-5 py-4';
                     const spanStatus = document.createElement('span');
                     spanStatus.className = `status-pill ${f.status === 'analyzed' ? 'status-active' : 'status-pending'}`;
                     spanStatus.textContent = f.status === 'analyzed' ? 'Analyzed' : 'Pending';
                     tdStatus.appendChild(spanStatus);
 
                     const tdLength = document.createElement('td');
+                    tdLength.className = 'px-5 py-4';
                     tdLength.textContent = f.sequenceLength ? `${f.sequenceLength.toLocaleString()} bp` : '—';
 
                     const tdGC = document.createElement('td');
+                    tdGC.className = 'px-5 py-4';
                     tdGC.textContent = f.gcContent ? `${(f.gcContent * 100).toFixed(1)}%` : '—';
 
                     const tdAnomalies = document.createElement('td');
+                    tdAnomalies.className = 'px-5 py-4';
                     const spanAnomaly = document.createElement('span');
                     spanAnomaly.className = f.hasAnomalies ? 'text-coral font-bold' : 'text-emerald';
                     spanAnomaly.textContent = f.hasAnomalies ? 'Yes' : 'No';
                     tdAnomalies.appendChild(spanAnomaly);
+
+                    const tdUploaded = document.createElement('td');
+                    tdUploaded.className = 'px-5 py-4 text-xs font-mono';
+                    tdUploaded.style.color = 'var(--text-faint)';
+                    tdUploaded.textContent = f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '—';
 
                     tr.appendChild(tdName);
                     tr.appendChild(tdStatus);
                     tr.appendChild(tdLength);
                     tr.appendChild(tdGC);
                     tr.appendChild(tdAnomalies);
+                    tr.appendChild(tdUploaded);
                     tbody.appendChild(tr);
                 });
             }
