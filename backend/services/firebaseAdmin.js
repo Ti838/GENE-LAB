@@ -3,7 +3,14 @@ const admin = require('firebase-admin');
 let firebaseApp = null;
 
 function normalizePrivateKey(privateKey) {
-  return typeof privateKey === 'string' ? privateKey.replace(/\\n/g, '\n') : privateKey;
+  if (typeof privateKey !== 'string') return privateKey;
+  let clean = privateKey.trim();
+  if (clean.startsWith('"') && clean.endsWith('"')) {
+    clean = clean.slice(1, -1);
+  } else if (clean.startsWith("'") && clean.endsWith("'")) {
+    clean = clean.slice(1, -1);
+  }
+  return clean.replace(/\\n/g, '\n');
 }
 
 function getServiceAccount() {
