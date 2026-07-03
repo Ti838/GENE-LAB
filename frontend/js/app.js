@@ -2,6 +2,78 @@
  * Copyright (c) 2026 GeneLab. All rights reserved.
  * Do not copy, distribute, or modify without permission.
  */
+
+/* ─────────────────────────────────────────────────────────────────
+   ROUTE GUARDS
+   Call window.adminOnly() or window.doctorOnly() at the top of
+   any protected page's DOMContentLoaded handler to enforce access.
+───────────────────────────────────────────────────────────────── */
+
+/**
+ * Resolve the correct login URL relative to the current page depth.
+ */
+function _loginUrl() {
+  const isSubDir = window.location.pathname.includes('/doctor/') ||
+                   window.location.pathname.includes('/console/');
+  return isSubDir ? '../login.html' : 'login.html';
+}
+
+/**
+ * Returns the current authenticated user or null.
+ * Reads from localStorage first (persisted session), then sessionStorage.
+ */
+window.getAuthUser = function () {
+  try {
+    const raw = localStorage.getItem('genelab_user') ||
+                sessionStorage.getItem('genelab_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+
+/**
+ * Enforce admin-only access. Redirects immediately if the user is not
+ * authenticated or does not have the 'admin' role.
+ */
+window.adminOnly = function () {
+  const token = localStorage.getItem('genelab_token') ||
+                sessionStorage.getItem('genelab_token');
+  const user  = window.getAuthUser();
+  if (!token || !user) {
+    window.location.replace(_loginUrl());
+    return false;
+  }
+  if (user.role !== 'admin') {
+    // Non-admin landed on an admin page — redirect them to their portal
+    const dest = user.role === 'doctor' || user.role === 'researcher'
+      ? (window.location.pathname.includes('/console/')
+          ? '../doctor/dashboard.html'
+          : 'doctor/dashboard.html')
+      : _loginUrl();
+    window.location.replace(dest);
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Enforce doctor/researcher access. Redirects if not authenticated
+ * or not one of: doctor, researcher, admin.
+ */
+window.doctorOnly = function () {
+  const token = localStorage.getItem('genelab_token') ||
+                sessionStorage.getItem('genelab_token');
+  const user  = window.getAuthUser();
+  if (!token || !user) {
+    window.location.replace(_loginUrl());
+    return false;
+  }
+  if (!['doctor', 'researcher', 'admin'].includes(user.role)) {
+    window.location.replace(_loginUrl());
+    return false;
+  }
+  return true;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof window.gsap !== 'undefined';
@@ -178,16 +250,25 @@ window.showToast = function(message, type = 'success') {
     
     const icons = {
         success: 'check_circle',
-        error: 'error',
-        info: 'info'
+        error:   'error',
+        info:    'info',
+        warning: 'warning'
     };
 
-    toast.innerHTML = `
-        <div class="toast-icon">
-            <span class="material-symbols-outlined">${icons[type] || 'info'}</span>
-        </div>
-        <div class="toast-message">${message}</div>
-    `;
+    // Build DOM safely to avoid stored-XSS via toast message content
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'toast-icon';
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'material-symbols-outlined';
+    iconSpan.textContent = icons[type] || 'info';
+    iconWrap.appendChild(iconSpan);
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'toast-message';
+    msgDiv.textContent = message; // textContent is XSS-safe
+
+    toast.appendChild(iconWrap);
+    toast.appendChild(msgDiv);
 
     // 3. Add to container
     container.appendChild(toast);

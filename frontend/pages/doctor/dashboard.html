@@ -245,6 +245,9 @@
     <script src="../../js/doctor-dashboard.js" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // ── Role guard — must be called before any data fetch ──
+        if (!window.doctorOnly()) return;
+
         // Set print date
         document.getElementById('main-header')?.setAttribute('data-print-date', new Date().toLocaleString());
         // Populate sidebar user info

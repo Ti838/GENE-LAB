@@ -4,6 +4,7 @@
 // profile.js - Profile Management
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
     const profileForm = document.getElementById('doctor-profile-form');
 
 const API_BASE_URL = window.__GENELAB_API_BASE_URL__
@@ -126,8 +127,14 @@ const API_BASE_URL = window.__GENELAB_API_BASE_URL__
                 }
 
                 if (data.user) {
-                    localStorage.setItem('genelab_user', JSON.stringify(data.user));
-                    sessionStorage.setItem('genelab_user', JSON.stringify(data.user));
+                    // Honor rememberMe — only persist to the storage that already has the token
+                    const inLocal = !!localStorage.getItem('genelab_token');
+                    const userJson = JSON.stringify(data.user);
+                    if (inLocal) {
+                        localStorage.setItem('genelab_user', userJson);
+                    } else {
+                        sessionStorage.setItem('genelab_user', userJson);
+                    }
                 }
 
                 showToast('Profile photo updated successfully!', 'success');

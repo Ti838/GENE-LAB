@@ -467,9 +467,10 @@ aside > div:last-child {
   flex-shrink: 0;
 }
 
-.toast-success .toast-icon { background: rgba(6, 255, 160, 0.15); color: #06ffa0; }
-.toast-error .toast-icon { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
-.toast-info .toast-icon { background: rgba(0, 212, 255, 0.15); color: #00d4ff; }
+.toast-success .toast-icon { background: rgba(6, 255, 160, 0.15);   color: #06ffa0; }
+.toast-error   .toast-icon { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
+.toast-info    .toast-icon { background: rgba(0, 212, 255, 0.15);   color: #00d4ff; }
+.toast-warning .toast-icon { background: rgba(255, 209, 102, 0.15); color: #ffd166; }
 
 .toast-message {
   font-size: 0.875rem;

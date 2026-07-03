@@ -32,10 +32,16 @@
                 </div>
                 <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+            <div class="px-6 py-4 border-b" style="border-color:var(--border)">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
+                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
+                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">doctor</p>
+            </div>
+            <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
                 <a href="analysis.html" class="sidebar-link active"><span class="material-symbols-outlined">psychology</span> Analysis</a>
+                <a href="analytics.html" class="sidebar-link"><span class="material-symbols-outlined">monitoring</span> Analytics</a>
                 <a href="compare.html" class="sidebar-link"><span class="material-symbols-outlined">compare_arrows</span> Compare DNA</a>
                 <a href="notes.html" class="sidebar-link"><span class="material-symbols-outlined">sticky_note_2</span> Notes</a>
                 <a href="reports.html" class="sidebar-link"><span class="material-symbols-outlined">description</span> Reports</a>
@@ -74,15 +80,32 @@
                         <span class="material-symbols-outlined text-4xl text-cyan">memory</span>
                     </div>
                     <h3 class="text-xl font-display font-bold mb-3">Engine Initialization</h3>
-                    <p class="mb-8 max-w-xs mx-auto" style="color:var(--text-muted)">Run automated sequence processing to calculate nucleotide distribution and GC content.</p>
+                    <p class="mb-8 max-w-xs mx-auto" style="color:var(--text-muted)">Select a file from the left, then click Run to launch AI-powered nucleotide analysis and mutation screening.</p>
                     <button id="run-analysis-btn" disabled class="btn-premium btn-cyan w-full py-5 rounded-xl text-base font-bold opacity-50 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">play_circle</span> Run Sequence Analysis
                     </button>
+                    <!-- ── Job polling status panel (shown when analysis is running) ── -->
+                    <div id="analysis-status-panel" class="hidden w-full mt-6 p-5 rounded-2xl text-left" style="background:rgba(0,180,216,0.05);border:1px solid var(--border)"></div>
                 </div>
             </div>
         </main>
     </div>
     <script src="../../js/analysis.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.doctorOnly()) return;
+        const userStr = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                const nameEl = document.getElementById('sidebar-user-name');
+                const roleEl = document.getElementById('sidebar-user-role');
+                if (nameEl) nameEl.textContent = user.name || 'Dr. User';
+                if (roleEl) roleEl.textContent = (user.role || 'doctor').charAt(0).toUpperCase() + (user.role || 'doctor').slice(1);
+            } catch(e){}
+        }
+    });
+    </script>
 </body>
 </html>
 

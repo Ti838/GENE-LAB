@@ -31,7 +31,12 @@
                 </div>
                 <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+            <div class="px-6 py-4 border-b" style="border-color:var(--border)">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
+                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
+                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">Doctor</p>
+            </div>
+            <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
                 <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
@@ -170,6 +175,14 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
+        if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+        // Populate sidebar user info
+        try {
+            const u = JSON.parse(localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user') || '{}');
+            if (u.name) { const el = document.getElementById('sidebar-user-name'); if (el) el.textContent = u.name; }
+            if (u.role) { const el = document.getElementById('sidebar-user-role'); if (el) el.textContent = u.role.charAt(0).toUpperCase() + u.role.slice(1); }
+        } catch(_){}
+
         document.getElementById('main-header')?.setAttribute('data-print-date', new Date().toLocaleString());
         let allFiles = [];
 
@@ -283,8 +296,22 @@
             });
             const legend = document.getElementById('status-legend');
             if (legend) {
-                [['Analyzed','#06ffa0',analyzed],['Pending','#a78bfa',pending],['Anomaly','#ff6b6b',anomalies]].forEach(([l,c,v]) => {
-                    legend.innerHTML += `<div class="flex items-center gap-2 text-[11px]"><span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${c}"></span><span style="color:var(--text-muted)">${l}</span><span class="ml-auto font-bold" style="color:var(--text)">${v}</span></div>`;
+                legend.innerHTML = '';
+                [['Analyzed','#06ffa0',analyzed],['Pending','#a78bfa',pending],['Anomaly','#ff6b6b',anomalies]].forEach(([label,color,val]) => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center gap-2 text-[11px]';
+                    const dot = document.createElement('span');
+                    dot.className = 'w-3 h-3 rounded-full flex-shrink-0';
+                    dot.style.background = color;
+                    const lbl = document.createElement('span');
+                    lbl.style.color = 'var(--text-muted)';
+                    lbl.textContent = label;
+                    const num = document.createElement('span');
+                    num.className = 'ml-auto font-bold';
+                    num.style.color = 'var(--text)';
+                    num.textContent = String(val);
+                    row.appendChild(dot); row.appendChild(lbl); row.appendChild(num);
+                    legend.appendChild(row);
                 });
             }
         }
@@ -338,28 +365,9 @@
             });
         }
 
-        // ── File Summary Table ────────────────────────────────────────
+        // ── File Summary Table (XSS-safe DOM building) ──────────────
         const tbody = document.getElementById('analytics-table-body');
         if (tbody) {
-            if (allFiles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-sm italic" style="color:var(--text-faint)">No DNA files uploaded yet.</td></tr>';
-            } else {
-                tbody.innerHTML = allFiles.map(f => {
-                    const status = f.status === 'analyzed'
-                        ? `<span class="px-2.5 py-1 rounded-full text-[9px] font-bold uppercase" style="color:var(--teal);background:rgba(6,255,160,0.1);border:1px solid rgba(6,255,160,0.25)">Analyzed</span>`
-                        : `<span class="px-2.5 py-1 rounded-full text-[9px] font-bold uppercase" style="color:var(--violet);background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.25)">Pending</span>`;
-                    const anomaly = f.hasAnomalies
-                        ? `<span class="text-coral font-bold text-[11px]">⚠ Yes</span>`
-                        : `<span class="text-[11px]" style="color:var(--text-faint)">—</span>`;
-                    const gc = f.gcContent ? (f.gcContent * 100).toFixed(1) + '%' : '—';
-                    const date = new Date(f.createdAt).toLocaleDateString();
-                    return `<tr style="border-bottom:1px solid var(--border)" class="hover:bg-white/5 transition">
-                        <td class="px-5 py-3 font-mono text-xs text-white">${f.originalName}</td>
-                        <td class="px-5 py-3">${status}</td>
-                        <td class="px-5 py-3 font-mono text-xs" style="color:var(--text-muted)">${(f.sequenceLength || 0).toLocaleString()}</td>
-                        <td class="px-5 py-3 font-mono text-xs" style="color:var(--cyan)">${gc}</td>
-                        <td class="px-5 py-3">${anomaly}</td>
-                        <td class="px-5 py-3 text-xs" style="color:var(--text-faint)">${date}</td>
                     </tr>`;
                 }).join('');
             }

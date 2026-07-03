@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 // upload.js - DNA File Ingestion Logic
 document.addEventListener('DOMContentLoaded', () => {
-    const fileInput = document.querySelector('input[type="file"]');
+    const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
     const fileListContainer = document.getElementById('file-list');
     const manualPasteBtn = document.getElementById('manual-paste-btn');
@@ -156,25 +156,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addFileToUI(id, name, size, status) {
         if (!fileListContainer) return;
-        
-        // Remove empty state if present
-        if (fileListContainer.querySelector('.italic')) {
-            fileListContainer.innerHTML = '';
-        }
+        if (fileListContainer.querySelector('.italic')) fileListContainer.innerHTML = '';
 
         const div = document.createElement('div');
         div.id = `file-${id}`;
-        div.className = 'flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl transition-all animate-fade-in';
-        div.innerHTML = `
-            <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-cyan text-3xl">description</span>
-                <div>
-                    <p class="text-lg font-bold text-white mb-1 truncate max-w-[200px]">${name}</p>
-                    <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">${size}</p>
-                </div>
-            </div>
-            <span class="status-badge px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/10 text-slate-400" id="status-${id}">${status}</span>
-        `;
+        div.className = 'flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl transition-all';
+
+        // Left: icon + meta
+        const leftWrap = document.createElement('div');
+        leftWrap.className = 'flex items-center gap-4';
+        const ico = document.createElement('span');
+        ico.className = 'material-symbols-outlined text-cyan text-3xl';
+        ico.textContent = 'description';
+        const metaDiv = document.createElement('div');
+        const nameP = document.createElement('p');
+        nameP.className = 'text-lg font-bold text-white mb-1 truncate max-w-[200px]';
+        nameP.textContent = name; // safe
+        const sizeP = document.createElement('p');
+        sizeP.className = 'text-xs font-mono text-slate-500 uppercase tracking-widest';
+        sizeP.textContent = size;
+        metaDiv.appendChild(nameP);
+        metaDiv.appendChild(sizeP);
+        leftWrap.appendChild(ico);
+        leftWrap.appendChild(metaDiv);
+
+        // Right: status badge
+        const badge = document.createElement('span');
+        badge.id = `status-${id}`;
+        badge.className = 'status-badge px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/10 text-slate-400';
+        badge.textContent = status;
+
+        div.appendChild(leftWrap);
+        div.appendChild(badge);
         fileListContainer.prepend(div);
     }
 
@@ -215,36 +228,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Load initial files
     async function loadFiles() {
+        if (!fileListContainer) return;
+        fileListContainer.innerHTML = '<p class="italic text-center p-4" style="color:var(--text-faint)">Loading bio-assets...</p>';
         try {
             const files = await api.get('/dna/my-files');
-            if (!fileListContainer) return;
-            
             if (files.length === 0) {
-                fileListContainer.innerHTML = '<p class="text-slate-500 italic text-center p-4">No files uploaded yet.</p>';
+                fileListContainer.innerHTML = '<p class="text-slate-500 italic text-center p-4">No files uploaded yet. Upload your first DNA file above.</p>';
                 return;
             }
-
             fileListContainer.innerHTML = '';
             files.forEach(f => {
                 const color = f.status === 'analyzed' ? 'teal' : f.status === 'failed' ? 'coral' : 'cyan';
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl mb-4';
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <span class="material-symbols-outlined text-cyan text-3xl">description</span>
-                        <div>
-                            <p class="text-lg font-bold text-white mb-1 truncate max-w-[200px]">${f.originalName}</p>
-                            <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">${new Date(f.createdAt).toLocaleDateString()}</p>
-                        </div>
-                    </div>
-                    <span class="status-badge px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-${color}/30 text-${color}">${f.status}</span>
-                `;
+                div.className = 'flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded-3xl mb-3 cursor-pointer hover:border-cyan/30 transition-all';
+                div.onclick = () => { window.location.href = `result.html?id=${f._id}`; };
+
+                const leftWrap = document.createElement('div');
+                leftWrap.className = 'flex items-center gap-4';
+                const ico = document.createElement('span');
+                ico.className = 'material-symbols-outlined text-3xl';
+                ico.style.color = `var(--${color})`;
+                ico.textContent = 'description';
+                const metaDiv = document.createElement('div');
+                const nameP = document.createElement('p');
+                nameP.className = 'text-sm font-bold text-white mb-0.5 truncate max-w-[180px]';
+                nameP.textContent = f.originalName; // safe
+                const dateP = document.createElement('p');
+                dateP.className = 'text-[10px] font-mono uppercase tracking-widest';
+                dateP.style.color = 'var(--text-faint)';
+                dateP.textContent = new Date(f.createdAt).toLocaleDateString();
+                metaDiv.appendChild(nameP);
+                metaDiv.appendChild(dateP);
+                leftWrap.appendChild(ico);
+                leftWrap.appendChild(metaDiv);
+
+                const badge = document.createElement('span');
+                badge.className = `status-badge px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase`;
+                badge.style.cssText = `border:1px solid rgba(var(--${color}-rgb,0,212,255),0.3);color:var(--${color})`;
+                badge.textContent = f.status;
+
+                div.appendChild(leftWrap);
+                div.appendChild(badge);
                 fileListContainer.appendChild(div);
             });
         } catch (error) {
-            console.error(error);
+            fileListContainer.innerHTML = '';
+            const errP = document.createElement('p');
+            errP.className = 'text-coral italic text-center p-4 text-sm';
+            errP.textContent = 'Failed to load files. Please refresh or check your connection.';
+            fileListContainer.appendChild(errP);
         }
     }
 

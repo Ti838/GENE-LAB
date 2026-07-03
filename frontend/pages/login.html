@@ -49,9 +49,9 @@
 
     /* TABS */
     .tab-bar{display:flex;gap:1.5rem;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:1rem;padding-bottom:0.4rem}
-    .tab-btn{font-family:var(--font-display),sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-muted);border:none;background:none;cursor:pointer;padding-bottom:0.3rem;border-bottom:2px solid transparent;transition:all .2s;outline:none!important}
+    .tab-btn{font-family:var(--font-display),sans-serif;font-size:1.1rem;font-weight:700;color:var(--text-muted);border:none;background:none;cursor:pointer;padding-bottom:0.3rem;border-bottom:2px solid transparent;transition:all .2s;outline:none}
     .tab-btn.active{color:var(--text-primary,white);border-bottom-color:var(--cyan)}
-    .tab-btn:focus{outline:none!important}
+    .tab-btn:focus-visible{outline:3px solid var(--cyan);outline-offset:3px;border-radius:4px}
 
     /* PANELS */
     .panel{display:none}

@@ -232,6 +232,9 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
+        // Double-check role (console-guard.js runs sync, this is belt-and-suspenders)
+        if (typeof window.adminOnly === 'function' && !window.adminOnly()) return;
+
         document.getElementById('main-header')?.setAttribute('data-print-date', new Date().toLocaleString());
         // Sidebar admin name
         try {
@@ -259,25 +262,49 @@
             // Render recent logs
             const container = document.getElementById('recent-logs');
             if (container && logs.logs?.length) {
-                const iconMap = { login:'login', register:'person_add', update_user:'manage_accounts', delete_user:'person_remove', approve_request:'check_circle', reject_request:'cancel', google_login:'google', verify_email:'verified', forgot_password:'lock_reset', delete_dna:'delete' };
-                const colorMap = { login:'text-cyan', register:'text-teal', delete_user:'text-coral', update_user:'text-violet-400', delete_dna:'text-coral' };
+                const iconMap  = { login:'login', register:'person_add', update_user:'manage_accounts', delete_user:'person_remove', approve_request:'check_circle', reject_request:'cancel', google_login:'google', verify_email:'verified', forgot_password:'lock_reset', delete_dna:'delete' };
+                const colorMap = { login:'text-cyan', register:'text-teal', delete_user:'text-coral', update_user:'text-violet', delete_dna:'text-coral' };
                 container.innerHTML = '';
                 logs.logs.slice(0, 6).forEach(log => {
                     const icon  = iconMap[log.action]  || 'history';
                     const color = colorMap[log.action] || 'text-cyan';
                     const time  = new Date(log.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
                     const who   = log.userId?.name || 'System';
-                    const row   = document.createElement('div');
+                    const action = (log.action || '').replace(/_/g, ' ');
+
+                    const row = document.createElement('div');
                     row.className = 'log-row flex gap-4 p-4 rounded-2xl border';
-                    row.style = 'background:rgba(255,255,255,0.03);border-color:var(--border)';
-                    row.innerHTML = `
-                        <span class="material-symbols-outlined ${color}" style="font-size:18px!important;width:18px!important;height:18px!important;flex-shrink:0;margin-top:2px">${icon}</span>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-[11px] font-bold text-white uppercase tracking-wider">${log.action.replace(/_/g,' ')}</p>
-                            <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)">${who}</p>
-                        </div>
-                        <p class="text-[10px] font-mono flex-shrink-0" style="color:var(--text-faint)">${time}</p>
-                    `;
+                    row.style.cssText = 'background:rgba(255,255,255,0.03);border-color:var(--border)';
+
+                    // Icon
+                    const icoEl = document.createElement('span');
+                    icoEl.className = `material-symbols-outlined ${color}`;
+                    icoEl.style.cssText = 'font-size:18px!important;width:18px!important;height:18px!important;flex-shrink:0;margin-top:2px';
+                    icoEl.textContent = icon;
+
+                    // Text block
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'flex-1 min-w-0';
+                    const actionP = document.createElement('p');
+                    actionP.className = 'text-[11px] font-bold uppercase tracking-wider';
+                    actionP.style.color = 'var(--text)';
+                    actionP.textContent = action.toUpperCase();
+                    const whoP = document.createElement('p');
+                    whoP.className = 'text-[10px] font-mono truncate';
+                    whoP.style.color = 'var(--text-faint)';
+                    whoP.textContent = who; // textContent = XSS safe
+                    textDiv.appendChild(actionP);
+                    textDiv.appendChild(whoP);
+
+                    // Time
+                    const timeP = document.createElement('p');
+                    timeP.className = 'text-[10px] font-mono flex-shrink-0';
+                    timeP.style.color = 'var(--text-faint)';
+                    timeP.textContent = time;
+
+                    row.appendChild(icoEl);
+                    row.appendChild(textDiv);
+                    row.appendChild(timeP);
                     container.appendChild(row);
                 });
             } else if (container) {
@@ -295,7 +322,15 @@
             if (mem) mem.textContent = h.memory || '—';
             if (upt) upt.textContent = h.uptime || '—';
             const chip = document.getElementById('uptime-chip');
-            if (chip) chip.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">monitoring</span> Uptime ${h.uptime || '—'}`;
+            if (chip) {
+                chip.textContent = '';
+                const icoEl = document.createElement('span');
+                icoEl.className = 'material-symbols-outlined';
+                icoEl.style.cssText = 'font-size:14px!important;width:14px!important;height:14px!important;';
+                icoEl.textContent = 'monitoring';
+                chip.appendChild(icoEl);
+                chip.appendChild(document.createTextNode(' Uptime ' + (h.uptime || '—')));
+            }
         }
 
         // Doughnut Chart
@@ -313,8 +348,27 @@
             });
             const leg = document.getElementById('donut-legend');
             if (leg) {
-                [['Analyzed','#06ffa0',analyzed],['Pending','#a78bfa',pending]].forEach(([l,c,v]) => {
-                    leg.innerHTML += `<div class="flex items-center justify-between text-[11px]"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${c};flex-shrink:0"></span><span style="color:var(--text-muted)">${l}</span></span><span class="font-bold" style="color:var(--text)">${v}</span></div>`;
+                leg.innerHTML = ''; // Clear first
+                [['Analyzed', '#06ffa0', analyzed], ['Pending', '#a78bfa', pending]].forEach(([label, color, val]) => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between text-[11px]';
+                    const left = document.createElement('span');
+                    left.className = 'flex items-center gap-2';
+                    const dot = document.createElement('span');
+                    dot.className = 'w-3 h-3 rounded-full flex-shrink-0';
+                    dot.style.background = color;
+                    const lbl = document.createElement('span');
+                    lbl.style.color = 'var(--text-muted)';
+                    lbl.textContent = label;
+                    left.appendChild(dot);
+                    left.appendChild(lbl);
+                    const right = document.createElement('span');
+                    right.className = 'font-bold';
+                    right.style.color = 'var(--text)';
+                    right.textContent = String(val);
+                    row.appendChild(left);
+                    row.appendChild(right);
+                    leg.appendChild(row);
                 });
             }
         }

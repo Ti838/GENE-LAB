@@ -53,13 +53,39 @@ const api = {
     post(endpoint, body) { return this.request(endpoint, { method: 'POST', body: JSON.stringify(body) }); },
     put(endpoint, body) { return this.request(endpoint, { method: 'PUT', body: JSON.stringify(body) }); },
     delete(endpoint) { return this.request(endpoint, { method: 'DELETE' }); },
-    upload(endpoint, formData) {
+    async upload(endpoint, formData) {
         const token = localStorage.getItem('genelab_token');
-        return fetch(`${API_BASE_URL}${endpoint}`, {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
-        }).then(res => res.json());
-    }
+        });
+        const text = await response.text();
+        let data = {};
+        if (text) {
+            try { data = JSON.parse(text); } catch { data = { message: text }; }
+        }
+        if (!response.ok) {
+            const errorMsg = data.message || 'Upload failed';
+            if (response.status === 401) {
+                localStorage.removeItem('genelab_token');
+                localStorage.removeItem('genelab_user');
+                sessionStorage.removeItem('genelab_token');
+                sessionStorage.removeItem('genelab_user');
+                if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
+                setTimeout(() => {
+                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
+                    window.location.href = isSubDir ? '../login.html' : 'login.html';
+                }, 1500);
+            } else {
+                if (window.showToast) window.showToast(errorMsg, 'error');
+            }
+            throw new Error(errorMsg);
+        }
+        return data;
+    },
+
+    // PATCH (partial update) — used for profile and settings
+    patch(endpoint, body) { return this.request(endpoint, { method: 'PATCH', body: JSON.stringify(body) }); }
 };
 

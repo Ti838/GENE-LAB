@@ -30,7 +30,12 @@
                 </div>
                 <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+            <div class="px-6 py-4 border-b" style="border-color:var(--border)">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
+                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
+                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">Doctor</p>
+            </div>
+            <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
                 <a href="upload.html" class="sidebar-link"><span class="material-symbols-outlined">upload_file</span> Upload DNA</a>
                 <a href="analysis.html" class="sidebar-link"><span class="material-symbols-outlined">psychology</span> Analysis</a>
@@ -78,6 +83,21 @@
         </main>
     </div>
     <script src="../../js/compare.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.doctorOnly()) return;
+        const userStr = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                const nameEl = document.getElementById('sidebar-user-name');
+                const roleEl = document.getElementById('sidebar-user-role');
+                if (nameEl) nameEl.textContent = user.name || 'Dr. User';
+                if (roleEl) roleEl.textContent = (user.role || 'doctor').charAt(0).toUpperCase() + (user.role || 'doctor').slice(1);
+            } catch(e){}
+        }
+    });
+    </script>
 </body>
 </html>
 

@@ -5,6 +5,8 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('doctor/dashboard.html')) return;
+    // Role guard — redirect non-doctors immediately
+    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
 
     let allFiles = [];
 
@@ -39,9 +41,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const badge = document.getElementById('anomaly-badge');
             if (badge) badge.textContent = anomalies > 0 ? `${anomalies} Alert${anomalies > 1 ? 's' : ''}` : 'Clear';
 
-            // Sync chip
+            // Sync chip — build via DOM to avoid XSS
             const chip = document.getElementById('last-sync-chip');
-            if (chip) chip.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px!important;width:14px!important;height:14px!important;">schedule</span> Synced ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+            if (chip) {
+                chip.textContent = '';
+                const ico = document.createElement('span');
+                ico.className = 'material-symbols-outlined';
+                ico.style.cssText = 'font-size:14px!important;width:14px!important;height:14px!important;';
+                ico.textContent = 'schedule';
+                chip.appendChild(ico);
+                chip.appendChild(document.createTextNode(
+                    ' Synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                ));
+            }
 
             // Trend chart data
             let labels = [], counts = [];
@@ -82,29 +94,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const sorted = [...files].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
         if (sorted.length === 0) {
-            container.innerHTML = '<p class="text-sm opacity-40 text-center py-6">No recent activity. Upload your first DNA file.</p>';
+            const p = document.createElement('p');
+            p.className = 'text-sm opacity-40 text-center py-6';
+            p.textContent = 'No recent activity. Upload your first DNA file.';
+            container.appendChild(p);
             return;
         }
 
         sorted.forEach(f => {
             const time = new Date(f.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
             const isAnalyzed = f.status === 'analyzed';
+
             const div = document.createElement('div');
             div.className = 'activity-item flex gap-3 p-3.5 rounded-2xl border';
-            div.style = 'background:rgba(255,255,255,0.03);border-color:var(--border)';
+            div.style.cssText = 'background:rgba(255,255,255,0.03);border-color:var(--border)';
             div.dataset.fileId = f._id;
-            div.innerHTML = `
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${isAnalyzed ? 'rgba(6,255,160,0.1)' : 'rgba(0,212,255,0.1)'}">
-                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;color:${isAnalyzed ? 'var(--teal)' : 'var(--cyan)'}">
-                        ${isAnalyzed ? 'check_circle' : 'pending'}
-                    </span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-white">${isAnalyzed ? 'Analysis Complete' : 'DNA Uploaded'}</p>
-                    <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)">${f.originalName}</p>
-                </div>
-                <p class="text-[10px] flex-shrink-0" style="color:var(--text-faint)">${time}</p>
-            `;
+
+            // Icon container
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0';
+            iconWrap.style.background = isAnalyzed ? 'rgba(6,255,160,0.1)' : 'rgba(0,212,255,0.1)';
+            const ico = document.createElement('span');
+            ico.className = 'material-symbols-outlined';
+            ico.style.cssText = `font-size:18px!important;width:18px!important;height:18px!important;color:${isAnalyzed ? 'var(--teal)' : 'var(--cyan)'}`;
+            ico.textContent = isAnalyzed ? 'check_circle' : 'pending';
+            iconWrap.appendChild(ico);
+
+            // Text content
+            const textWrap = document.createElement('div');
+            textWrap.className = 'flex-1 min-w-0';
+            const titleP = document.createElement('p');
+            titleP.className = 'text-xs font-bold text-white';
+            titleP.textContent = isAnalyzed ? 'Analysis Complete' : 'DNA Uploaded';
+            const nameP = document.createElement('p');
+            nameP.className = 'text-[10px] font-mono truncate';
+            nameP.style.color = 'var(--text-faint)';
+            nameP.textContent = f.originalName; // textContent prevents XSS
+            textWrap.appendChild(titleP);
+            textWrap.appendChild(nameP);
+
+            // Time
+            const timeP = document.createElement('p');
+            timeP.className = 'text-[10px] flex-shrink-0';
+            timeP.style.color = 'var(--text-faint)';
+            timeP.textContent = time;
+
+            div.appendChild(iconWrap);
+            div.appendChild(textWrap);
+            div.appendChild(timeP);
             container.appendChild(div);
         });
     }
@@ -166,7 +203,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         sys.forEach(e => {
             const line = document.createElement('div');
             line.className = 'flex gap-3 items-start py-1.5 border-b border-white/5';
-            line.innerHTML = `<span style="color:var(--text-faint);min-width:70px">${e.time}</span><span style="color:${cols[e.level]||'#fff'};min-width:58px;font-weight:700">[${e.level}]</span><span style="color:#cbd5e1">${e.msg}</span>`;
+            // Build each column safely
+            const timeSpan = document.createElement('span');
+            timeSpan.style.cssText = 'color:var(--text-faint);min-width:70px';
+            timeSpan.textContent = e.time;
+            const levelSpan = document.createElement('span');
+            levelSpan.style.cssText = `color:${cols[e.level]||'#fff'};min-width:58px;font-weight:700`;
+            levelSpan.textContent = `[${e.level}]`;
+            const msgSpan = document.createElement('span');
+            msgSpan.style.color = '#cbd5e1';
+            msgSpan.textContent = e.msg; // textContent safe
+            line.appendChild(timeSpan);
+            line.appendChild(levelSpan);
+            line.appendChild(msgSpan);
             container.appendChild(line);
         });
         logsOverlay.classList.remove('hidden');

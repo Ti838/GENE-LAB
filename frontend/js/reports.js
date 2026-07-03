@@ -29,21 +29,20 @@ function _safeStem(originalName) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('reports.html')) return;
+    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
 
     const reportsTableBody = document.getElementById('reports-table-body');
 
-    // ── Load and render reports table ─────────────────────────────────────
     async function loadReports() {
+        if (!reportsTableBody) return;
+        reportsTableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center italic" style="color:var(--text-faint)">Accessing clinical records...</td></tr>';
         try {
             const files = await api.get('/dna/my-files');
-            if (!reportsTableBody) return;
-
             const analyzedFiles = files.filter(f => f.status === 'analyzed');
             reportsTableBody.innerHTML = '';
 
-            if (analyzedFiles.length === 0) {
-                reportsTableBody.innerHTML =
-                    '<tr><td colspan="4" class="text-center text-slate-500 p-8 italic">No analyzed reports found. Run analysis on your files first.</td></tr>';
+            if (!analyzedFiles.length) {
+                reportsTableBody.innerHTML = '<tr><td colspan="4" class="text-center italic p-8" style="color:var(--text-faint)">No analyzed reports found. Run analysis on your files first.</td></tr>';
                 return;
             }
 
@@ -51,28 +50,59 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const date = new Date(f.createdAt).toLocaleDateString();
                 const row  = document.createElement('tr');
                 row.className = 'hover:bg-white/5 transition';
-                row.innerHTML = `
-                    <td class="p-4 font-mono text-cyan text-xs">${f._id.substr(-8).toUpperCase()}</td>
-                    <td class="p-4 text-white font-bold">${f.originalName}</td>
-                    <td class="p-4 text-slate-500 text-sm">${date}</td>
-                    <td class="p-4 text-right">
-                        <div class="flex justify-end gap-3">
-                            <button onclick="viewReport('${f._id}')" class="text-teal font-bold text-xs uppercase hover:underline flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">visibility</span> View
-                            </button>
-                            <button onclick="downloadReport('${f._id}')" class="text-cyan font-bold text-xs uppercase hover:underline flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF
-                            </button>
-                            <button onclick="exportReportCSV('${f._id}')" class="text-violet font-bold text-xs uppercase hover:underline flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">download</span> CSV
-                            </button>
-                        </div>
-                    </td>
-                `;
+                row.style.borderBottom = '1px solid var(--border)';
+
+                // Ref ID — last 8 chars of mongo id (safe, no user input)
+                const tdId = document.createElement('td');
+                tdId.className = 'p-4 font-mono text-xs';
+                tdId.style.color = 'var(--cyan)';
+                tdId.textContent = f._id.substr(-8).toUpperCase();
+
+                // File name
+                const tdName = document.createElement('td');
+                tdName.className = 'p-4 font-bold';
+                tdName.style.color = 'var(--text)';
+                tdName.textContent = f.originalName; // textContent = XSS safe
+
+                // Date
+                const tdDate = document.createElement('td');
+                tdDate.className = 'p-4 text-sm';
+                tdDate.style.color = 'var(--text-muted)';
+                tdDate.textContent = date;
+
+                // Actions
+                const tdActions = document.createElement('td');
+                tdActions.className = 'p-4 text-right';
+                const btnWrap = document.createElement('div');
+                btnWrap.className = 'flex justify-end gap-3';
+
+                const mkBtn = (label, icon, color, handler) => {
+                    const btn = document.createElement('button');
+                    btn.className = `font-bold text-xs uppercase flex items-center gap-1 hover:underline transition`;
+                    btn.style.color = `var(--${color})`;
+                    const ico = document.createElement('span');
+                    ico.className = 'material-symbols-outlined';
+                    ico.style.cssText = 'font-size:14px!important;width:14px!important;height:14px!important;';
+                    ico.textContent = icon;
+                    btn.appendChild(ico);
+                    btn.appendChild(document.createTextNode(' ' + label));
+                    btn.addEventListener('click', handler);
+                    return btn;
+                };
+
+                btnWrap.appendChild(mkBtn('View', 'visibility',   'teal',   () => window.viewReport(f._id)));
+                btnWrap.appendChild(mkBtn('PDF',  'picture_as_pdf','cyan',  () => window.downloadReport(f._id)));
+                btnWrap.appendChild(mkBtn('CSV',  'download',     'violet', () => window.exportReportCSV(f._id)));
+
+                tdActions.appendChild(btnWrap);
+                row.appendChild(tdId);
+                row.appendChild(tdName);
+                row.appendChild(tdDate);
+                row.appendChild(tdActions);
                 reportsTableBody.appendChild(row);
             });
-        } catch (error) {
-            console.error('Failed to load reports:', error);
+        } catch (err) {
+            reportsTableBody.innerHTML = '<tr><td colspan="4" class="text-center p-8 italic" style="color:var(--coral)">Failed to load reports. Please refresh.</td></tr>';
         }
     }
 

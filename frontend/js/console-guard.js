@@ -1,39 +1,66 @@
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
- * Console Guard - Prevents mobile/tablet access to administrative consoles.
+ * Console Guard — Blocks:
+ *   1. Mobile / small-screen devices from accessing admin pages.
+ *   2. Unauthenticated users (no token).
+ *   3. Non-admin roles (doctor, researcher, etc.).
+ *
+ * This script is loaded SYNCHRONOUSLY (no defer/async) at the top of every
+ * console page so the check runs before any content is painted.
  */
 (() => {
-    // 1. Check User Agent
+    // ── Helper: resolve login URL relative to current depth ──────
+    function loginUrl() {
+        return window.location.pathname.includes('/console/')
+            ? '../login.html'
+            : 'pages/login.html';
+    }
+
+    // ── 1. Auth + Role check ──────────────────────────────────────
+    const token = localStorage.getItem('genelab_token') ||
+                  sessionStorage.getItem('genelab_token');
+
+    if (!token) {
+        window.location.replace(loginUrl());
+        return; // Stop executing — redirect is in flight
+    }
+
+    let user = null;
+    try {
+        const raw = localStorage.getItem('genelab_user') ||
+                    sessionStorage.getItem('genelab_user');
+        user = raw ? JSON.parse(raw) : null;
+    } catch (_) { user = null; }
+
+    if (!user || user.role !== 'admin') {
+        // Clear any partial session and send to login
+        localStorage.removeItem('genelab_token');
+        localStorage.removeItem('genelab_user');
+        sessionStorage.removeItem('genelab_token');
+        sessionStorage.removeItem('genelab_user');
+        window.location.replace(loginUrl());
+        return;
+    }
+
+    // ── 2. Mobile / small-screen block ───────────────────────────
     const mobileUARegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    const isMobileUA = mobileUARegex.test(navigator.userAgent);
-
-    // 2. Check viewport size (blocking mobile and portrait tablet widths)
+    const isMobileUA    = mobileUARegex.test(navigator.userAgent);
     const isSmallScreen = window.innerWidth < 1024;
-
-    // Avoid redirect loop if already on the blocked page
     const isBlockedPage = window.location.pathname.includes('mobile-blocked.html');
 
     if ((isMobileUA || isSmallScreen) && !isBlockedPage) {
-        // Log block attempt in session storage for debug display
         sessionStorage.setItem('console-block-reason', JSON.stringify({
-            userAgent: navigator.userAgent,
-            resolution: `${window.innerWidth}x${window.innerHeight}`,
-            timestamp: new Date().toISOString(),
-            ipPlaceholder: "Logged Security Event"
+            userAgent:     navigator.userAgent,
+            resolution:    `${window.innerWidth}x${window.innerHeight}`,
+            timestamp:     new Date().toISOString(),
+            blockedUser:   user.email || 'unknown'
         }));
 
-        // Determine path to mobile-blocked.html
-        let targetPath = 'mobile-blocked.html';
-        
-        // If nested or using absolute URLs, route properly
-        if (window.location.pathname.includes('/pages/')) {
-            targetPath = '../console/mobile-blocked.html';
-        } else if (window.location.pathname.includes('/console/')) {
-            targetPath = 'mobile-blocked.html';
-        } else {
-            targetPath = '/console/mobile-blocked.html';
-        }
+        const targetPath = window.location.pathname.includes('/console/')
+            ? 'mobile-blocked.html'
+            : 'console/mobile-blocked.html';
 
         window.location.replace(targetPath);
     }
 })();
+

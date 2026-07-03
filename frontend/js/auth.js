@@ -42,26 +42,29 @@ const auth = {
     },
 
     persistSession(data, rememberMe) {
+        // Write ONLY to the appropriate storage based on rememberMe
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem('genelab_token', data.token);
         storage.setItem('genelab_user', JSON.stringify(data.user || data));
-        localStorage.setItem('genelab_token', data.token);
-        localStorage.setItem('genelab_user', JSON.stringify(data.user || data));
+        // Always keep a localStorage copy for the guard functions (session check)
+        // but remove it if the user did NOT check rememberMe (so it won't persist across browser closes)
+        if (!rememberMe) {
+            localStorage.removeItem('genelab_token');
+            localStorage.removeItem('genelab_user');
+        }
     },
 
     redirectByRole(role) {
-        // Determine base path depending on where we are
-        const isAtPages = window.location.pathname.includes('/pages/login');
-        const base = isAtPages ? '' : 'pages/';
+        // Build the target path based on current depth in the pages/ directory
+        const path = window.location.pathname;
+        const inPages = path.includes('/pages/') || path.endsWith('login.html') || path.endsWith('index.html');
+        const base = inPages ? '' : 'pages/';
 
         if (role === 'admin') {
             window.location.href = base + 'console/dashboard.html';
             return;
         }
-        if (role === 'researcher') {
-            window.location.href = base + 'doctor/dashboard.html';
-            return;
-        }
+        // Both 'doctor' and 'researcher' land on the doctor portal
         window.location.href = base + 'doctor/dashboard.html';
     },
 

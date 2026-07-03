@@ -33,7 +33,15 @@
                 </div>
                 <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <nav class="flex-1 px-5 space-y-1.5 mt-8">
+            <div class="px-6 py-4 border-b" style="border-color:var(--border)">
+                <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Admin Session</p>
+                <p class="text-sm font-bold text-white truncate" id="admin-name">Administrator</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                    <div class="w-1.5 h-1.5 rounded-full bg-teal animate-pulse"></div>
+                    <p class="text-[10px] font-mono" style="color:var(--teal)">System Online</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
                 <a href="doctors.html" class="sidebar-link active"><span class="material-symbols-outlined">manage_accounts</span> Doctors</a>
                 <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
@@ -88,6 +96,14 @@
                 </div>
             </div>
             <script src="../../js/admin.js" defer></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                try {
+                    const u = JSON.parse(localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user') || '{}');
+                    if (u.name) document.getElementById('admin-name').textContent = u.name;
+                } catch(e) {}
+            });
+            </script>
         </main>
     </div>
 </body>
