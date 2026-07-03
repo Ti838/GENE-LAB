@@ -106,7 +106,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isAnalyzed = f.status === 'analyzed';
 
             const div = document.createElement('div');
-            div.className = 'activity-item flex gap-3 p-3.5 rounded-2xl border';
+            if (isAnalyzed) {
+                div.className = 'activity-item flex gap-3 p-3.5 rounded-2xl border cursor-pointer hover:bg-white/10 transition';
+                div.addEventListener('click', () => {
+                    window.location.href = `result.html?id=${f._id}`;
+                });
+            } else {
+                div.className = 'activity-item flex gap-3 p-3.5 rounded-2xl border';
+            }
             div.style.cssText = 'background:rgba(255,255,255,0.03);border-color:var(--border)';
             div.dataset.fileId = f._id;
 

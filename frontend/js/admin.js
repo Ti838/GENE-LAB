@@ -247,21 +247,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const tdDate = _td(new Date(file.createdAt).toLocaleString(), 'text-[10px] font-mono');
                     tdDate.style.color = 'var(--text-faint)';
 
-                    // Col 5: delete button
-                    const tdDel = document.createElement('td');
-                    tdDel.className = 'p-4 text-right';
+                    // Col 5: action buttons
+                    const tdActions = document.createElement('td');
+                    tdActions.className = 'p-4 text-right';
+                    const btnWrap = document.createElement('div');
+                    btnWrap.className = 'flex justify-end gap-2';
+
+                    if (file.status === 'analyzed') {
+                        const viewBtn = document.createElement('button');
+                        viewBtn.className = 'px-3 py-1.5 rounded-lg text-[10px] font-bold transition';
+                        viewBtn.style.cssText = 'background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);color:var(--cyan)';
+                        viewBtn.textContent = 'View';
+                        viewBtn.addEventListener('click', () => {
+                            window.location.href = `../doctor/result.html?id=${file._id}`;
+                        });
+                        btnWrap.appendChild(viewBtn);
+                    }
+
                     const delBtn = document.createElement('button');
                     delBtn.className = 'px-3 py-1.5 rounded-lg text-[10px] font-bold transition';
                     delBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
                     delBtn.textContent = 'Delete';
                     delBtn.addEventListener('click', () => deleteDNAFile(file._id, file.originalName));
-                    tdDel.appendChild(delBtn);
+                    btnWrap.appendChild(delBtn);
+                    tdActions.appendChild(btnWrap);
 
                     row.appendChild(tdFile);
                     row.appendChild(tdDoctor);
                     row.appendChild(tdStatus);
                     row.appendChild(tdDate);
-                    row.appendChild(tdDel);
+                    row.appendChild(tdActions);
                     dataBody.appendChild(row);
                 });
             } catch (err) {
