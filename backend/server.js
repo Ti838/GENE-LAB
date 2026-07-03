@@ -99,8 +99,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // ── Static Uploads (optional — serves uploaded files if needed) ───────────
-// Uploads are served through authenticated API routes, NOT static serving.
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Uploads are served through authenticated API routes or fallback static serving
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth',          authRoutes);

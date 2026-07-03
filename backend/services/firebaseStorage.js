@@ -34,7 +34,24 @@ async function uploadBufferToFirebase({
 
   const bucket = getFirebaseBucket();
   if (!bucket) {
-    throw new Error('Firebase Storage is not configured. Set FIREBASE_STORAGE_BUCKET and service account credentials.');
+    // Local filesystem storage fallback when Firebase is not configured (e.g. local development)
+    const fs = require('fs');
+    const path = require('path');
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    const safeFile = sanitizeName(originalName);
+    const localFileName = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${safeFile}`;
+    const localFilePath = path.join(uploadsDir, localFileName);
+    fs.writeFileSync(localFilePath, buffer);
+
+    return {
+      bucketName: 'local',
+      storagePath: `uploads/${localFileName}`,
+      downloadUrl: `/uploads/${localFileName}`,
+      token: 'local-token'
+    };
   }
 
   const { storagePath, token } = buildStoragePath(folder, ownerId, originalName);
