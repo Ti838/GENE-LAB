@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const leftName = document.getElementById('profile-display-name');
             if (leftName) leftName.textContent = user.name || 'Doctor Profile';
 
+            const sidebarName = document.getElementById('sidebar-user-name') || document.getElementById('admin-name');
+            if (sidebarName) sidebarName.textContent = user.name || 'Dr. User';
+
             const leftTitle = document.getElementById('profile-display-title');
             if (leftTitle) leftTitle.textContent = user.specialization || 'Clinical Specialist';
 
@@ -122,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const leftTitle = document.getElementById('profile-display-title');
                     if (leftTitle) leftTitle.textContent = response.user.specialization || 'Clinical Specialist';
 
-                    const sidebarName = document.getElementById('sidebar-user-name');
+                    const sidebarName = document.getElementById('sidebar-user-name') || document.getElementById('admin-name');
                     if (sidebarName) sidebarName.textContent = response.user.name || 'Dr. User';
                 }
 

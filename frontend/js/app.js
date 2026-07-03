@@ -126,11 +126,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupPointerParallax(hasGsap && !reducedMotion);
 
-  // Dynamically customize UI vocabulary for Researchers
+  // Populate sidebar / profile user names dynamically
   const userJson = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
   if (userJson) {
     try {
       const user = JSON.parse(userJson);
+      const sidebarName = document.getElementById('sidebar-user-name') || document.getElementById('admin-name');
+      if (sidebarName && user.name) {
+        sidebarName.textContent = user.name;
+      }
       if (user.role === 'researcher') {
         if (document.title.includes('Doctor')) {
           document.title = document.title.replace('Doctor', 'Researcher');
