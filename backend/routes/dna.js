@@ -136,6 +136,8 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
       return res.status(409).json({ message: 'Analysis already in progress for this file.' });
     }
 
+    const analysisType = req.body.analysisType || 'instant';
+
     // Mark as analyzing
     file.status = 'analyzing';
     await file.save();
@@ -146,7 +148,7 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
       jobId,
       userId: req.user._id,
       dnaFileId: file._id,
-      analysisType: 'instant',
+      analysisType,
       status: 'queued',
       inputFileName: file.originalName,
       inputFileSize: file.size
@@ -165,7 +167,11 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
     };
 
     try {
-      await queueService.enqueueInstantAnalysis(jobPayload);
+      if (analysisType === 'deep') {
+        await queueService.enqueueDeepAnalysis(jobPayload);
+      } else {
+        await queueService.enqueueInstantAnalysis(jobPayload);
+      }
       return res.json({
         message: 'Analysis started.',
         jobId,
@@ -177,20 +183,53 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
       console.warn('Queue fallback for /analyze/:id:', queueErr.message);
       let result;
       try {
-        if (file.sequence) {
-          result = await fastapiService.runInstantAnalysisText(file.sequence, file.originalName, []);
-        } else if (file.fileUrl || (file.path && /^https?:\/\//.test(file.path))) {
-          const sequenceText = await downloadTextFromUrl(file.fileUrl || file.path);
-          const parsedSequence = dnaService.parseSequence(sequenceText);
-          result = await fastapiService.runInstantAnalysisText(parsedSequence, file.originalName, []);
-        } else if (file.sequence) {
-          result = await fastapiService.runInstantAnalysisText(file.sequence, file.originalName, []);
+        if (analysisType === 'deep') {
+          if (file.sequence) {
+            result = await fastapiService.runDeepAnalysisText(file.sequence, file.originalName);
+          } else if (file.fileUrl || (file.path && /^https?:\/\//.test(file.path))) {
+            const sequenceText = await downloadTextFromUrl(file.fileUrl || file.path);
+            const parsedSequence = dnaService.parseSequence(sequenceText);
+            result = await fastapiService.runDeepAnalysisText(parsedSequence, file.originalName);
+          } else {
+            throw new Error('No file content available for deep analysis.');
+          }
+
+          await DNAFile.findByIdAndUpdate(file._id, {
+            status: 'analyzed',
+            analysisType: 'deep',
+            analysisJobId: jobId,
+            sequence: file.sequence || result.sequence || undefined,
+            gcContent: 0,
+            blastResult: {
+              status: result.status,
+              rid: result.rid,
+              totalHits: result.total_hits,
+              topOrganism: result.top_organism,
+              topIdentity: result.top_identity,
+              topAccession: result.top_accession,
+              topEvalue: result.top_evalue,
+              organismsIdentified: result.organisms_identified,
+              scientificExplanation: result.scientific_explanation,
+              hits: result.hits
+            },
+            scientificSummary: result.scientific_explanation,
+            sequenceLength: result.sequence_length
+          });
         } else {
-          throw new Error('No file content available for analysis.');
+          if (file.sequence) {
+            result = await fastapiService.runInstantAnalysisText(file.sequence, file.originalName, []);
+          } else if (file.fileUrl || (file.path && /^https?:\/\//.test(file.path))) {
+            const sequenceText = await downloadTextFromUrl(file.fileUrl || file.path);
+            const parsedSequence = dnaService.parseSequence(sequenceText);
+            result = await fastapiService.runInstantAnalysisText(parsedSequence, file.originalName, []);
+          } else {
+            throw new Error('No file content available for instant analysis.');
+          }
+
+          const updateData = _mapInstantResultToDNAFile(result, jobId);
+          await DNAFile.findByIdAndUpdate(file._id, updateData);
         }
 
-        const updateData = _mapInstantResultToDNAFile(result, jobId);
-        await DNAFile.findByIdAndUpdate(file._id, updateData);
         await AnalysisJob.findOneAndUpdate(
           { jobId },
           { status: 'completed', completedAt: new Date(), progress: 100, result }

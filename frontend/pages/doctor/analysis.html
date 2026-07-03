@@ -80,7 +80,25 @@
                         <span class="material-symbols-outlined text-4xl text-cyan">memory</span>
                     </div>
                     <h3 class="text-xl font-display font-bold mb-3">Engine Initialization</h3>
-                    <p class="mb-8 max-w-xs mx-auto" style="color:var(--text-muted)">Select a file from the left, then click Run to launch AI-powered nucleotide analysis and mutation screening.</p>
+                    <p class="mb-6 max-w-xs mx-auto" style="color:var(--text-muted)">Select a file from the left, select an analysis mode, and run the engine.</p>
+                    
+                    <!-- Intensity Mode Toggle -->
+                    <div class="w-full text-left mb-6">
+                        <label class="text-[10px] font-bold uppercase tracking-widest block mb-3 text-cyan">Analysis Intensity Mode</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="glass-panel p-4 rounded-xl cursor-pointer flex flex-col gap-1 border transition-all hover:border-cyan/30" style="background:rgba(255,255,255,0.02);border-color:var(--border)" id="mode-instant-label">
+                                <input type="radio" name="analysis-mode" value="instant" checked class="sr-only" />
+                                <span class="font-bold text-sm text-white flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan inline-block"></span>Instant Mode</span>
+                                <span class="text-[10px]" style="color:var(--text-faint)">Metrics & codon stats</span>
+                            </label>
+                            <label class="glass-panel p-4 rounded-xl cursor-pointer flex flex-col gap-1 border transition-all hover:border-cyan/30" style="background:rgba(255,255,255,0.02);border-color:var(--border)" id="mode-deep-label">
+                                <input type="radio" name="analysis-mode" value="deep" class="sr-only" />
+                                <span class="font-bold text-sm text-white flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white/20 inline-block"></span>Deep BLAST</span>
+                                <span class="text-[10px]" style="color:var(--text-faint)">Database alignment</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <button id="run-analysis-btn" disabled class="btn-premium btn-cyan w-full py-5 rounded-xl text-base font-bold opacity-50 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">play_circle</span> Run Sequence Analysis
                     </button>

@@ -234,6 +234,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ── Intensity Mode Styling & Toggling ─────────────────────────
+    const radios = document.getElementsByName('analysis-mode');
+    function updateModeUI() {
+        radios.forEach(r => {
+            const label = r.closest('label');
+            if (!label) return;
+            const dot = label.querySelector('.rounded-full');
+            if (r.checked) {
+                label.style.borderColor = 'var(--cyan)';
+                label.style.background = 'rgba(0, 212, 255, 0.05)';
+                if (dot) {
+                    dot.style.background = 'var(--cyan)';
+                    dot.classList.add('shadow-[0_0_8px_var(--cyan)]');
+                }
+            } else {
+                label.style.borderColor = 'var(--border)';
+                label.style.background = 'rgba(255, 255, 255, 0.02)';
+                if (dot) {
+                    dot.style.background = 'rgba(255, 255, 255, 0.2)';
+                    dot.classList.remove('shadow-[0_0_8px_var(--cyan)]');
+                }
+            }
+        });
+    }
+    radios.forEach(r => {
+        r.addEventListener('change', updateModeUI);
+    });
+    updateModeUI();
+
     // ── Run analysis button ───────────────────────────────────────
     if (runAnalysisBtn) {
         runAnalysisBtn.addEventListener('click', async () => {
@@ -242,12 +271,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const selectedMode = document.querySelector('input[name="analysis-mode"]:checked')?.value || 'instant';
+
             runAnalysisBtn.disabled = true;
             runAnalysisBtn.classList.add('opacity-50');
             runAnalysisBtn.innerHTML = '<span class="material-symbols-outlined animate-spin-slow" style="font-size:18px">sync</span>&nbsp;Starting...';
 
             try {
-                const response = await api.post(`/dna/analyze/${selectedFileId}`);
+                const response = await api.post(`/dna/analyze/${selectedFileId}`, { analysisType: selectedMode });
                 // response: { message, jobId, statusUrl, dnaFileId }
                 if (response.jobId) {
                     showStatusPanel(response.jobId, response.dnaFileId);
