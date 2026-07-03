@@ -33,48 +33,52 @@ async function uploadBufferToFirebase({
   }
 
   const bucket = getFirebaseBucket();
-  if (!bucket) {
-    // Local filesystem storage fallback when Firebase is not configured (e.g. local development)
-    const fs = require('fs');
-    const path = require('path');
-    const uploadsDir = path.join(__dirname, '..', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-    const safeFile = sanitizeName(originalName);
-    const localFileName = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${safeFile}`;
-    const localFilePath = path.join(uploadsDir, localFileName);
-    fs.writeFileSync(localFilePath, buffer);
+  if (bucket) {
+    try {
+      const { storagePath, token } = buildStoragePath(folder, ownerId, originalName);
+      const file = bucket.file(storagePath);
 
-    return {
-      bucketName: 'local',
-      storagePath: `uploads/${localFileName}`,
-      downloadUrl: `/uploads/${localFileName}`,
-      token: 'local-token'
-    };
+      await file.save(buffer, {
+        resumable: false,
+        metadata: {
+          contentType: mimeType || 'application/octet-stream',
+          metadata: {
+            firebaseStorageDownloadTokens: token,
+            ...metadata
+          }
+        }
+      });
+
+      const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media&token=${token}`;
+
+      return {
+        bucketName: bucket.name,
+        storagePath,
+        downloadUrl,
+        token
+      };
+    } catch (firebaseErr) {
+      console.warn('Firebase upload failed, falling back to local storage:', firebaseErr.message);
+    }
   }
 
-  const { storagePath, token } = buildStoragePath(folder, ownerId, originalName);
-  const file = bucket.file(storagePath);
-
-  await file.save(buffer, {
-    resumable: false,
-    metadata: {
-      contentType: mimeType || 'application/octet-stream',
-      metadata: {
-        firebaseStorageDownloadTokens: token,
-        ...metadata
-      }
-    }
-  });
-
-  const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media&token=${token}`;
+  // Local filesystem storage fallback when Firebase is not configured or fails
+  const fs = require('fs');
+  const path = require('path');
+  const uploadsDir = path.join(__dirname, '..', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  const safeFile = sanitizeName(originalName);
+  const localFileName = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${safeFile}`;
+  const localFilePath = path.join(uploadsDir, localFileName);
+  fs.writeFileSync(localFilePath, buffer);
 
   return {
-    bucketName: bucket.name,
-    storagePath,
-    downloadUrl,
-    token
+    bucketName: 'local',
+    storagePath: `uploads/${localFileName}`,
+    downloadUrl: `/uploads/${localFileName}`,
+    token: 'local-token'
   };
 }
 
