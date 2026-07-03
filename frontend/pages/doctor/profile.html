@@ -67,30 +67,47 @@
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-6 max-w-6xl" data-animate="panel">
-                <div class="glass-panel p-8 rounded-[24px] text-center relative overflow-hidden group">
+                <div class="glass-panel p-8 rounded-[24px] text-center relative overflow-hidden group flex flex-col justify-between">
                     <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:linear-gradient(180deg, rgba(0,180,216,0.08) 0%, transparent 100%)"></div>
-                    <div class="w-32 h-32 bg-cyan/10 border-2 border-cyan/30 rounded-full mx-auto mb-6 flex items-center justify-center overflow-hidden text-cyan relative z-10" style="box-shadow:0 0 30px rgba(0,212,255,0.15)">
-                        <img data-profile-photo-preview src="" alt="Profile" class="w-full h-full object-cover hidden">
-                        <span data-profile-photo-icon class="material-symbols-outlined" style="font-size:56px!important;width:56px!important;height:56px!important;">person</span>
+                    <div>
+                        <div class="w-32 h-32 bg-cyan/10 border-2 border-cyan/30 rounded-full mx-auto mb-6 flex items-center justify-center overflow-hidden text-cyan relative z-10 cursor-pointer" style="box-shadow:0 0 30px rgba(0,212,255,0.15)" onclick="document.querySelector('[data-profile-photo-input]').click()">
+                            <img data-profile-photo-preview src="" alt="Profile" class="w-full h-full object-cover hidden">
+                            <span data-profile-photo-icon class="material-symbols-outlined" style="font-size:56px!important;width:56px!important;height:56px!important;">person</span>
+                        </div>
+                        <h3 class="text-xl font-display font-bold mb-1" id="profile-display-name">Doctor Profile</h3>
+                        <p class="text-xs uppercase font-mono tracking-widest mb-6 text-cyan" id="profile-display-title">Clinical Specialist</p>
+
+                        <!-- Live clinical activity statistics -->
+                        <div class="grid grid-cols-2 gap-3 mb-6 text-center">
+                            <div class="p-3.5 rounded-xl border" style="background:rgba(255,255,255,0.02);border-color:var(--border)">
+                                <p class="text-[9px] font-bold uppercase tracking-wider text-muted mb-1">DNA Files</p>
+                                <p class="text-xl font-display font-bold text-cyan" id="profile-stat-files">—</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl border" style="background:rgba(255,255,255,0.02);border-color:var(--border)">
+                                <p class="text-[9px] font-bold uppercase tracking-wider text-muted mb-1">Reports Ready</p>
+                                <p class="text-xl font-display font-bold text-teal" id="profile-stat-reports">—</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 text-left mb-6 text-sm">
+                            <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
+                                <span style="color:var(--text-muted)">Role</span>
+                                <span class="status-chip status-online" id="profile-display-role">Doctor</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
+                                <span style="color:var(--text-muted)">Account Status</span>
+                                <span class="status-chip status-online">Active</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
+                                <span style="color:var(--text-muted)">Member Since</span>
+                                <span class="status-chip status-muted" id="profile-display-date">—</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-display font-bold mb-1">Doctor Profile</h3>
-                    <p class="text-[10px] font-mono tracking-widest uppercase mb-6" style="color:var(--cyan)">PRD-aligned account details</p>
-                    <div class="space-y-3 text-left mb-8 text-sm">
-                        <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
-                            <span style="color:var(--text-muted)">Role</span>
-                            <span class="status-chip status-online">Doctor</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
-                            <span style="color:var(--text-muted)">Account Status</span>
-                            <span class="status-chip status-online">Active</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3.5 rounded-xl border" style="background:var(--bg-glass);border-color:var(--border)">
-                            <span style="color:var(--text-muted)">Created Date</span>
-                            <span class="status-chip status-muted">2026-04-22</span>
-                        </div>
+                    <div>
+                        <input type="file" data-profile-photo-input accept="image/*" class="hidden">
+                        <button type="button" data-change-photo class="w-full btn-premium py-3.5 rounded-xl transition-all text-sm font-bold border" style="background:var(--bg-glass);border-color:var(--border)">Upload New Photo</button>
                     </div>
-                    <input type="file" data-profile-photo-input accept="image/*" class="hidden">
-                    <button type="button" data-change-photo class="w-full btn-premium py-3.5 rounded-xl transition-all text-sm font-bold border" style="background:var(--bg-glass);border-color:var(--border)">View profile</button>
                 </div>
 
                 <div class="space-y-6">
@@ -99,32 +116,53 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Full Name</label>
-                                <input name="name" type="text" value="Dr. Ayesha Khan" class="field-input w-full">
+                                <input name="name" type="text" placeholder="Dr. Ayesha Khan" class="field-input w-full">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Email Address</label>
-                                <input name="email" type="email" value="doctor@genelab.com" class="field-input w-full">
+                                <input name="email" type="email" readonly disabled placeholder="doctor@genelab.ai" class="field-input w-full opacity-60 cursor-not-allowed">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Phone Number</label>
-                                <input name="phone" type="text" value="+1 555 0142" class="field-input w-full">
+                                <input name="phone" type="text" placeholder="+1 555 0142" class="field-input w-full">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Specialization</label>
-                                <input name="specialization" type="text" value="Genetics Specialist" class="field-input w-full">
+                                <input name="specialization" type="text" placeholder="Genetics Specialist" class="field-input w-full">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Organization</label>
-                                <input name="organization" type="text" value="GeneLab Center" class="field-input w-full">
+                                <input name="organization" type="text" placeholder="GeneLab Center" class="field-input w-full">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">License Number</label>
-                                <input name="licenseNumber" type="text" value="LIC-CA-39921" class="field-input w-full">
+                                <input name="licenseNumber" type="text" placeholder="LIC-CA-39921" class="field-input w-full">
                             </div>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 mt-8">
                             <button type="submit" class="btn-premium btn-cyan px-6 py-3.5 rounded-xl text-sm font-bold">Update Information</button>
-                            <button type="button" data-change-photo class="btn-premium btn-ghost px-6 py-3.5 rounded-xl text-sm">Change Photo</button>
+                        </div>
+                    </form>
+
+                    <!-- Change Password Form -->
+                    <form id="doctor-password-form" class="glass-panel p-8 rounded-[24px]">
+                        <h3 class="text-lg font-display font-bold mb-6 flex items-center gap-2"><span class="material-symbols-outlined text-coral">lock_open</span> Security Credentials</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Current Password</label>
+                                <input name="currentPassword" type="password" required placeholder="••••••••" class="field-input w-full">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">New Password</label>
+                                <input name="newPassword" type="password" required placeholder="••••••••" class="field-input w-full">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5 block" style="color:var(--text-faint)">Confirm Password</label>
+                                <input name="confirmPassword" type="password" required placeholder="••••••••" class="field-input w-full">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="btn-premium btn-cyan px-6 py-3.5 rounded-xl text-sm font-bold">Update Password</button>
                         </div>
                     </form>
 
