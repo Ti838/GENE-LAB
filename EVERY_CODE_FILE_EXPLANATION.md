@@ -1,4 +1,4 @@
-﻿# Every Code File Explanation (Exact Usage Map)
+# Every Code File Explanation (Exact Usage Map)
 
 This document is fully aligned with the current codebase.
 It explains what each code file does and where it is used.
@@ -330,8 +330,8 @@ Use this section first if you are new.
 
 ## 9) Real Mismatch Notes (Codebase Truth)
 
-1. Several frontend scripts call /dna/* and /notes/* style endpoints that are not currently mounted in backend/server.js.
-2. frontend/js/analytics.js exists but is currently not included by any page.
+1. Backend has mounted all routes (including /api/dna and /api/notes) referenced by frontend scripts.
+2. frontend/js/analytics.js exists but is currently not included by any page (inline scripting is used instead).
 3. backend/services/dna.service.js exists but is not directly wired into active route handlers.
 4. The async analysis path depends on Redis, the queue service, and the FastAPI microservice.
 

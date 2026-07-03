@@ -297,10 +297,22 @@ if (response.status === 401) {
 }
 ```
 
-### 6.3 XSS Protection — PASS
+### 6.3 XSS Protection & DOM Hardening — FIXED (was: VULNERABLE)
 
-- Content Security Policy is enforced through Helmet
-- All data rendered into `innerHTML` originates from Mongoose-validated database records
+**Vulnerability:** User-supplied fields (such as gene names, rsids, notes, and file names) were rendered using `innerHTML` on the Doctor's result page and analytics pages. This could allow Stored XSS if a database record contained malicious scripts.
+
+- **Fix Applied:** Rewrote dynamic rendering loops in `result.js`, `compare.js`, `notes.js`, `reports.js`, and `analytics.html` to construct DOM elements using safe DOM APIs (`document.createElement`) and populate text content via `.textContent`.
+- **Helmet Headers:** Active Content Security Policy is enforced.
+
+### 6.4 Client-Side RBAC Guards — FIXED (was: BYPASSABLE)
+
+**Vulnerability:** Doctor portal pages lacked immediate, synchronous client-side role verification before rendering the layout, allowing unauthorized users to preview layouts or access credentials.
+
+- **Fix Applied:** Integrated blocking synchronous `doctorOnly()` role-verification calls at the top of all workflow pages (`compare.html`, `reports.html`, `notes.html`, `profile.html`, `result.html`, `analytics.html`, `analysis.html`). If a session role is not authorized, page load is halted and a clean redirect to `login.html` is executed immediately.
+
+### 6.5 Session Persistence Logic Alignment — FIXED
+
+- **Fix Applied:** In `profile.js`, the profile photo update handler was updated to check whether the authentication token was stored in `localStorage` (honoring 'rememberMe') before updating the user profile JSON object in the correct storage container.
 
 ---
 
@@ -356,9 +368,12 @@ if (response.status === 401) {
 | 3 | HIGH | ReDoS via unsanitized user input in regex | `routes/admin.js`, `routes/requests.js` | Fixed |
 | 4 | HIGH | Mass assignment vulnerability in request creation | `routes/requests.js` | Fixed |
 | 5 | HIGH | Stale/invalid token not cleared from browser storage | `frontend/js/api.js` | Fixed |
-| 6 | MEDIUM | Prometheus background polling crashing serverless | `backend/server.js` | Fixed |
-| 7 | MEDIUM | MongoDB connection with no timeout — caused hanging | `backend/utils/mongo.js` | Fixed |
-| 8 | LOW | Health check endpoint behind DB middleware (blocked on DB failure) | `backend/server.js` | Fixed |
+| 6 | HIGH | Stored XSS via innerHTML in DNA results / analytics page | `frontend/js/*.js`, `frontend/pages/doctor/*.html` | Fixed |
+| 7 | MEDIUM | Lack of client-side routing guards on doctor pages | `frontend/pages/doctor/*.html` | Fixed |
+| 8 | MEDIUM | Prometheus background polling crashing serverless | `backend/server.js` | Fixed |
+| 9 | MEDIUM | MongoDB connection with no timeout — caused hanging | `backend/utils/mongo.js` | Fixed |
+| 10| LOW | Health check endpoint behind DB middleware (blocked on DB failure) | `backend/server.js` | Fixed |
+| 11| LOW | Incorrect session persistence on profile photo update | `frontend/js/profile.js` | Fixed |
 | — | N/A | Hardcoded secrets in source code | All files | None Found |
 | — | N/A | SQL / NoSQL injection | All routes | Not Applicable (Mongoose ODM) |
 
