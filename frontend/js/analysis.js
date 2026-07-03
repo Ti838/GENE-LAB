@@ -13,25 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFileId    = null;
     let selectedFileName  = '';
     let pollInterval      = null;
+    let allFiles          = [];
 
     // ── Load file list ────────────────────────────────────────────
     async function loadFiles() {
         if (!fileContainer) return;
         fileContainer.innerHTML = '<p class="italic text-center p-4" style="color:var(--text-faint)">Loading bio-assets...</p>';
         try {
-            const files = await api.get('/dna/my-files');
-            fileContainer.innerHTML = '';
-
-            if (files.length === 0) {
-                const p = document.createElement('p');
-                p.className = 'italic text-center p-4';
-                p.style.color = 'var(--text-faint)';
-                p.textContent = 'No files found. Please upload a DNA file first.';
-                fileContainer.appendChild(p);
-                return;
-            }
-
-            files.forEach(f => buildFileCard(f));
+            allFiles = await api.get('/dna/my-files');
+            renderFilesList();
         } catch (err) {
             fileContainer.innerHTML = '';
             const p = document.createElement('p');
@@ -39,6 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
             p.textContent = 'Failed to load files. Please refresh the page.';
             fileContainer.appendChild(p);
         }
+    }
+
+    // ── Render file list from memory ──────────────────────────────
+    function renderFilesList() {
+        if (!fileContainer) return;
+        fileContainer.innerHTML = '';
+
+        if (allFiles.length === 0) {
+            const p = document.createElement('p');
+            p.className = 'italic text-center p-4';
+            p.style.color = 'var(--text-faint)';
+            p.textContent = 'No files found. Please upload a DNA file first.';
+            fileContainer.appendChild(p);
+            return;
+        }
+
+        allFiles.forEach(f => buildFileCard(f));
     }
 
     // ── Build a single file card (XSS-safe) ──────────────────────
@@ -58,14 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Left: icon + name
         const left = document.createElement('div');
-        left.className = 'flex gap-3 items-center';
+        left.className = 'flex gap-3 items-center min-w-0';
         const ico = document.createElement('span');
-        ico.className = 'material-symbols-outlined';
+        ico.className = 'material-symbols-outlined flex-shrink-0';
         ico.style.color = isAnalyzed ? 'var(--teal)' : isAnalyzing ? 'var(--violet)' : 'var(--text-faint)';
-        ico.textContent = 'dna';
+        ico.textContent = 'biotech';
         const nameDiv = document.createElement('div');
+        nameDiv.className = 'min-w-0';
         const nameP = document.createElement('p');
-        nameP.className = 'font-bold text-sm';
+        nameP.className = 'font-bold text-sm truncate';
         nameP.style.color = 'var(--text)';
         nameP.textContent = f.originalName; // textContent — XSS safe
         const statusP = document.createElement('p');
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Right: check icon if selected
         if (isSelected) {
             const checkIco = document.createElement('span');
-            checkIco.className = 'material-symbols-outlined';
+            checkIco.className = 'material-symbols-outlined flex-shrink-0';
             checkIco.style.color = 'var(--cyan)';
             checkIco.textContent = 'check_circle';
             card.appendChild(left);
@@ -97,11 +105,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectFile(id, name) {
         selectedFileId   = id;
         selectedFileName = name || '';
-        loadFiles(); // re-render to show selection highlight
+        renderFilesList(); // re-render locally from memory (instantaneous!)
+
         if (runAnalysisBtn) {
             runAnalysisBtn.disabled = false;
             runAnalysisBtn.classList.remove('opacity-50');
         }
+
+        // Dynamically update the right panel to show ready state
+        const rightPanelHeader = document.querySelector('.glass-panel h3.text-xl');
+        const rightPanelDesc   = document.querySelector('.glass-panel p.max-w-xs');
+        if (rightPanelHeader) {
+            rightPanelHeader.textContent = 'Engine Configured';
+        }
+        if (rightPanelDesc) {
+            rightPanelDesc.textContent = `Target: ${name}. Ready to launch AI-powered nucleotide analysis and mutation screening.`;
+        }
+
         resetStatusPanel();
     }
 
