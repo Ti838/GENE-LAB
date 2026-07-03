@@ -483,9 +483,19 @@ router.get('/download-report/:jobId', protect, async (req, res, next) => {
       const mappedResult = _mapDNAFileToFastAPIResult(dnaFile);
 
       if (analysisType === 'instant') {
-        pdfBuffer = await fastapiService.getInstantAnalysisPDF(mappedResult);
+        try {
+          pdfBuffer = await fastapiService.getInstantAnalysisPDF(mappedResult);
+        } catch (err) {
+          logger.warn(`FastAPI PDF service unreachable: ${err.message}. Using fallback.`, { fileId: jobId });
+          pdfBuffer = _generateFallbackPDF(originalName, mappedResult);
+        }
       } else {
-        pdfBuffer = await fastapiService.getDeepAnalysisPDF(mappedResult);
+        try {
+          pdfBuffer = await fastapiService.getDeepAnalysisPDF(mappedResult);
+        } catch (err) {
+          logger.warn(`FastAPI PDF service unreachable: ${err.message}. Using fallback.`, { fileId: jobId });
+          pdfBuffer = _generateFallbackPDF(originalName, mappedResult);
+        }
       }
     } else {
       // Fallback to original AnalysisJob lookup
@@ -497,9 +507,19 @@ router.get('/download-report/:jobId', protect, async (req, res, next) => {
 
       originalName = jobData.inputFileName || 'report';
       if (jobData.analysisType === 'instant') {
-        pdfBuffer = await fastapiService.getInstantAnalysisPDF(jobData.result);
+        try {
+          pdfBuffer = await fastapiService.getInstantAnalysisPDF(jobData.result);
+        } catch (err) {
+          logger.warn(`FastAPI PDF service unreachable: ${err.message}. Using fallback.`, { jobId });
+          pdfBuffer = _generateFallbackPDF(originalName, jobData.result);
+        }
       } else {
-        pdfBuffer = await fastapiService.getDeepAnalysisPDF(jobData.result);
+        try {
+          pdfBuffer = await fastapiService.getDeepAnalysisPDF(jobData.result);
+        } catch (err) {
+          logger.warn(`FastAPI PDF service unreachable: ${err.message}. Using fallback.`, { jobId });
+          pdfBuffer = _generateFallbackPDF(originalName, jobData.result);
+        }
       }
     }
 
@@ -654,6 +674,65 @@ function _mapInstantResultToDNAFile(result, jobId) {
       kmer: r.kmer, count: r.count, frequency: r.frequency
     }))
   };
+}
+
+function _generateFallbackPDF(fileName, data) {
+  const len = data.sequenceLength || data.sequence_length || 0;
+  const gc = ((data.gcContent || data.gc_content || 0) * 100).toFixed(1);
+  const summary = data.scientificSummary || data.scientific_summary || 'Genomic analysis complete.';
+  const codon = data.codonAnalysis || data.codon_analysis || {};
+  const totalCodons = codon.totalCodons || codon.total_codons || 0;
+
+  const lines = [
+    'GENELAB CLINICAL DIAGNOSTIC REPORT',
+    '==================================',
+    `File Name: ${fileName}`,
+    `Sequence Length: ${len} bp`,
+    `GC Content: ${gc}%`,
+    `Total Codons: ${totalCodons}`,
+    `Scientific Summary: ${summary.substring(0, 200)}...`,
+    '----------------------------------',
+    'Note: This is a backup report generated locally because',
+    'the heavy python bio-engine was offline during download.'
+  ];
+
+  let streamContent = 'BT\n/F1 12 Tf\n50 750 Td\n18 TL\n';
+  lines.forEach(line => {
+    const escaped = line.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    streamContent += `(${escaped}) Tj T*\n`;
+  });
+  streamContent += 'ET';
+
+  const pdf = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 612 792] /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length ${streamContent.length} >>
+stream
+${streamContent}
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000286 00000 n
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+${350 + streamContent.length}
+%%EOF`;
+
+  return Buffer.from(pdf, 'utf-8');
 }
 
 module.exports = router;
