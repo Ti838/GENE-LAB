@@ -443,3 +443,9 @@ body[data-theme="light"] .admin-modal-close:hover {
   color: #0f172a;
   background: rgba(0, 0, 0, 0.05);
 }
+
+/* Prevent main content overflow and cutoff */
+aside ~ main {
+  max-width: calc(100% - 19.5rem) !important;
+  min-width: 0 !important;
+}
