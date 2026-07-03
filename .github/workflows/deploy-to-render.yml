@@ -18,7 +18,8 @@ jobs:
           WORKER_ID: ${{ secrets.RENDER_WORKER_ID }}
         run: |
           if [ -z "$RENDER_API_KEY" ] || [ -z "$BIOSERVICE_ID" ] || [ -z "$WORKER_ID" ]; then
-            echo "Missing Render secrets — set RENDER_API_KEY, RENDER_BIOSERVICE_ID, RENDER_WORKER_ID"; exit 1
+            echo "::warning::Missing Render secrets — set RENDER_API_KEY, RENDER_BIOSERVICE_ID, RENDER_WORKER_ID in GitHub Secrets to enable automated deploys."
+            exit 0
           fi
 
           echo "Triggering bioservice deploy..."
