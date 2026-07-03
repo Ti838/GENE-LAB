@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPointerParallax(hasGsap && !reducedMotion);
 
   // Dynamically customize UI vocabulary for Researchers
-  const userJson = localStorage.getItem('genelab_user');
+  const userJson = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
   if (userJson) {
     try {
       const user = JSON.parse(userJson);

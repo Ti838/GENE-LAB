@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ? 'http://localhost:5000/api'
                     : '/api');
 
-            const token    = localStorage.getItem('genelab_token');
+            const token    = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
             const response = await fetch(`${API_BASE}/analysis/download-report/${jobId}`, {
                 method : 'GET',
                 headers: token ? { Authorization: `Bearer ${token}` } : {}

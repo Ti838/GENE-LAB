@@ -9,7 +9,7 @@ const API_BASE_URL = window.__GENELAB_API_BASE_URL__
         : '/api');
 const api = {
     async request(endpoint, options = {}) {
-        const token = localStorage.getItem('genelab_token');
+        const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -54,7 +54,7 @@ const api = {
     put(endpoint, body) { return this.request(endpoint, { method: 'PUT', body: JSON.stringify(body) }); },
     delete(endpoint) { return this.request(endpoint, { method: 'DELETE' }); },
     async upload(endpoint, formData) {
-        const token = localStorage.getItem('genelab_token');
+        const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
