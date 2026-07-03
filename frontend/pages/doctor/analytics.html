@@ -368,8 +368,49 @@
         // ── File Summary Table (XSS-safe DOM building) ──────────────
         const tbody = document.getElementById('analytics-table-body');
         if (tbody) {
-                    </tr>`;
-                }).join('');
+            tbody.innerHTML = '';
+            if (allFiles.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 5;
+                td.className = 'text-center p-6 italic';
+                td.style.color = 'var(--text-muted)';
+                td.textContent = 'No files found.';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            } else {
+                allFiles.forEach(f => {
+                    const tr = document.createElement('tr');
+
+                    const tdName = document.createElement('td');
+                    tdName.className = 'font-medium';
+                    tdName.textContent = f.originalName || 'Unnamed File';
+
+                    const tdStatus = document.createElement('td');
+                    const spanStatus = document.createElement('span');
+                    spanStatus.className = `status-pill ${f.status === 'analyzed' ? 'status-active' : 'status-pending'}`;
+                    spanStatus.textContent = f.status === 'analyzed' ? 'Analyzed' : 'Pending';
+                    tdStatus.appendChild(spanStatus);
+
+                    const tdLength = document.createElement('td');
+                    tdLength.textContent = f.sequenceLength ? `${f.sequenceLength.toLocaleString()} bp` : '—';
+
+                    const tdGC = document.createElement('td');
+                    tdGC.textContent = f.gcContent ? `${(f.gcContent * 100).toFixed(1)}%` : '—';
+
+                    const tdAnomalies = document.createElement('td');
+                    const spanAnomaly = document.createElement('span');
+                    spanAnomaly.className = f.hasAnomalies ? 'text-coral font-bold' : 'text-emerald';
+                    spanAnomaly.textContent = f.hasAnomalies ? 'Yes' : 'No';
+                    tdAnomalies.appendChild(spanAnomaly);
+
+                    tr.appendChild(tdName);
+                    tr.appendChild(tdStatus);
+                    tr.appendChild(tdLength);
+                    tr.appendChild(tdGC);
+                    tr.appendChild(tdAnomalies);
+                    tbody.appendChild(tr);
+                });
             }
         }
 
