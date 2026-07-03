@@ -101,6 +101,58 @@
                 </div>
             </div>
 
+            <!-- Codon & Translation Analysis -->
+            <div class="grid lg:grid-cols-2 gap-6 mb-8" data-animate="panel">
+                <div class="glass-panel p-7 rounded-[24px] flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-display font-bold mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-violet">dna</span> Codon Translation Profile
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 rounded-2xl border animate-pulse-slow" style="background:var(--bg-glass);border-color:var(--border)">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Total Codons</p>
+                                <p class="text-2xl font-display font-extrabold mt-1 text-white" id="codon-total">—</p>
+                            </div>
+                            <div class="p-4 rounded-2xl border animate-pulse-slow" style="background:var(--bg-glass);border-color:var(--border)">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Protein Length</p>
+                                <p class="text-2xl font-display font-extrabold mt-1 text-white" id="codon-peptide-len">—</p>
+                            </div>
+                            <div class="p-4 rounded-2xl border animate-pulse-slow" style="background:var(--bg-glass);border-color:var(--border)">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Start Codons (ATG)</p>
+                                <p class="text-2xl font-display font-extrabold mt-1 text-white" id="codon-start-count">—</p>
+                            </div>
+                            <div class="p-4 rounded-2xl border animate-pulse-slow" style="background:var(--bg-glass);border-color:var(--border)">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.18em]" style="color:var(--text-faint)">Stop Codons</p>
+                                <p class="text-2xl font-display font-extrabold mt-1 text-white" id="codon-stop-count">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 rounded-2xl border flex items-center justify-between" style="background:var(--bg-glass);border-color:rgba(167,139,250,0.25)">
+                        <span class="text-xs" style="color:var(--text-muted)">Open Reading Frames (ORFs)</span>
+                        <span class="status-chip status-online font-mono" id="codon-orfs">—</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-7 rounded-[24px] flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-display font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lime">translate</span> Translated Peptide Sequence
+                            </h3>
+                            <button onclick="copyPeptideSequence()" class="btn-premium btn-ghost px-3 py-1.5 rounded-lg text-xs flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs" style="font-size:12px!important;">content_copy</span> Copy
+                            </button>
+                        </div>
+                        <div class="font-mono text-sm leading-relaxed p-5 rounded-2xl border overflow-x-auto select-all max-h-[140px] overflow-y-auto" style="background:var(--bg-base);border-color:var(--border);scrollbar-width:thin;" id="codon-sequence-preview">
+                            —
+                        </div>
+                    </div>
+                    <p class="text-[10px] mt-4" style="color:var(--text-faint)">
+                        * Amino acid representation using standard single-letter IUPAC symbols. Asterisk (*) denotes translational stop codon.
+                    </p>
+                </div>
+            </div>
+
             <div class="glass-panel p-7 rounded-[24px] mb-8" data-animate="panel">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-display font-bold">Scientific Summary</h3>

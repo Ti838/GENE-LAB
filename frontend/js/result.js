@@ -146,6 +146,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.genelabCharts.updateNucleotides(values);
         }
 
+        // ── Codon & Translation Analysis ─────────────────────────────────────
+        const ca = src.codonAnalysis || src.codon_analysis || {};
+        
+        const totalCodons = ca.totalCodons !== undefined ? ca.totalCodons : (ca.total_codons || 0);
+        const proteinLength = ca.proteinLength !== undefined ? ca.proteinLength : (ca.protein_length || 0);
+        const startCodons = ca.startCodonCount !== undefined ? ca.startCodonCount : (ca.start_codon_count || 0);
+        const stopCodons = ca.stopCodonCount !== undefined ? ca.stopCodonCount : (ca.stop_codon_count || 0);
+        const orfs = ca.openReadingFramesDetected !== undefined ? ca.openReadingFramesDetected : (ca.open_reading_frames_detected || 0);
+        const peptideSeq = ca.aminoAcidSequencePreview !== undefined ? ca.aminoAcidSequencePreview : (ca.amino_acid_sequence || '');
+
+        const totalCodonsEl = document.getElementById('codon-total');
+        if (totalCodonsEl) totalCodonsEl.textContent = totalCodons.toLocaleString();
+
+        const proteinLengthEl = document.getElementById('codon-peptide-len');
+        if (proteinLengthEl) proteinLengthEl.textContent = `${proteinLength} aa`;
+
+        const startCodonsEl = document.getElementById('codon-start-count');
+        if (startCodonsEl) startCodonsEl.textContent = startCodons.toLocaleString();
+
+        const stopCodonsEl = document.getElementById('codon-stop-count');
+        if (stopCodonsEl) stopCodonsEl.textContent = stopCodons.toLocaleString();
+
+        const orfsEl = document.getElementById('codon-orfs');
+        if (orfsEl) orfsEl.textContent = `${orfs} detected`;
+
+        const seqPreviewEl = document.getElementById('codon-sequence-preview');
+        if (seqPreviewEl) {
+            seqPreviewEl.textContent = peptideSeq || 'No peptide translation available';
+        }
+
+        window.copyPeptideSequence = () => {
+            const el = document.getElementById('codon-sequence-preview');
+            if (!el || el.textContent.includes('No peptide translation')) return;
+            navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+                showToast('Peptide sequence copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Copy failed', 'error');
+            });
+        };
+
         // ── Scientific Summary ───────────────────────────────────────────────
         const summaryEl = document.getElementById('scientific-summary');
         if (summaryEl) {
