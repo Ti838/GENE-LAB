@@ -221,10 +221,10 @@ Use this section first if you are new.
 
 - frontend/js/admin.js
   - Loaded by:
-    - frontend/pages/admin/dashboard.html
-    - frontend/pages/admin/data.html
-    - frontend/pages/admin/doctors.html
-    - frontend/pages/admin/logs.html
+    - frontend/pages/ops-control/dashboard.html
+    - frontend/pages/ops-control/data.html
+    - frontend/pages/ops-control/doctors.html
+    - frontend/pages/ops-control/logs.html
 
 ### Doctor Feature JS
 
@@ -251,15 +251,15 @@ Use this section first if you are new.
 
 - frontend/js/profile.js
   - Loaded by:
-    - frontend/pages/admin/profile.html
+    - frontend/pages/ops-control/profile.html
     - frontend/pages/doctor/profile.html
 
 ### Chart / Analytics JS
 
 - frontend/js/charts.js
   - Loaded by:
-    - frontend/pages/admin/dashboard.html
-    - frontend/pages/admin/analytics.html
+    - frontend/pages/ops-control/dashboard.html
+    - frontend/pages/ops-control/analytics.html
     - frontend/pages/doctor/dashboard.html
     - frontend/pages/doctor/analytics.html
     - frontend/pages/doctor/result.html
@@ -278,25 +278,25 @@ Use this section first if you are new.
 - frontend/pages/login.html
   - Uses common core JS (login/register handled by auth.js).
 
-- frontend/pages/admin/dashboard.html
+- frontend/pages/ops-control/dashboard.html
   - Uses admin.js + charts.js + common core JS.
 
-- frontend/pages/admin/analytics.html
+- frontend/pages/ops-control/analytics.html
   - Uses charts.js + common core JS.
 
-- frontend/pages/admin/data.html
+- frontend/pages/ops-control/data.html
   - Uses admin.js + common core JS.
 
-- frontend/pages/admin/doctors.html
+- frontend/pages/ops-control/doctors.html
   - Uses admin.js + common core JS.
 
-- frontend/pages/admin/logs.html
+- frontend/pages/ops-control/logs.html
   - Uses admin.js + common core JS.
 
-- frontend/pages/admin/profile.html
+- frontend/pages/ops-control/profile.html
   - Uses profile.js + common core JS.
 
-- frontend/pages/admin/settings.html
+- frontend/pages/ops-control/settings.html
   - Uses common core JS only.
 
 - frontend/pages/doctor/dashboard.html

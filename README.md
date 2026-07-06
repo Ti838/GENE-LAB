@@ -67,7 +67,7 @@ genelab/
 ├── frontend/               # Static UI
 │   ├── pages/
 │   │   ├── doctor/         # dashboard, upload, analysis, notes, profile, reports
-│   │   └── admin/          # dashboard, doctors, data, logs, analytics, settings
+│   │   └── ops-control/    # dashboard, doctors, data, logs, analytics, settings
 │   ├── js/                 # api.js, auth.js, admin.js, notes.js, profile.js, charts.js...
 │   └── css/                # style.css, theme.css
 ├── vercel.json             # Vercel routing + security headers

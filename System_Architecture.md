@@ -46,7 +46,7 @@ frontend/
 │   │   ├── reports.html    # Generated reports
 │   │   ├── compare.html    # Sequence comparison
 │   │   └── profile.html    # User profile settings
-│   └── admin/              # Admin pages
+│   └── ops-control/        # Admin pages
 │       ├── dashboard.html  # Command console + audit logs
 │       ├── doctors.html    # User management
 │       ├── data.html       # DNA file registry

@@ -108,8 +108,8 @@ npx vercel --prod --yes
 | Service | URL |
 |---------|-----|
 | Express API | http://localhost:5000/api/health |
-| Admin Dashboard | http://localhost:5000/pages/admin/dashboard.html |
-| Doctor Dashboard | http://localhost:5000/pages/doctor/dashboard.html |
+| Admin Dashboard | http://localhost:3000/pages/ops-control/dashboard.html (or open local file) |
+| Doctor Dashboard | http://localhost:3000/pages/doctor/dashboard.html (or open local file) |
 | FastAPI Bio Service | http://localhost:8000/docs |
 
 ---
