@@ -36,6 +36,7 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
 
+    const { patientId, patientAge, biologicalSex, clinicalIndication } = req.body;
     const sequence = dnaService.parseSequence(req.file.buffer.toString('utf8'));
     const storageResult = await uploadBufferToFirebase({
       buffer: req.file.buffer,
@@ -59,7 +60,12 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
       mimetype:     req.file.mimetype,
       doctor:       req.user._id,
       sequence,
-      status:       'uploaded'
+      status:       'uploaded',
+      patientId:    patientId || undefined,
+      patientAge:   patientAge ? parseInt(patientAge, 10) : undefined,
+      biologicalSex: biologicalSex || undefined,
+      clinicalIndication: clinicalIndication || undefined,
+      clinicalStatus: 'Pending Approval'
     });
 
     res.status(201).json({
@@ -90,7 +96,7 @@ router.get('/my-files', protect, async (req, res, next) => {
 // ────────────────────────────────────────────────────────────────────────────
 router.post('/paste', protect, async (req, res, next) => {
   try {
-    const { sequence, name } = req.body;
+    const { sequence, name, patientId, patientAge, biologicalSex, clinicalIndication } = req.body;
     if (!sequence) return res.status(400).json({ message: 'Sequence is required.' });
 
     const dnaFile = await DNAFile.create({
@@ -99,7 +105,12 @@ router.post('/paste', protect, async (req, res, next) => {
       path:         'internal',
       sequence:     sequence.trim().toUpperCase(),
       doctor:       req.user._id,
-      status:       'uploaded'
+      status:       'uploaded',
+      patientId:    patientId || undefined,
+      patientAge:   patientAge ? parseInt(patientAge, 10) : undefined,
+      biologicalSex: biologicalSex || undefined,
+      clinicalIndication: clinicalIndication || undefined,
+      clinicalStatus: 'Pending Approval'
     });
 
     res.status(201).json({
@@ -301,7 +312,7 @@ router.delete('/file/:id', protect, async (req, res, next) => {
     if (!file) return res.status(404).json({ message: 'File not found.' });
 
     // Remove from disk if applicable
-    // Firebase Storage objects are retained by design; database record deletion is enough here.
+    // Supabase Storage objects are retained by design; database record deletion is enough here.
     await DNAFile.deleteOne({ _id: file._id });
     res.json({ message: 'File deleted.' });
   } catch (err) { next(err); }
@@ -375,5 +386,27 @@ function _mapInstantResultToDNAFile(result, jobId) {
     }))
   };
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// PUT /api/dna/file/:id/review — Save doctor's clinical review and notes
+// ────────────────────────────────────────────────────────────────────────────
+router.put('/file/:id/review', protect, async (req, res, next) => {
+  try {
+    const file = await DNAFile.findOne({ _id: req.params.id, doctor: req.user._id });
+    if (!file) return res.status(404).json({ message: 'File not found.' });
+
+    const { clinicalStatus, notes, patientId, patientAge, biologicalSex, clinicalIndication } = req.body;
+
+    if (clinicalStatus !== undefined) file.clinicalStatus = clinicalStatus;
+    if (notes !== undefined) file.notes = notes;
+    if (patientId !== undefined) file.patientId = patientId;
+    if (patientAge !== undefined) file.patientAge = patientAge;
+    if (biologicalSex !== undefined) file.biologicalSex = biologicalSex;
+    if (clinicalIndication !== undefined) file.clinicalIndication = clinicalIndication;
+
+    await file.save();
+    res.json({ message: 'Clinical review updated successfully.', file });
+  } catch (err) { next(err); }
+});
 
 module.exports = router;

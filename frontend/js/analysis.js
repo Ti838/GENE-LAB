@@ -5,7 +5,9 @@
 // analysis.js — Sequence Analysis with BullMQ job polling
 document.addEventListener('DOMContentLoaded', () => {
     // ── Route guard ───────────────────────────────────────────────
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
 
     const fileContainer   = document.getElementById('file-container');
     const runAnalysisBtn  = document.getElementById('run-analysis-btn');
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rightPanelHeader.textContent = 'Engine Configured';
         }
         if (rightPanelDesc) {
-            rightPanelDesc.textContent = `Target: ${name}. Ready to launch AI-powered nucleotide analysis and mutation screening.`;
+            rightPanelDesc.textContent = `Target: ${name}. Ready to launch nucleotide analysis and mutation screening.`;
         }
 
         resetStatusPanel();

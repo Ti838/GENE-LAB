@@ -1,14 +1,92 @@
 /**
  * Copyright (c) 2026 GeneLab. All rights reserved.
  */
-// doctor-dashboard.js - Live Data & Chart Filter Logic
+// researcher-dashboard.js - Live Data & Chart Filter Logic
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!window.location.pathname.includes('doctor/dashboard.html')) return;
-    // Role guard — redirect non-doctors immediately
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    if (!window.location.pathname.includes('researcher/dashboard.html')) return;
+    // Role guard — redirect non-researchers immediately
+    if (typeof window.researcherOnly === 'function' && !window.researcherOnly()) return;
 
     const user = window.getAuthUser();
+
+    // 1. Customize main header titles and badges
+    const badge = document.querySelector('.section-badge');
+    if (badge) {
+        badge.textContent = 'Researcher workflow';
+        badge.className = 'section-badge mb-3 bg-violet/10 text-violet border-violet/20';
+    }
+    const h1 = document.querySelector('header h1');
+    if (h1) h1.textContent = 'Research Workbench';
+    const subtitle = document.querySelector('header p.font-medium');
+    if (subtitle) subtitle.textContent = 'Reference genome alignments, BLAST lookups, and sequence statistics.';
+    
+    const infoChips = document.querySelectorAll('header .info-chip');
+    if (infoChips.length > 0) {
+        infoChips[0].innerHTML = '<span class="material-symbols-outlined" style="font-size:14px!important;">science</span> Research Engine Active';
+    }
+
+    // 2. Customize Stat Cards Labels
+    const labels = document.querySelectorAll('.stat-card-glow p.uppercase');
+    if (labels.length >= 4) {
+        labels[0].textContent = 'Genomic Collections';
+        labels[1].textContent = 'Blast Runs Complete';
+        labels[2].textContent = 'Mutations Mapped';
+        labels[2].style.color = 'var(--text-faint)';
+        labels[3].textContent = 'BLAST Queue Status';
+    }
+
+    // Modify anomaly stat card icons/badges to match research context instead of clinical alarm
+    const anomalyCard = document.querySelector('.stat-card-glow[style*="border-color"]');
+    if (anomalyCard) {
+        anomalyCard.style.borderColor = 'rgba(0,180,216,0.18)';
+        const iconWrap = anomalyCard.querySelector('.w-10');
+        if (iconWrap) {
+            iconWrap.className = 'w-10 h-10 rounded-xl bg-cyan/10 border border-cyan/20 flex items-center justify-center';
+            const icon = iconWrap.querySelector('.material-symbols-outlined');
+            if (icon) {
+                icon.textContent = 'dna';
+                icon.className = 'material-symbols-outlined text-cyan';
+            }
+        }
+        const statText = anomalyCard.querySelector('[data-stat="anomalies"]');
+        if (statText) statText.className = 'text-3xl font-display font-extrabold text-cyan mb-1';
+    }
+
+    const anomalyBadge = document.getElementById('anomaly-badge');
+    if (anomalyBadge) {
+        anomalyBadge.style.color = 'var(--cyan)';
+        anomalyBadge.style.borderColor = 'rgba(0,212,255,0.3)';
+        anomalyBadge.style.background = 'rgba(0,212,255,0.08)';
+    }
+
+    // 3. Customize Quick Actions Link Text
+    const quickActions = document.querySelectorAll('.quick-action');
+    if (quickActions.length >= 3) {
+        // Action 1: Upload
+        const title1 = quickActions[0].querySelector('p.font-bold');
+        const sub1 = quickActions[0].querySelector('p.text-\\[11px\\]');
+        if (title1) title1.textContent = 'Upload FASTA/FASTQ';
+        if (sub1) sub1.textContent = 'Import genomic datasets';
+
+        // Action 2: Run Analysis
+        const title2 = quickActions[1].querySelector('p.font-bold');
+        const sub2 = quickActions[1].querySelector('p.text-\\[11px\\]');
+        if (title2) title2.textContent = 'BLAST Alignment';
+        if (sub2) sub2.textContent = 'Cross-compare genomes';
+
+        // Action 3: Reports
+        const title3 = quickActions[2].querySelector('p.font-bold');
+        const sub3 = quickActions[2].querySelector('p.text-\\[11px\\]');
+        if (title3) title3.textContent = 'Research Records';
+        if (sub3) sub3.textContent = 'Export publication data';
+    }
+
+    // 4. Customize Chart Title
+    const chartTitle = document.querySelector('.col-span-2 h3');
+    const chartSub = document.querySelector('.col-span-2 p');
+    if (chartTitle) chartTitle.textContent = 'Sequence Submission Trend';
+    if (chartSub) chartSub.textContent = 'Bioinformatics runs monitored over time';
 
     let allFiles = [];
 
@@ -42,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Anomaly badge
             const badge = document.getElementById('anomaly-badge');
             if (badge) {
-                badge.textContent = anomalies > 0 ? `${anomalies} Alert${anomalies > 1 ? 's' : ''}` : 'Clear';
+                badge.textContent = anomalies > 0 ? `${anomalies} Mutation${anomalies > 1 ? 's' : ''}` : 'No Variants';
             }
 
             // Sync chip — build via DOM to avoid XSS
@@ -100,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (sorted.length === 0) {
             const p = document.createElement('p');
             p.className = 'text-sm opacity-40 text-center py-6';
-            p.textContent = 'No recent activity. Upload your first DNA file.';
+            p.textContent = 'No recent activity. Upload your first dataset.';
             container.appendChild(p);
             return;
         }
@@ -136,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             textWrap.className = 'flex-1 min-w-0';
             const titleP = document.createElement('p');
             titleP.className = 'text-xs font-bold text-white';
-            titleP.textContent = isAnalyzed ? 'Analysis Complete' : 'DNA Uploaded';
+            titleP.textContent = isAnalyzed ? 'Alignment Complete' : 'Sequence Imported';
             const nameP = document.createElement('p');
             nameP.className = 'text-[10px] font-mono truncate';
             nameP.style.color = 'var(--text-faint)';

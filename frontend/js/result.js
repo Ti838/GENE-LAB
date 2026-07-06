@@ -4,7 +4,9 @@
  */
 // result.js - Detailed Analysis Result View (XSS-safe)
 document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
 
     const urlParams = new URLSearchParams(window.location.search);
     const fileId = urlParams.get('id');
@@ -20,6 +22,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!data) return;
         // tolerate either job.result or direct DNAFile fields
         const src = data.result || data;
+
+        // Populate Patient Demographics & Review Form (Doctor Portal Only)
+        if (!isResearcherPath) {
+            const patIdEl = document.getElementById('patient-id-val');
+            const patAgeSexEl = document.getElementById('patient-age-sex-val');
+            const patIndEl = document.getElementById('patient-indication-val');
+            const reviewStatusSel = document.getElementById('review-status-select');
+            const reviewCommentsInput = document.getElementById('review-comments-input');
+            const saveReviewBtn = document.getElementById('save-review-btn');
+
+            if (patIdEl) patIdEl.textContent = src.patientId || 'GL-PAT-001';
+            if (patAgeSexEl) patAgeSexEl.textContent = `${src.patientAge || 42} y/o / ${src.biologicalSex || 'Female'}`;
+            if (patIndEl) patIndEl.textContent = src.clinicalIndication || 'Hereditary screening request';
+            if (reviewStatusSel) reviewStatusSel.value = src.clinicalStatus || 'Pending Approval';
+            if (reviewCommentsInput) reviewCommentsInput.value = src.notes || '';
+
+            if (saveReviewBtn) {
+                // Clone button to strip existing listeners
+                const newBtn = saveReviewBtn.cloneNode(true);
+                saveReviewBtn.parentNode.replaceChild(newBtn, saveReviewBtn);
+                newBtn.addEventListener('click', async () => {
+                    newBtn.disabled = true;
+                    newBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-xs">sync</span> Saving...';
+                    try {
+                        const fileIdToUse = src._id || fileId;
+                        await api.put(`/dna/file/${fileIdToUse}/review`, {
+                            clinicalStatus: reviewStatusSel.value,
+                            notes: reviewCommentsInput.value
+                        });
+                        showToast('Clinical assessment saved successfully!', 'success');
+                    } catch (e) {
+                        console.error(e);
+                        showToast('Failed to save assessment', 'error');
+                    } finally {
+                        newBtn.disabled = false;
+                        newBtn.innerHTML = '<span class="material-symbols-outlined text-xs" style="font-size:16px!important;">save</span> Save Assessment';
+                    }
+                });
+            }
+        }
 
         // ── GC / AT content ──────────────────────────────────────────────────
         let gc = (src.gcContent !== undefined)
@@ -639,21 +681,14 @@ function generateTranslationReport(src, peptideSeq) {
 
     // 3. Protein Summary & Biological Interpretation
     const bioSummaryEl = document.getElementById('tr-bio-summary');
-    const aiInsightEl = document.getElementById('tr-ai-insight');
     
     if (peptide === 'MTEITL*') {
         if (bioSummaryEl) {
             bioSummaryEl.textContent = 'Synthetic translation leader construct. Matches short peptide signals or targeted initiation constructs designed for regulatory studies.';
         }
-        if (aiInsightEl) {
-            aiInsightEl.textContent = 'High compatibility construct. The combination of N-terminal Methionine followed by branched-chain hydrophobic residues (Isoleucine, Leucine) suggests a classic signal peptide configuration. Predicts high membrane affinity.';
-        }
     } else {
         if (bioSummaryEl) {
             bioSummaryEl.textContent = `A translated ${activeLength}-residue peptide sequence. Functions depend on structural folds and domain organization within the native tissue asset.`;
-        }
-        if (aiInsightEl) {
-            aiInsightEl.textContent = `Sequence composition shows a balanced charge profile (pI: ${piVal}) and ${hydroRatio} hydrophobicity. Suggests standard cytoplasmic localization with minimal aggregation risk.`;
         }
     }
 

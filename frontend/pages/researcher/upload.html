@@ -33,8 +33,8 @@
             </div>
             <div class="px-6 py-4 border-b" style="border-color:var(--border)">
                 <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
-                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
-                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">doctor</p>
+                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Researcher User</p>
+                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">researcher</p>
             </div>
             <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
@@ -56,7 +56,7 @@
         <main class="flex-1 ml-[19.5rem] p-8">
             <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                    <p class="section-badge mb-3">Doctor workflow</p>
+                    <p class="section-badge mb-3 bg-violet/10 text-violet border-violet/20">Researcher workflow</p>
                     <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Upload DNA</h1>
                     <p class="font-medium" style="color:var(--text-muted)">Secure sequence intake and preparation for downstream analysis.</p>
                 </div>
@@ -85,45 +85,11 @@
                     <div class="glass-panel p-7 rounded-[24px]">
                         <div class="flex items-center gap-3 mb-5">
                             <span class="material-symbols-outlined text-teal">edit_note</span>
-                            <h3 class="text-lg font-display font-bold">Manual Sequence Entry & Patient Demographics</h3>
+                            <h3 class="text-lg font-display font-bold">Manual Sequence Entry</h3>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                                <label for="manual-name" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">Sequence Name</label>
-                                <input id="manual-name" type="text" class="field-input text-xs" placeholder="e.g. BRCA1_Panel">
-                            </div>
-                            <div>
-                                <label for="manual-patient-id" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">Patient ID</label>
-                                <input id="manual-patient-id" type="text" class="field-input text-xs" placeholder="e.g. GL-PAT-009">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label for="manual-patient-age" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">Patient Age</label>
-                                <input id="manual-patient-age" type="number" class="field-input text-xs" placeholder="Age" min="0" max="120">
-                            </div>
-                            <div>
-                                <label for="manual-patient-sex" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">Biological Sex</label>
-                                <select id="manual-patient-sex" class="bg-slate-900 border text-xs font-bold text-white w-full h-[40px] px-3 rounded-xl focus:border-cyan/50 focus:outline-none" style="border-color:var(--border)">
-                                    <option value="Female">Female</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-span-1">
-                                <label class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">&nbsp;</label>
-                                <div class="text-[10px] text-slate-500 italic pt-2">Verify prior to submit.</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="manual-patient-indication" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">Clinical Indication</label>
-                            <input id="manual-patient-indication" type="text" class="field-input text-xs" placeholder="e.g. Family history of genetic malignancy">
-                        </div>
-                        <div class="mb-3">
-                            <label for="manual-paste-area" class="text-[10px] font-bold uppercase tracking-wider block mb-1 text-slate-400">DNA Sequence (FASTA/RAW)</label>
-                            <textarea id="manual-paste-area" class="field-input h-28 resize-none font-mono text-xs p-4" placeholder="Paste DNA sequence (A, T, G, C)..."></textarea>
-                        </div>
-                        <button id="save-manual-btn" class="btn-premium btn-cyan w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest">
+                        <input id="manual-name" type="text" class="field-input mb-3" placeholder="Sequence Identifier (e.g. SAMPLE_001)">
+                        <textarea id="manual-paste-area" class="field-input h-40 resize-none font-mono text-xs p-4" placeholder="Paste DNA sequence (A, T, G, C)..."></textarea>
+                        <button id="save-manual-btn" class="btn-premium btn-cyan w-full py-3.5 rounded-xl mt-3 flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">send</span> Inject Manual Data
                         </button>
                     </div>
@@ -145,7 +111,7 @@
     <script src="../../js/upload.js" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        if (!window.doctorOnly()) return;
+        if (!window.researcherOnly()) return;
         const userStr = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
         if (userStr) {
             try {

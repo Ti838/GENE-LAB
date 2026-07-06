@@ -111,7 +111,18 @@ const dnaFileSchema = new mongoose.Schema({
   // ── Misc ─────────────────────────────────────────────────────────────────
   sampleType: { type: String },
   notes:      { type: String },
-  errorMessage: { type: String }
+  errorMessage: { type: String },
+
+  // ── Patient Demographics & Clinical Status ───────────────────────────────
+  clinicalStatus: {
+    type: String,
+    enum: ['Pending Approval', 'Approved', 'Needs Review'],
+    default: 'Pending Approval'
+  },
+  patientId: { type: String, default: 'GL-PAT-001' },
+  patientAge: { type: Number, default: 42 },
+  biologicalSex: { type: String, default: 'Female' },
+  clinicalIndication: { type: String, default: 'Hereditary screening request' }
 
 }, { timestamps: true, collection: 'dna_sequences' });
 

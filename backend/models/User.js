@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['doctor', 'researcher', 'admin', 'employee'], default: 'doctor' },
   authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
   firebaseUid: { type: String, trim: true },
+  supabaseUid: { type: String, trim: true },
   gender: { type: String, enum: ['male', 'female', 'other'], trim: true },
   organization: { type: String, trim: true },
   specialization: { type: String, trim: true },
@@ -27,7 +28,8 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, trim: true },
   profilePicture: { type: String, default: '' },
   profilePicturePath: { type: String, default: '' },
-  profilePictureProvider: { type: String, enum: ['firebase', 'manual', 'none'], default: 'none' },
+  profilePictureProvider: { type: String, enum: ['firebase', 'supabase', 'manual', 'none'], default: 'none' },
+  signatureUrl: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   isEmailVerified: { type: Boolean, default: false },
   verificationToken: { type: String },
@@ -63,6 +65,7 @@ userSchema.methods.isLocked = function () {
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ firebaseUid: 1 }, { sparse: true });
+userSchema.index({ supabaseUid: 1 }, { sparse: true });
 
 module.exports = mongoose.model('User', userSchema);
 

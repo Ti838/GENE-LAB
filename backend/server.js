@@ -160,17 +160,13 @@ async function startServer() {
     }
   }
 
-  app.listen(PORT, () => {
-    console.log(`🧬 GeneLab Server running on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🧬 GeneLab Server running on port ${PORT}`);
+    if (process.env.BACKEND_URL) {
+      console.log(`🌐 Public URL: ${process.env.BACKEND_URL}`);
+    }
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🐍 FastAPI URL: ${process.env.FASTAPI_URL || 'http://localhost:8000'}`);
-    console.log(`📊 API Endpoints:`);
-    console.log(`   POST /api/analysis/instant-analysis`);
-    console.log(`   POST /api/analysis/deep-analysis`);
-    console.log(`   POST /api/analysis/upload-csv`);
-    console.log(`   GET  /api/analysis/analysis-status/:id`);
-    console.log(`   GET  /api/analysis/analysis-result/:id`);
-    console.log(`   GET  /api/analysis/download-report/:id`);
   });
 }
 

@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnostics Report | GeneLab</title>
+    <title>Analysis Result | GeneLab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -34,8 +34,8 @@
             </div>
             <div class="px-6 py-4 border-b" style="border-color:var(--border)">
                 <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
-                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
-                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">Doctor</p>
+                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Researcher User</p>
+                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">Researcher</p>
             </div>
             <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
@@ -56,9 +56,9 @@
         <main class="flex-1 ml-[19.5rem] p-8">
             <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                    <p class="section-badge mb-3">Diagnostic analysis</p>
-                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Molecular Interpretation</h1>
-                    <p class="font-medium" style="color:var(--text-muted)">High-fidelity clinical output for interpreted bio-asset.</p>
+                    <p class="section-badge mb-3 bg-violet/10 text-violet border-violet/20">Genomic analysis</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Biological Interpretation</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">High-fidelity genomic interpretation and alignment metrics.</p>
                 </div>
                 <div class="flex gap-3">
                     <button onclick="window.print()" class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
@@ -70,56 +70,6 @@
                     </button>
                 </div>
             </header>
-
-            <!-- ═══ Patient Demographics & Clinical Assessment Review ═══ -->
-            <div class="grid lg:grid-cols-[1fr_1fr] gap-6 mb-8" data-animate="panel">
-                <!-- Patient Demographics Info Card -->
-                <div class="glass-panel p-7 rounded-[24px]">
-                    <div class="flex items-center gap-3 mb-5 border-b pb-3" style="border-color:var(--border)">
-                        <span class="material-symbols-outlined text-cyan">person</span>
-                        <h3 class="text-lg font-display font-bold">Patient Information</h3>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider" style="color:var(--text-faint)">Patient ID</p>
-                            <p id="patient-id-val" class="font-mono font-bold text-white mt-0.5">—</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider" style="color:var(--text-faint)">Age / Sex</p>
-                            <p id="patient-age-sex-val" class="font-bold text-white mt-0.5">—</p>
-                        </div>
-                        <div class="col-span-2">
-                            <p class="text-[10px] font-bold uppercase tracking-wider" style="color:var(--text-faint)">Clinical Indication</p>
-                            <p id="patient-indication-val" class="text-slate-300 mt-0.5 font-medium">—</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Clinical Review Form -->
-                <div class="glass-panel p-7 rounded-[24px]" style="border-color:rgba(167,139,250,0.25)">
-                    <div class="flex items-center gap-3 mb-5 border-b pb-3" style="border-color:var(--border)">
-                        <span class="material-symbols-outlined text-violet">clinical_research</span>
-                        <h3 class="text-lg font-display font-bold">Clinical Assessment</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between gap-4">
-                            <label for="review-status-select" class="text-xs font-bold uppercase tracking-wider" style="color:var(--text-faint)">Review Status</label>
-                            <select id="review-status-select" class="bg-slate-900 border text-xs font-bold text-white px-3 py-2 rounded-xl focus:border-cyan/50 focus:outline-none" style="border-color:var(--border)">
-                                <option value="Pending Approval">Pending Approval</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Needs Review">Needs Review</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="review-comments-input" class="text-xs font-bold uppercase tracking-wider mb-2 block" style="color:var(--text-faint)">Doctor's Comments / Interpretative Notes</label>
-                            <textarea id="review-comments-input" class="field-input text-xs h-20 resize-none p-3" placeholder="Enter clinical comments and observations here..."></textarea>
-                        </div>
-                        <button id="save-review-btn" class="btn-premium btn-cyan w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest">
-                            <span class="material-symbols-outlined text-xs" style="font-size:16px!important;">save</span> Save Assessment
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <div class="grid md:grid-cols-3 gap-5 mb-8">
                 <div class="glass-panel p-6 rounded-[24px]" style="border-color:rgba(0,180,216,0.2)" data-animate="panel">
@@ -275,11 +225,11 @@
                         </ul>
                     </div>
 
-                    <!-- Column 3: Clinical Interpretation -->
+                    <!-- Column 3: Biological Interpretation -->
                     <div class="p-6 rounded-2xl border flex flex-col justify-between" style="background:var(--bg-glass);border-color:var(--border)">
                         <div>
                             <h4 class="text-sm font-display font-bold mb-3 flex items-center gap-1.5 text-lime">
-                                <span class="material-symbols-outlined text-sm">clinical_research</span> Clinical Interpretation
+                                <span class="material-symbols-outlined text-sm">biotech</span> Biological Interpretation
                             </h4>
                             <p id="tr-bio-summary" class="text-xs leading-relaxed text-slate-400 mb-4">
                                 Short peptide construct matching eukaryotic signaling peptides or synthetic variants.
@@ -437,7 +387,7 @@
     <script src="../../js/result.js" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        if (!window.doctorOnly()) return;
+        if (!window.researcherOnly()) return;
         const userStr = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
         if (userStr) {
             try {

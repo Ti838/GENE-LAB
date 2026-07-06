@@ -25,8 +25,8 @@ GeneLab is a production-grade, cloud-deployed SaaS platform for clinical DNA seq
 ### Backend
 - **Runtime:** Node.js + Express.js
 - **Database:** MongoDB Atlas (via Mongoose ODM)
-- **Auth:** JWT + bcryptjs (salt rounds: 12) + Firebase Google sign-in
-- **Storage:** Firebase Storage for profile images and DNA/report uploads
+- **Auth:** JWT + bcryptjs (salt rounds: 12) + Supabase Google sign-in
+- **Storage:** Supabase Storage for profile images and DNA/report uploads
 - **Security:** Helmet, express-rate-limit, express-validator
 - **Queue:** Redis + BullMQ (async DNA analysis jobs)
 - **Bio Service:** FastAPI microservice (BioPython + MyVariant + NCBI BLAST)
@@ -37,7 +37,7 @@ GeneLab is a production-grade, cloud-deployed SaaS platform for clinical DNA seq
 ## Key Features
 
 - **DNA Upload & Analysis** — Upload FASTA/sequence files, trigger instant or deep BLAST analysis
-- **Google Login** — Firebase-backed Google sign-in with JWT session handoff
+- **Google Login** — Supabase-backed Google sign-in with JWT session handoff
 - **Password Recovery** — Forgot/reset password flow for email/password accounts
 - **Clinical Dashboard** — Real-time metrics: stored sequences, analysis count, anomalies detected
 - **Clinical Notes** — Create, edit, and delete clinical observations linked to DNA files
@@ -110,10 +110,11 @@ JWT_SECRET=your_secure_random_key
 JWT_EXPIRY=24h
 FASTAPI_URL=http://localhost:8000
 REDIS_URL=redis://localhost:6379
-FIREBASE_PROJECT_ID=your-firebase-project-id
-FIREBASE_CLIENT_EMAIL=your-firebase-service-account-email
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_STORAGE_BUCKET=your-firebase-storage-bucket.appspot.com
+SUPABASE_URL=https://finxktktqzuvrvwqkixj.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+SUPABASE_JWT_SECRET=your-supabase-jwt-secret
+SUPABASE_STORAGE_BUCKET=genelab-bucket
 NODE_ENV=development
 ```
 
@@ -157,11 +158,11 @@ The platform is fully deployed on Vercel.
 |----------|---------|
 | `RESEND_API_KEY` | Email verification via Resend |
 | `REDIS_URL` | BullMQ job queue |
-| `FIREBASE_PROJECT_ID` | Firebase Admin project ID |
-| `FIREBASE_CLIENT_EMAIL` | Firebase service account email |
-| `FIREBASE_PRIVATE_KEY` | Firebase service account private key |
-| `FIREBASE_STORAGE_BUCKET` | Firebase Storage bucket for uploads |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Optional full service account JSON blob |
+| `SUPABASE_URL` | Supabase API connection URL |
+| `SUPABASE_ANON_KEY` | Public Anon API key for client-side load |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret Service Role key for secure backend uploads |
+| `SUPABASE_JWT_SECRET` | Secret token signing key used for JWT verification |
+| `SUPABASE_STORAGE_BUCKET` | Destination bucket name (e.g. `genelab-bucket`) |
 | `SENTRY_DSN` | Error monitoring |
 | `NCBI_API_KEY` | Higher BLAST rate limits |
 

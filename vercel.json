@@ -24,6 +24,7 @@
     { "source": "/login", "destination": "/frontend/pages/login.html" },
     { "source": "/login.html", "destination": "/frontend/pages/login.html" },
     { "source": "/doctor/(.*)", "destination": "/frontend/pages/doctor/$1" },
+    { "source": "/researcher/(.*)", "destination": "/frontend/pages/researcher/$1" },
     { "source": "/ops-control/(.*)", "destination": "/frontend/pages/ops-control/$1" },
     { "source": "/pages/(.*)", "destination": "/frontend/pages/$1" },
     { "source": "/(.*)", "destination": "/frontend/$1" }

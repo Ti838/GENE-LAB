@@ -32,10 +32,39 @@
 		});
 	}
 
+	function injectBrandLogos() {
+		const sidebars = document.querySelectorAll('aside');
+		sidebars.forEach((aside) => {
+			const brandHeader = aside.querySelector('.border-b.flex');
+			if (brandHeader) {
+				const iconContainer = brandHeader.querySelector('div');
+				if (iconContainer) {
+					if (!iconContainer.querySelector('img')) {
+						iconContainer.className = 'w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center';
+						iconContainer.style.background = 'rgba(0, 212, 255, 0.1)';
+						iconContainer.style.border = '1px solid rgba(0, 212, 255, 0.25)';
+						
+						const img = document.createElement('img');
+						const isSubDir = window.location.pathname.includes('/doctor/') ||
+										 window.location.pathname.includes('/researcher/') ||
+										 window.location.pathname.includes('/ops-control/');
+						img.src = isSubDir ? '../../assets/images/logo.png' : '../assets/images/logo.png';
+						img.className = 'w-7 h-7 object-contain';
+						img.alt = 'GeneLab Logo';
+						
+						iconContainer.innerHTML = '';
+						iconContainer.appendChild(img);
+					}
+				}
+			}
+		});
+	}
+
 	function initTheme() {
 		const currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
 		document.body.dataset.theme = currentTheme;
 		updateUI(currentTheme);
+		injectBrandLogos();
 
 		// Remove preload class after a short delay to enable smooth transitions
 		setTimeout(() => {

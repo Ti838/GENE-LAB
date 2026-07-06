@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const axios = require('axios');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const { protect } = require('../middleware/auth');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
-const { getFirebaseAdminAuth } = require('../services/firebaseAdmin');
 
 const generateToken = (user) => jwt.sign(
   { id: user._id.toString(), role: user.role, provider: user.authProvider },
@@ -208,45 +208,62 @@ router.post('/login', [
 });
 
 router.post('/google', [
-  body('idToken').notEmpty().withMessage('Firebase ID token is required'),
+  body('idToken').notEmpty().withMessage('Google ID token (idToken) is required'),
   body('role').optional().isIn(['doctor', 'researcher', 'admin', 'employee']).withMessage('Invalid role')
 ], async (req, res, next) => {
   try {
     verifyRequest(req);
 
     const { idToken, role } = req.body;
-    const firebaseAuth = getFirebaseAdminAuth();
-    if (!firebaseAuth) {
-      return res.status(503).json({ message: 'Firebase authentication is not configured on the server.' });
+    let decoded;
+    try {
+      const response = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      decoded = response.data;
+      
+      if (process.env.GOOGLE_CLIENT_ID && decoded.aud !== process.env.GOOGLE_CLIENT_ID) {
+        return res.status(401).json({ message: 'Token audience mismatch.' });
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        decoded = jwt.decode(idToken);
+        if (!decoded) {
+          return res.status(401).json({ message: 'Invalid token format in development.' });
+        }
+      } else {
+        return res.status(401).json({ message: 'Google token verification failed: ' + (err.response?.data?.error_description || err.message) });
+      }
     }
 
-    const decoded = await firebaseAuth.verifyIdToken(idToken);
     const normalizedEmail = (decoded.email || '').toLowerCase().trim();
-
     if (!normalizedEmail) {
       return res.status(400).json({ message: 'Google account does not expose an email address.' });
     }
 
-    let user = await User.findOne({ $or: [{ firebaseUid: decoded.uid }, { email: normalizedEmail }] });
+    const googleUid = decoded.sub;
+
+    let user = await User.findOne({ $or: [{ supabaseUid: googleUid }, { email: normalizedEmail }] });
+
+    const fullName = decoded.name || normalizedEmail.split('@')[0];
+    const avatarUrl = decoded.picture || '';
 
     if (!user) {
       user = await User.create({
-        name: decoded.name || normalizedEmail.split('@')[0],
+        name: fullName,
         email: normalizedEmail,
         role: role || 'doctor',
         authProvider: 'google',
-        firebaseUid: decoded.uid,
-        profilePicture: decoded.picture || '',
-        profilePictureProvider: decoded.picture ? 'firebase' : 'none',
+        supabaseUid: googleUid,
+        profilePicture: avatarUrl,
+        profilePictureProvider: avatarUrl ? 'supabase' : 'none',
         isEmailVerified: true,
         lastLogin: new Date()
       });
     } else {
-      user.firebaseUid = user.firebaseUid || decoded.uid;
-      if (!user.name && decoded.name) user.name = decoded.name;
-      if (decoded.picture && !user.profilePicture) {
-        user.profilePicture = decoded.picture;
-        user.profilePictureProvider = 'firebase';
+      user.supabaseUid = user.supabaseUid || googleUid;
+      if (!user.name && fullName) user.name = fullName;
+      if (avatarUrl && !user.profilePicture) {
+        user.profilePicture = avatarUrl;
+        user.profilePictureProvider = 'supabase';
       }
       user.isEmailVerified = true;
       user.lastLogin = new Date();
@@ -256,7 +273,7 @@ router.post('/google', [
       await user.save();
     }
 
-    await logSecurityEvent(user._id, 'google_login', 'session', { email: normalizedEmail, firebaseUid: decoded.uid }, req);
+    await logSecurityEvent(user._id, 'google_login', 'session', { email: normalizedEmail, googleUid }, req);
 
     const token = generateToken(user);
     res.json({
@@ -413,20 +430,11 @@ router.get('/me', protect, async (req, res) => {
   res.json({ user: serializeUser(req.user) });
 });
 
-router.get('/firebase-config', (req, res) => {
-  const config = {
-    apiKey: process.env.FIREBASE_WEB_API_KEY || '',
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
-    projectId: process.env.FIREBASE_PROJECT_ID || '',
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: process.env.FIREBASE_WEB_APP_ID || '',
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID || ''
-  };
-
+router.get('/google-config', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID || '';
   res.json({
-    configured: Boolean(config.apiKey && config.authDomain && config.projectId && config.appId),
-    config
+    configured: Boolean(clientId),
+    clientId
   });
 });
 

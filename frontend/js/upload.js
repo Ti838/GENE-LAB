@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
         outputArea.innerHTML = '';
         const card = document.createElement('div');
         card.className = 'mt-4 p-4 bg-slate-800 rounded-lg';
-        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="/pages/doctor/result.html?jobId=${jobId}" target="_blank" class="text-cyan">Open Result</a></div><div class="mt-2"><div id="job-progress-text-${jobId}" class="text-sm text-slate-400">Waiting...</div><div class="w-full bg-white/5 h-2 rounded mt-2"><div id="job-progress-bar-${jobId}" class="h-2 bg-cyan rounded" style="width:0%"></div></div></div>`;
+        const isResearcherPath = window.location.pathname.includes('/researcher/');
+        const resultUrl = isResearcherPath ? `/pages/researcher/result.html?jobId=${jobId}` : `/pages/doctor/result.html?jobId=${jobId}`;
+        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="${resultUrl}" target="_blank" class="text-cyan">Open Result</a></div><div class="mt-2"><div id="job-progress-text-${jobId}" class="text-sm text-slate-400">Waiting...</div><div class="w-full bg-white/5 h-2 rounded mt-2"><div id="job-progress-bar-${jobId}" class="h-2 bg-cyan rounded" style="width:0%"></div></div></div>`;
         outputArea.appendChild(card);
 
         window.GenelabPoller.pollJob(jobId, (status) => {
@@ -204,6 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveManualBtn.addEventListener('click', async () => {
             const sequence = manualPasteArea.value.trim();
             const name = document.getElementById('manual-name')?.value?.trim() || 'Manual_Sequence';
+            const patientId = document.getElementById('manual-patient-id')?.value?.trim();
+            const patientAge = document.getElementById('manual-patient-age')?.value?.trim();
+            const biologicalSex = document.getElementById('manual-patient-sex')?.value;
+            const clinicalIndication = document.getElementById('manual-patient-indication')?.value?.trim();
             
             if (!sequence) {
                 showToast('Please enter a DNA sequence', 'info');
@@ -214,11 +220,22 @@ document.addEventListener('DOMContentLoaded', () => {
             saveManualBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Processing...';
 
             try {
-                const response = await api.post('/dna/paste', { sequence, name });
+                const response = await api.post('/dna/paste', { 
+                    sequence, 
+                    name,
+                    patientId,
+                    patientAge,
+                    biologicalSex,
+                    clinicalIndication
+                });
                 showToast('Sequence saved successfully!', 'success');
                 manualPasteArea.value = '';
                 if (document.getElementById('manual-name')) document.getElementById('manual-name').value = '';
-                // Optional: load my files if we have a list somewhere
+                if (document.getElementById('manual-patient-id')) document.getElementById('manual-patient-id').value = '';
+                if (document.getElementById('manual-patient-age')) document.getElementById('manual-patient-age').value = '';
+                if (document.getElementById('manual-patient-indication')) document.getElementById('manual-patient-indication').value = '';
+                // Reload list
+                loadFiles();
             } catch (error) {
                 // showToast is already called in api.js, but we can add more context if needed
             } finally {

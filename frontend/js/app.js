@@ -14,6 +14,7 @@
  */
 function _loginUrl() {
   const isSubDir = window.location.pathname.includes('/doctor/') ||
+                   window.location.pathname.includes('/researcher/') ||
                    window.location.pathname.includes('/ops-control/');
   return isSubDir ? '../login.html' : 'login.html';
 }
@@ -44,10 +45,14 @@ window.adminOnly = function () {
   }
   if (user.role !== 'admin') {
     // Non-admin landed on an admin page — redirect them to their portal
-    const dest = user.role === 'doctor' || user.role === 'researcher'
+    const dest = user.role === 'doctor'
       ? (window.location.pathname.includes('/ops-control/')
           ? '../doctor/dashboard.html'
           : 'doctor/dashboard.html')
+      : user.role === 'researcher'
+      ? (window.location.pathname.includes('/ops-control/')
+          ? '../researcher/dashboard.html'
+          : 'researcher/dashboard.html')
       : _loginUrl();
     window.location.replace(dest);
     return false;
@@ -56,8 +61,8 @@ window.adminOnly = function () {
 };
 
 /**
- * Enforce doctor/researcher access. Redirects if not authenticated
- * or not one of: doctor, researcher, admin.
+ * Enforce doctor-only access. Redirects if not authenticated
+ * or not doctor/admin.
  */
 window.doctorOnly = function () {
   const token = localStorage.getItem('genelab_token') ||
@@ -67,7 +72,26 @@ window.doctorOnly = function () {
     window.location.replace(_loginUrl());
     return false;
   }
-  if (!['doctor', 'researcher', 'admin'].includes(user.role)) {
+  if (!['doctor', 'admin'].includes(user.role)) {
+    window.location.replace(_loginUrl());
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Enforce researcher-only access. Redirects if not authenticated
+ * or not researcher/admin.
+ */
+window.researcherOnly = function () {
+  const token = localStorage.getItem('genelab_token') ||
+                sessionStorage.getItem('genelab_token');
+  const user  = window.getAuthUser();
+  if (!token || !user) {
+    window.location.replace(_loginUrl());
+    return false;
+  }
+  if (!['researcher', 'admin'].includes(user.role)) {
     window.location.replace(_loginUrl());
     return false;
   }
@@ -135,23 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (sidebarName && user.name) {
         sidebarName.textContent = user.name;
       }
-      if (user.role === 'researcher') {
-        if (document.title.includes('Doctor')) {
-          document.title = document.title.replace('Doctor', 'Researcher');
-        }
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        let node;
-        while (node = walker.nextNode()) {
-          const parentTag = node.parentElement ? node.parentElement.tagName.toUpperCase() : '';
-          if (parentTag === 'SCRIPT' || parentTag === 'STYLE') continue;
-          if (node.nodeValue.includes('Doctor')) {
-            node.nodeValue = node.nodeValue.replace(/Doctor/g, 'Researcher');
-          }
-          if (node.nodeValue.includes('doctor')) {
-            node.nodeValue = node.nodeValue.replace(/doctor/g, 'researcher');
-          }
-        }
-      }
+
     } catch (e) {
       console.warn('Could not customize role branding:', e);
     }

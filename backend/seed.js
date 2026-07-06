@@ -256,7 +256,12 @@ async function seed() {
         confidence: 0.99,
         topRepeats: [{ kmer: 'ATG', count: 4, frequency: 0.02 }],
         sampleType: 'Whole Genome',
-        notes: 'Priority clinical diagnostics screening.'
+        notes: 'Priority clinical diagnostics screening.',
+        patientId: 'GL-PAT-001',
+        patientAge: 42,
+        biologicalSex: 'Female',
+        clinicalIndication: 'Hereditary Breast and Ovarian Cancer (HBOC) syndrome screening',
+        clinicalStatus: 'Pending Approval'
       },
       {
         originalName: 'E_Coli_LacZ_Sequence.fasta',
@@ -288,7 +293,12 @@ async function seed() {
         scientificSummary: 'Alignment results match perfectly with bacterial reference database.',
         confidence: 1.0,
         sampleType: 'Whole Exome',
-        notes: 'Control reference indexing check.'
+        notes: 'Control reference indexing check.',
+        patientId: 'GL-PAT-002',
+        patientAge: 58,
+        biologicalSex: 'Male',
+        clinicalIndication: 'Metastatic lung adenocarcinoma - Somatic profiling',
+        clinicalStatus: 'Approved'
       },
       {
         originalName: 'EGFR_Tumor_Biopsy.fasta',
@@ -300,7 +310,12 @@ async function seed() {
         status: 'analyzing',
         analysisType: 'instant',
         sampleType: 'Targeted Panel',
-        notes: 'Somatic profiling for lung biopsy.'
+        notes: 'Somatic profiling for lung biopsy.',
+        patientId: 'GL-PAT-003',
+        patientAge: 29,
+        biologicalSex: 'Male',
+        clinicalIndication: 'Suspected EGFR mutation in lung adenocarcinoma',
+        clinicalStatus: 'Needs Review'
       }
     ]);
     console.log('✅ Rich DNA Files and Scientific Analysis results successfully seeded!');

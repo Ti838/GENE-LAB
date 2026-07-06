@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-# Healthcheck in docker-compose uses curl, so install it in the image.
+# curl needed for healthcheck
 RUN apk add --no-cache curl
 
 WORKDIR /app
@@ -11,6 +11,10 @@ RUN npm install --production
 
 COPY . .
 
-EXPOSE 5000
+# Create uploads directory for persistent file storage
+RUN mkdir -p /app/uploads
+
+# Railway injects PORT automatically — expose it
+EXPOSE ${PORT:-5000}
 
 CMD ["node", "server.js"]

@@ -1,237 +1,163 @@
-# GeneLab — System Architecture
+# 🏛️ GeneLab — System Architecture & Design Specification
 
 **Version:** 2.0.0  
-**Deployment:** Vercel (Serverless) + MongoDB Atlas  
-**Live URL:** https://gene-lab-gray.vercel.app
+**Deployment Scheme:** Hybrid Vercel Serverless + MongoDB Atlas  
 
 ---
 
-## Overview
-
-GeneLab is composed of four cooperating layers:
+## 1. Directory Structure
 
 ```
-Browser (User)
-     │
-     ▼
-Frontend (HTML/JS/CSS — Vercel Static)
-     │  API calls via fetch()
-     ▼
-Backend API (Express.js — Vercel Serverless Functions)
-     │                         │
-     ▼                         ▼
-MongoDB Atlas             FastAPI Bio Service
-(Primary Database)        (DNA Analysis Engine)
-                               │
-                          Redis / BullMQ
-                          (Async Job Queue)
-```
-
----
-
-## Layer 1 — Frontend
-
-**Location:** `frontend/`  
-**Deployed as:** Vercel static files
-
-```
-frontend/
-├── pages/
-│   ├── login.html          # Auth page (login + register tabs)
-│   ├── doctor/             # Doctor/Researcher pages
-│   │   ├── dashboard.html  # Live stats + charts
-│   │   ├── upload.html     # DNA file upload
-│   │   ├── analysis.html   # Analysis results
-│   │   ├── notes.html      # Clinical notes CRUD
-│   │   ├── reports.html    # Generated reports
-│   │   ├── compare.html    # Sequence comparison
-│   │   └── profile.html    # User profile settings
-│   └── ops-control/        # Admin pages
-│       ├── login.html      # Secure admin-only login gateway
-│       ├── dashboard.html  # Command console + audit logs
-│       ├── doctors.html    # User management
-│       ├── data.html       # DNA file registry
-│       ├── logs.html       # Full audit log view
-│       ├── analytics.html  # Platform analytics
-│       ├── settings.html   # System settings
-│       └── profile.html    # Admin profile
-├── js/
-│   ├── api.js              # Central fetch wrapper (auto 401 logout)
-│   ├── auth.js             # Login / register / logout logic
-│   ├── admin.js            # Admin dashboard logic
-│   ├── doctor-dashboard.js # Doctor dashboard live data
-│   ├── notes.js            # Clinical notes CRUD
-│   ├── profile.js          # Profile form handling
-│   ├── charts.js           # Chart.js initialisation
-│   ├── app.js              # Global init (GSAP, guards)
-│   ├── theme.js            # Dark/light mode toggle
-│   └── dna-background.js   # Animated DNA helix canvas
-└── css/
-    ├── style.css           # Global styles + glassmorphism
-    └── theme.css           # CSS custom properties (colors, fonts)
-```
-
-**Key design decisions:**
-- All API calls go through `api.js` — single place for auth headers and error handling
-- 401 responses auto-clear localStorage and redirect to login
-- Route guards in `app.js` redirect unauthenticated users before page renders
-
----
-
-## Layer 2 — Backend API
-
-**Location:** `backend/`  
-**Deployed as:** Vercel Serverless Functions via `api/index.js`
-
-```
-backend/
-├── server.js               # Express app factory
-├── routes/
-│   ├── auth.js             # Register, login, verify-email, resend-verification
-│   ├── admin.js            # Stats, users CRUD, DNA registry, audit logs, requests
-│   ├── dna.js              # Upload, my-files, delete, analysis trigger
-│   ├── analysis.js         # Analysis jobs, results, instant analysis
-│   ├── notes.js            # Clinical notes CRUD
-│   ├── profile.js          # Get/update user profile
-│   ├── requests.js         # Sequencing requests (doctor → admin workflow)
-│   ├── core.js             # General uploads
-│   ├── announcements.js    # Announcements CRUD
-│   └── metrics.js          # Prometheus metrics (admin-only)
-├── middleware/
-│   ├── auth.js             # protect, adminOnly, doctorOnly
-│   └── errorHandler.js     # Global error handler
-├── models/
-│   ├── User.js             # Schema: name, email, role, password, lockout, verification
-│   ├── DNAFile.js          # Schema: originalName, status, nucleotide data, doctor ref
-│   ├── AnalysisJob.js      # Schema: job status, results, worker output
-│   ├── Note.js             # Schema: title, content, dnaFile ref, author
-│   ├── SequencingRequest.js # Schema: sampleType, status, priority, adminNotes
-│   ├── AuditLog.js         # Schema: userId, action, resourceType, IP, timestamp
-│   └── Announcement.js     # Schema: title, content, priority, author
-├── services/
-│   ├── queue.service.js    # BullMQ queue management
-│   ├── fastapi.service.js  # HTTP calls to FastAPI bio service
-│   ├── alignment.service.js # Sequence alignment helpers
-│   ├── cache.service.js    # Redis cache utilities
-│   └── logger.service.js   # Structured logging
-└── utils/
-    ├── mongo.js            # Connection pool (fast-fail, 8s timeout, retry-safe)
-    └── email.js            # Resend email integration
-```
-
-**Key design decisions:**
-- Serverless-safe: no `app.listen()` on Vercel, no blocking filesystem calls
-- MongoDB connection is cached per serverless instance with 8-second fast-fail timeout
-- `/api/health` is registered before all middleware — works even when DB is down
-- Prometheus `collectDefaultMetrics()` is disabled on Vercel to prevent container freeze
-
----
-
-## Layer 3 — Database (MongoDB Atlas)
-
-All persistent state lives in MongoDB. Collections:
-
-| Collection | Purpose |
-|------------|---------|
-| `users` | All registered accounts (admin, doctor, researcher, employee) |
-| `dnafiles` | Uploaded DNA file metadata + nucleotide analysis results |
-| `analysisjobs` | Background analysis job state and results |
-| `notes` | Clinical notes written by doctors |
-| `sequencingrequests` | Doctor → Admin sequencing workflow |
-| `auditlogs` | Full audit trail of every critical action |
-| `announcements` | Admin-posted system announcements |
-
-**Connection:** Mongoose ODM with schema validation. All queries are type-safe.
-
----
-
-## Layer 4 — Bio Service (FastAPI — Optional)
-
-**Location:** `bioservice/`  
-**Deployed as:** Render Docker container (optional — not required for core features)
-
-Handles computationally intensive DNA analysis:
-- **Instant analysis** — nucleotide frequency, codon analysis, GC content
-- **Deep analysis** — NCBI BLAST alignment, MyVariant.info variant lookup
-- **Report generation** — PDF clinical reports via ReportLab
-
-```
-bioservice/
-├── main.py                 # FastAPI app entry point
-├── engines/
-│   ├── blast_engine.py     # NCBI BLAST integration
-│   └── report_generator.py # PDF report builder
-└── requirements.txt        # Python dependencies
+genelab/
+├── backend/                  # REST API Server (Express.js)
+│   ├── middleware/           # Auth guard, error handlers, rate-limiters
+│   ├── models/               # Mongoose Schemas (User, DNAFile, AuditLog)
+│   ├── routes/               # API endpoints (auth, dna, admin, profile)
+│   ├── services/             # Integrations (Supabase Storage, BioService)
+│   ├── utils/                # Database pool connection, logger, emails
+│   ├── server.js             # Express app setup
+│   └── seed.js               # Database hydration scripts
+├── bioservice/               # Heavy Computing (FastAPI)
+│   ├── engines/              # BLAST engines, alignment and PDF generators
+│   ├── main.py               # FastAPI entry point
+│   └── requirements.txt      # Python libraries (Biopython, reportlab)
+├── frontend/                 # Client UI (HTML, CSS, JS)
+│   ├── css/                  # Glassmorphism design tokens
+│   ├── js/                   # central api.js wrapper, auth.js, result.js
+│   ├── pages/                # Isolated pages per role
+│   │   ├── doctor/           # Doctor Result, Profile, and Reports
+│   │   ├── researcher/       # Dataset Exploration dashboards
+│   │   ├── ops-control/      # Admin control center (desktop guarded)
+│   │   └── login.html        # Portal entry page
+│   └── theme.css             # Unified visual tokens
 ```
 
 ---
 
-## Request Flow
+## 2. MongoDB Schema Specifications
 
-### Standard API Request
+All documents are stored within MongoDB Atlas. Below are the core Mongoose schemas:
 
-```
-1. Browser sends fetch() to /api/<route>
-2. Vercel routes request to api/index.js (Express handler)
-3. protect middleware verifies JWT token
-4. Route handler runs business logic
-5. Mongoose query reads/writes MongoDB Atlas
-6. JSON response returns to browser
-```
-
-### DNA Analysis Flow
-
-```
-1. Doctor uploads DNA file to /api/dna/upload
-2. File saved to /tmp/uploads (Vercel) or uploads/ (local)
-3. Backend stores file metadata in MongoDB (status: "uploaded")
-4. Analysis job pushed to Redis via BullMQ (if Redis available)
-5. Worker calls FastAPI bio service with sequence data
-6. Bio service runs BLAST / nucleotide analysis
-7. Result written back to MongoDB (status: "analyzed")
-8. Doctor's dashboard shows updated stats in real-time
+### 2.1 User Collection (`users`)
+```javascript
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String, select: false },
+  role: { type: String, enum: ['doctor', 'researcher', 'admin', 'user'], default: 'user' },
+  organization: { type: String },
+  specialization: { type: String },
+  licenseNumber: { type: String },
+  signatureUrl: { type: String, default: '' },
+  isActive: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
+  verificationTokenExpires: { type: Date }
+}, { timestamps: true });
 ```
 
----
-
-## Security Architecture
-
+### 2.2 DNA Sequence Collection (`dnafiles`)
+```javascript
+const dnaFileSchema = new mongoose.Schema({
+  originalName: { type: String, required: true },
+  filename: { type: String, required: true },
+  path: { type: String, required: true },
+  sequence: { type: String },
+  sequenceLength: { type: Number },
+  gcContent: { type: Number },
+  status: { type: String, enum: ['uploaded', 'analyzing', 'analyzed', 'failed'], default: 'uploaded' },
+  doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  patientId: { type: String },
+  patientAge: { type: Number },
+  biologicalSex: { type: String },
+  clinicalIndication: { type: String },
+  clinicalStatus: { type: String, enum: ['Pending Approval', 'Approved', 'Needs Review'], default: 'Pending Approval' },
+  notes: { type: String, default: '' }
+}, { timestamps: true });
 ```
-Request
-  │
-  ├── Helmet headers applied (XSS, Frame, HSTS, CSP)
-  ├── Rate limiter checked (IP-based)
-  ├── CORS origin validated
-  │
-  ├── /api/health ← No auth required (uptime monitoring)
-  │
-  └── All other routes:
-        ├── JWT verified (protect middleware)
-        ├── Role checked (adminOnly / doctorOnly)
-        ├── Input validated (express-validator)
-        ├── Business logic executes
-        └── Action logged to AuditLog collection
-```
 
----
-
-## Environment Detection
-
-The backend detects its runtime environment and adapts:
-
-```js
-const isVercel = process.env.VERCEL === '1';
-
-// Filesystem: use /tmp on Vercel, local uploads/ elsewhere
-const UPLOADS_DIR = isVercel ? '/tmp/uploads' : './uploads';
-
-// Metrics: disable background polling on Vercel
-if (!isVercel) promClient.collectDefaultMetrics();
-
-// Server: never call app.listen() on Vercel
-if (!isVercel) app.listen(PORT, ...);
+### 2.3 Audit Logs Collection (`auditlogs`)
+```javascript
+const auditLogSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  action: { type: String, required: true },
+  resourceType: { type: String, required: true },
+  resourceId: { type: String },
+  ipAddress: { type: String },
+  userAgent: { type: String }
+}, { timestamps: true });
 ```
 
 ---
 
-*GeneLab v2.0.0 | Updated: 2026-05-26*
+## 3. Role Permission Matrix
+
+We enforce strict Role-Based Access Control (RBAC) across all API routes:
+
+| Role | Sequence Upload | Review / Comment | Dataset Upload | Admin Console | DB Cache Control |
+|---|---|---|---|---|---|
+| **Admin** | ❌ No | ❌ No | ❌ No |  Yes |  Yes |
+| **Doctor** |  Yes |  Yes | ❌ No | ❌ No | ❌ No |
+| **Researcher**| ❌ No | ❌ No |  Yes | ❌ No | ❌ No |
+| **User** |  Yes | ❌ No | ❌ No | ❌ No | ❌ No |
+
+---
+
+## 4. REST API Specification
+
+All paths are prefixed by `/api`. Every call must supply a JWT bearer header (`Authorization: Bearer <token>`).
+
+### 4.1 Authentication Service (`/auth`)
+*   `POST /auth/register` - Create user. Request body: `{ name, email, password, role }`.
+*   `POST /auth/login` - Authenticate user. Returns JWT token and User model metadata.
+*   `POST /auth/verify-email` - Validate token. Body: `{ token }`.
+*   `GET /auth/me` - Fetch profile metadata for logged-in user.
+
+### 4.2 DNA Management Service (`/dna`)
+*   `POST /dna/upload` - Upload FASTA/TXT sequence. Form-data containing key `dnaFile`.
+*   `POST /dna/paste` - Post manual sequence. Body: `{ sequence, name, patientId, patientAge, biologicalSex, clinicalIndication }`.
+*   `GET /dna/my-files` - List sequences belonging to the logged-in doctor/user.
+*   `PUT /dna/file/:id/review` - Save clinical review details. Body: `{ clinicalStatus, notes }`.
+*   `DELETE /dna/file/:id` - Remove a sequence from the database.
+
+### 4.3 Profile Service (`/profile`)
+*   `PUT /profile` - Update personal details (name, phone, organization, licenseNumber).
+*   `PUT /profile/password` - Change security credentials. Body: `{ currentPassword, newPassword }`.
+*   `PUT /profile/signature` - Upload clinical signature file. Key: `signature`.
+
+### 4.4 Admin Service (`/admin`)
+*   `GET /admin/stats` - Total users, sequences, and pending reviews.
+*   `GET /admin/users` - List all users with filtering.
+*   `PUT /admin/user/:id` - Update user active/suspended state.
+*   `GET /admin/audit-logs` - Chronological log audit list.
+
+---
+
+## 5. Authentication & JWT Token Flow
+
+GeneLab handles user authentication using signature-validated JWT tokens:
+
+```
+[ Browser ]                                       [ Express Backend API ]
+     │                                                      │
+     │ ── 1. POST /auth/login (Credentials) ──────────────> │
+     │                                                      │ ── 2. Validate password
+     │ <── 3. Return Token (expires 1 hour) ─────────────── │
+     │                                                      │
+     │ ── 4. GET /api/dna/my-files (Header: Bearer JWT) ──> │
+     │                                                      │ ── 5. Decode & Check Role
+     │ <── 6. Return JSON payload ───────────────────────── │
+```
+
+*   **Expiration Policy**: JWT tokens are signed using a 256-bit secret key with an expiration window of 1 hour.
+*   **Authorization Guard**: Accessing route directories (e.g., `/api/admin/*`) triggers an `adminOnly` checking middleware, blocking unauthorized clients with a `403 Forbidden` response.
+*   **Dynamic Logout**: If the frontend receives a `401 Unauthorized` response from any request, it automatically purges all active credentials and redirects the client back to `login.html`.
+
+---
+
+## 6. Deployment Architecture
+
+GeneLab utilizes a serverless-friendly hybrid deployment paradigm to ensure rapid response capabilities:
+*   **Client Assets & Serverless Handlers**: Deployed globally on Vercel. Static frontend builds are served via edge routers. Backend API requests are executed as Serverless Functions (`api/index.js`).
+*   **Bioinformatics Microservice**: Deployed in a standalone container instance (e.g., Render, AWS App Runner). This keeps heavy memory footprints (like Clustal Omega and BLAST datasets) off Vercel's CPU/RAM execution ceilings.
+*   **Database Host**: MongoDB Atlas cluster with auto-scaling storage rules and automated replicas.

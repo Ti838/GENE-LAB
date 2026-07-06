@@ -23,8 +23,6 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js" defer></script>
     <script src="../js/theme.js" defer></script>
     <script src="../js/app.js" defer></script>
     <script src="../js/api.js" defer></script>
@@ -202,8 +200,8 @@
     
     <div class="brand-side">
         <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem">
-            <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(0,180,216,0.15)">
-                <svg viewBox="0 0 100 100" style="width:32px;height:32px"><g transform="translate(10,10)"><path d="M16 10 C 32 10,48 70,64 70" fill="none" stroke="var(--cyan)" stroke-width="5" stroke-linecap="round"/><path d="M16 70 C 32 70,48 10,64 10" fill="none" stroke="var(--violet)" stroke-width="5" stroke-linecap="round" opacity="0.6"/><circle cx="16" cy="10" r="4.5" fill="#fff"/><circle cx="16" cy="70" r="4.5" fill="#fff"/><circle cx="64" cy="70" r="4.5" fill="#fff"/><circle cx="64" cy="10" r="4.5" fill="#fff"/></g></svg>
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(0,180,216,0.15);overflow:hidden">
+                <img src="../assets/images/logo.png" style="width:32px;height:32px;object-fit:contain" alt="GeneLab Logo">
             </div>
             <h1 style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:white;letter-spacing:0.02em">GeneLab</h1>
         </div>
@@ -214,8 +212,8 @@
     <div class="form-side">
         <div class="form-wrap">
             <div class="mob-logo">
-                <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center">
-                    <svg viewBox="0 0 100 100" style="width:22px;height:22px"><g transform="translate(10,10)"><path d="M16 10 C 32 10,48 70,64 70" fill="none" stroke="var(--cyan)" stroke-width="5" stroke-linecap="round"/><path d="M16 70 C 32 70,48 10,64 10" fill="none" stroke="var(--violet)" stroke-width="5" stroke-linecap="round" opacity="0.6"/></g></svg>
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                    <img src="../assets/images/logo.png" style="width:22px;height:22px;object-fit:contain" alt="GeneLab Logo">
                 </div>
                 <span style="font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:white">GeneLab</span>
             </div>
@@ -332,6 +330,11 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Handle OAuth callback if redirected back from Supabase Google Auth
+        if (window.auth && typeof window.auth.handleOAuthCallback === 'function') {
+            window.auth.handleOAuthCallback();
+        }
+
         const tabs = document.querySelectorAll('.tab-btn');
         const panels = document.querySelectorAll('.panel');
         tabs.forEach(t => t.addEventListener('click', () => {

@@ -29,20 +29,23 @@ function _safeStem(originalName) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('reports.html')) return;
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
 
     const reportsTableBody = document.getElementById('reports-table-body');
 
     async function loadReports() {
         if (!reportsTableBody) return;
-        reportsTableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center italic" style="color:var(--text-faint)">Accessing clinical records...</td></tr>';
+        const colCount = isResearcherPath ? 4 : 6;
+        reportsTableBody.innerHTML = `<tr><td colspan="${colCount}" class="p-10 text-center italic" style="color:var(--text-faint)">Accessing clinical records...</td></tr>`;
         try {
             const files = await api.get('/dna/my-files');
             const analyzedFiles = files.filter(f => f.status === 'analyzed');
             reportsTableBody.innerHTML = '';
 
             if (!analyzedFiles.length) {
-                reportsTableBody.innerHTML = '<tr><td colspan="4" class="text-center italic p-8" style="color:var(--text-faint)">No analyzed reports found. Run analysis on your files first.</td></tr>';
+                reportsTableBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center italic p-8" style="color:var(--text-faint)">No analyzed reports found. Run analysis on your files first.</td></tr>`;
                 return;
             }
 
@@ -57,18 +60,53 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tdId.className = 'p-4 font-mono text-xs';
                 tdId.style.color = 'var(--cyan)';
                 tdId.textContent = f._id.substr(-8).toUpperCase();
+                row.appendChild(tdId);
 
-                // File name
-                const tdName = document.createElement('td');
-                tdName.className = 'p-4 font-bold';
-                tdName.style.color = 'var(--text)';
-                tdName.textContent = f.originalName; // textContent = XSS safe
+                if (!isResearcherPath) {
+                    // Patient ID
+                    const tdPatId = document.createElement('td');
+                    tdPatId.className = 'p-4 font-mono text-xs font-bold text-white';
+                    tdPatId.textContent = f.patientId || 'GL-PAT-001';
+                    row.appendChild(tdPatId);
+
+                    // Indication
+                    const tdInd = document.createElement('td');
+                    tdInd.className = 'p-4 text-sm text-slate-300 max-w-[200px] truncate';
+                    tdInd.textContent = f.clinicalIndication || 'Hereditary screening request';
+                    row.appendChild(tdInd);
+
+                    // Review Status
+                    const tdStatus = document.createElement('td');
+                    tdStatus.className = 'p-4 text-xs';
+                    const cStat = f.clinicalStatus || 'Pending Approval';
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border';
+                    if (cStat === 'Approved') {
+                        statusSpan.style.cssText = 'color:var(--teal);border-color:rgba(6,255,160,0.3);background:rgba(6,255,160,0.08)';
+                    } else if (cStat === 'Needs Review') {
+                        statusSpan.style.cssText = 'color:var(--coral);border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.08)';
+                    } else {
+                        statusSpan.style.cssText = 'color:var(--coral);border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.08)'; // yellow/amber theme variables: we can use custom color or coral
+                        statusSpan.textContent = 'Pending Approval';
+                    }
+                    statusSpan.textContent = cStat;
+                    tdStatus.appendChild(statusSpan);
+                    row.appendChild(tdStatus);
+                } else {
+                    // File name (for researcher)
+                    const tdName = document.createElement('td');
+                    tdName.className = 'p-4 font-bold';
+                    tdName.style.color = 'var(--text)';
+                    tdName.textContent = f.originalName;
+                    row.appendChild(tdName);
+                }
 
                 // Date
                 const tdDate = document.createElement('td');
                 tdDate.className = 'p-4 text-sm';
                 tdDate.style.color = 'var(--text-muted)';
                 tdDate.textContent = date;
+                row.appendChild(tdDate);
 
                 // Actions
                 const tdActions = document.createElement('td');
@@ -95,14 +133,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btnWrap.appendChild(mkBtn('CSV',  'download',     'violet', () => window.exportReportCSV(f._id)));
 
                 tdActions.appendChild(btnWrap);
-                row.appendChild(tdId);
-                row.appendChild(tdName);
-                row.appendChild(tdDate);
                 row.appendChild(tdActions);
                 reportsTableBody.appendChild(row);
             });
         } catch (err) {
-            reportsTableBody.innerHTML = '<tr><td colspan="4" class="text-center p-8 italic" style="color:var(--coral)">Failed to load reports. Please refresh.</td></tr>';
+            reportsTableBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center p-8 italic" style="color:var(--coral)">Failed to load reports. Please refresh.</td></tr>`;
         }
     }
 

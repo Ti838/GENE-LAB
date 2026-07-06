@@ -5,7 +5,9 @@
 // compare.js — DNA Comparison Logic (XSS-safe)
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('compare.html')) return;
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
 
     const container       = document.getElementById('compare-files-container');
     const resultContainer = document.getElementById('compare-result');

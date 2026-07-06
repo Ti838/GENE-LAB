@@ -4,7 +4,9 @@
 // profile.js - Profile Management with Stats & Change Password
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
     const profileForm = document.getElementById('doctor-profile-form');
     const passwordForm = document.getElementById('doctor-password-form');
 
@@ -68,6 +70,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 togglePhotoUI(true);
             } else {
                 togglePhotoUI(false);
+            }
+
+            // Signature image
+            const sigPreviewImg = document.getElementById('signature-preview-img');
+            const sigPlaceholder = document.getElementById('signature-placeholder');
+            if (user.signatureUrl) {
+                if (sigPreviewImg) {
+                    sigPreviewImg.src = user.signatureUrl;
+                    sigPreviewImg.classList.remove('hidden');
+                }
+                if (sigPlaceholder) sigPlaceholder.classList.add('hidden');
+            } else {
+                if (sigPreviewImg) {
+                    sigPreviewImg.src = '';
+                    sigPreviewImg.classList.add('hidden');
+                }
+                if (sigPlaceholder) sigPlaceholder.classList.remove('hidden');
             }
 
             // Load and update statistics
@@ -218,6 +237,65 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast('Profile photo updated successfully!', 'success');
             } catch (error) {
                 showToast('Preview failed: ' + error.message, 'error');
+            }
+        };
+    }
+
+    const signatureFileInput = document.getElementById('signature-file-input');
+    const signaturePreviewImg = document.getElementById('signature-preview-img');
+    const signaturePlaceholder = document.getElementById('signature-placeholder');
+
+    if (signatureFileInput) {
+        signatureFileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Size check (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Signature file is too large! Max size 2MB.', 'error');
+                return;
+            }
+
+            try {
+                // show local preview immediately
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (signaturePreviewImg) {
+                        signaturePreviewImg.src = e.target.result;
+                        signaturePreviewImg.classList.remove('hidden');
+                    }
+                    if (signaturePlaceholder) signaturePlaceholder.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+
+                const formData = new FormData();
+                formData.append('signature', file);
+
+                const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
+                const response = await fetch(`${API_BASE_URL}/profile/signature`, {
+                    method: 'PUT',
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Signature upload failed.');
+                }
+
+                if (data.user) {
+                    const inLocal = !!localStorage.getItem('genelab_token');
+                    const userJson = JSON.stringify(data.user);
+                    if (inLocal) {
+                        localStorage.setItem('genelab_user', userJson);
+                    } else {
+                        sessionStorage.setItem('genelab_user', userJson);
+                    }
+                }
+
+                showToast('Signature updated successfully!', 'success');
+            } catch (error) {
+                showToast('Signature upload failed: ' + error.message, 'error');
             }
         };
     }

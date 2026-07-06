@@ -5,7 +5,9 @@
 // notes.js — Clinical Notes CRUD (XSS-safe)
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.location.pathname.includes('notes.html')) return;
-    if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
+    const isResearcherPath = window.location.pathname.includes('/researcher/');
+    const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
+    if (typeof guard === 'function' && !guard()) return;
 
     const notesList   = document.getElementById('notes-list');
     const noteTitle   = document.getElementById('note-title');

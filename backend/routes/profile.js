@@ -70,9 +70,9 @@ router.put('/photo', protect, upload.single('profilePhoto'), async (req, res, ne
         metadata: { userId: req.user._id.toString(), purpose: 'profile-photo' }
       });
 
-      user.profilePicture = uploadResult.downloadUrl;
+       user.profilePicture = uploadResult.downloadUrl;
       user.profilePicturePath = uploadResult.storagePath;
-      user.profilePictureProvider = 'firebase';
+      user.profilePictureProvider = 'supabase';
       await user.save();
 
       return res.json({
@@ -93,6 +93,45 @@ router.put('/photo', protect, upload.single('profilePhoto'), async (req, res, ne
     await user.save();
 
     res.json({ message: 'Profile photo updated!', user: await User.findById(req.user._id).select('-password') });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── PUT /api/profile/signature ── Update digital signature ──────────
+router.put('/signature', protect, upload.single('signature'), async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (req.file) {
+      const uploadResult = await uploadBufferToFirebase({
+        buffer: req.file.buffer,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        folder: 'signatures',
+        ownerId: req.user._id.toString(),
+        metadata: { userId: req.user._id.toString(), purpose: 'digital-signature' }
+      });
+
+      user.signatureUrl = uploadResult.downloadUrl;
+      await user.save();
+
+      return res.json({
+        message: 'Signature updated successfully!',
+        user: await User.findById(req.user._id).select('-password'),
+        signatureUrl: uploadResult.downloadUrl
+      });
+    }
+
+    const { signatureUrl } = req.body;
+    if (typeof signatureUrl !== 'string' || signatureUrl.trim().length === 0) {
+      return res.status(400).json({ message: 'Signature file or URL is required.' });
+    }
+
+    user.signatureUrl = signatureUrl.trim();
+    await user.save();
+
+    res.json({ message: 'Signature updated successfully!', user: await User.findById(req.user._id).select('-password'), signatureUrl: user.signatureUrl });
   } catch (err) {
     next(err);
   }

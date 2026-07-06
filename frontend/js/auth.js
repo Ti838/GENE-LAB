@@ -1,33 +1,5 @@
 // auth.js - Login, signup, Google sign-in, and password reset flows
 const auth = {
-    firebaseReady: false,
-    firebaseAuth: null,
-
-    async loadFirebaseClient() {
-        if (this.firebaseReady) return this.firebaseAuth;
-        if (typeof window.firebase === 'undefined') {
-            return null;
-        }
-
-        try {
-            const response = await api.get('/auth/firebase-config');
-            if (!response.configured) {
-                return null;
-            }
-
-            const config = response.config;
-            if (!window.firebase.apps.length) {
-                window.firebase.initializeApp(config);
-            }
-
-            this.firebaseAuth = window.firebase.auth();
-            this.firebaseReady = true;
-            return this.firebaseAuth;
-        } catch (error) {
-            console.warn('Firebase client initialization skipped:', error.message);
-            return null;
-        }
-    },
 
     setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
@@ -65,7 +37,11 @@ const auth = {
             window.location.href = inOpsControl ? 'dashboard.html' : base + 'ops-control/dashboard.html';
             return;
         }
-        // Both 'doctor' and 'researcher' land on the doctor portal
+        if (role === 'researcher') {
+            const inResearcher = path.includes('/researcher/');
+            window.location.href = inResearcher ? 'dashboard.html' : base + 'researcher/dashboard.html';
+            return;
+        }
         const inDoctor = path.includes('/doctor/');
         window.location.href = inDoctor ? 'dashboard.html' : base + 'doctor/dashboard.html';
     },
@@ -105,36 +81,59 @@ const auth = {
     },
 
     async loginWithGoogle(button) {
-        const firebaseAuth = await this.loadFirebaseClient();
-        if (!firebaseAuth) {
-            showToast('Google sign-in is not configured yet.', 'error');
+        auth.setButtonLoading(button, true, 'Connecting...');
+        try {
+            const response = await api.get('/auth/google-config');
+            if (!response.configured) {
+                showToast('Google login is not configured on the server.', 'error');
+                return;
+            }
+
+            const selectedRole = document.querySelector('input[name="signup-role-radio"]:checked')?.value
+                || document.querySelector('input[name="access-role"]:checked')?.value
+                || 'doctor';
+
+            localStorage.setItem('genelab_pending_role', selectedRole);
+
+            // Redirect directly to Google OAuth implicit flow
+            const redirectUri = window.location.origin + window.location.pathname;
+            const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${response.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=openid%20profile%20email&nonce=genelab-nonce`;
+            
+            window.location.href = googleAuthUrl;
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to start Google login: ' + err.message, 'error');
+        } finally {
+            auth.setButtonLoading(button, false);
+        }
+    },
+
+    async handleOAuthCallback() {
+        const hash = window.location.hash || '';
+        if (!hash.includes('id_token=')) {
             return;
         }
 
-        const provider = new window.firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
+        const params = new URLSearchParams(hash.substring(1));
+        const idToken = params.get('id_token');
+        if (!idToken) return;
 
-        // Read whichever role the user has selected in the form tiles
-        const selectedRole = document.querySelector('input[name="signup-role-radio"]:checked')?.value
-            || document.querySelector('input[name="access-role"]:checked')?.value
-            || 'doctor';
+        // Clear hash from URL immediately
+        window.history.replaceState(null, null, window.location.pathname);
 
-        auth.setButtonLoading(button, true, 'Connecting...');
+        const selectedRole = localStorage.getItem('genelab_pending_role') || 'doctor';
+        localStorage.removeItem('genelab_pending_role');
+
         try {
-            const result = await firebaseAuth.signInWithPopup(provider);
-            const idToken = await result.user.getIdToken();
             const response = await api.post('/auth/google', { idToken, role: selectedRole });
-            const rememberMe = Boolean(document.querySelector('input[name="remember-me"]')?.checked);
+            const rememberMe = true;
             this.persistSession(response, rememberMe);
+
             showToast(response.message || 'Google sign-in successful!', 'success');
             setTimeout(() => { this.redirectByRole(response.user?.role || selectedRole); }, 700);
-        } catch (error) {
-            const message = error.code === 'auth/popup-closed-by-user'
-                ? 'Google sign-in was cancelled.'
-                : (error.message || 'Google sign-in failed.');
-            showToast(message, 'error');
-        } finally {
-            auth.setButtonLoading(button, false);
+        } catch (err) {
+            console.error("Verification backend error:", err);
+            showToast(err.message || 'Verification failed.', 'error');
         }
     },
 
