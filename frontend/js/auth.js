@@ -61,7 +61,7 @@ const auth = {
         const base = inPages ? '' : 'pages/';
 
         if (role === 'admin') {
-            window.location.href = base + 'console/dashboard.html';
+            window.location.href = base + 'ops-control/dashboard.html';
             return;
         }
         // Both 'doctor' and 'researcher' land on the doctor portal
@@ -158,7 +158,7 @@ const auth = {
 
         showToast('Logged out successfully.', 'info');
 
-        const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
+        const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/');
         const target = isSubDir ? '../login.html' : 'login.html';
 
         setTimeout(() => {

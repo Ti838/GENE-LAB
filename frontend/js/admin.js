@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
 
     // ═══════════════════════════════════════════════════════════════
-    // USER / DOCTOR MANAGEMENT  — console/doctors.html
+    // USER / DOCTOR MANAGEMENT  — ops-control/doctors.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('console/doctors.html')) {
+    if (path.includes('ops-control/doctors.html')) {
         const tableBody  = document.getElementById('doctors-table-body');
         const searchInput = document.getElementById('doctor-search');
         let allUsers = [];
@@ -186,9 +186,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // DNA DATA REGISTRY  — console/data.html
+    // DNA DATA REGISTRY  — ops-control/data.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('console/data.html')) {
+    if (path.includes('ops-control/data.html')) {
         const dataBody = document.getElementById('dna-data-body');
         let currentRegistryFiles = [];
 
@@ -320,9 +320,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // ACTIVITY LOGS  — console/logs.html
+    // ACTIVITY LOGS  — ops-control/logs.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('console/logs.html')) {
+    if (path.includes('ops-control/logs.html')) {
         const logsBody  = document.getElementById('logs-body');
         const exportBtn = document.getElementById('export-logs-btn');
         let allLogs = [];

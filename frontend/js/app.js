@@ -14,7 +14,7 @@
  */
 function _loginUrl() {
   const isSubDir = window.location.pathname.includes('/doctor/') ||
-                   window.location.pathname.includes('/console/');
+                   window.location.pathname.includes('/ops-control/');
   return isSubDir ? '../login.html' : 'login.html';
 }
 
@@ -45,7 +45,7 @@ window.adminOnly = function () {
   if (user.role !== 'admin') {
     // Non-admin landed on an admin page — redirect them to their portal
     const dest = user.role === 'doctor' || user.role === 'researcher'
-      ? (window.location.pathname.includes('/console/')
+      ? (window.location.pathname.includes('/ops-control/')
           ? '../doctor/dashboard.html'
           : 'doctor/dashboard.html')
       : _loginUrl();

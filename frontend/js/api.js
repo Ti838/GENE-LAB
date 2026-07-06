@@ -39,7 +39,7 @@ const api = {
                 
                 if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
                 setTimeout(() => {
-                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
+                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/');
                     window.location.href = isSubDir ? '../login.html' : 'login.html';
                 }, 1500);
             } else {
@@ -74,7 +74,7 @@ const api = {
                 sessionStorage.removeItem('genelab_user');
                 if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
                 setTimeout(() => {
-                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/console/');
+                    const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/');
                     window.location.href = isSubDir ? '../login.html' : 'login.html';
                 }, 1500);
             } else {

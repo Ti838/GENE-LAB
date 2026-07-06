@@ -11,7 +11,7 @@
 (() => {
     // ── Helper: resolve login URL relative to current depth ──────
     function loginUrl() {
-        return window.location.pathname.includes('/console/')
+        return window.location.pathname.includes('/ops-control/')
             ? '../login.html'
             : 'pages/login.html';
     }
@@ -56,9 +56,9 @@
             blockedUser:   user.email || 'unknown'
         }));
 
-        const targetPath = window.location.pathname.includes('/console/')
+        const targetPath = window.location.pathname.includes('/ops-control/')
             ? 'mobile-blocked.html'
-            : 'console/mobile-blocked.html';
+            : 'ops-control/mobile-blocked.html';
 
         window.location.replace(targetPath);
     }
