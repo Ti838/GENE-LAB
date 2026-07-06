@@ -278,6 +278,9 @@ Use this section first if you are new.
 - frontend/pages/login.html
   - Uses common core JS (login/register handled by auth.js).
 
+- frontend/pages/ops-control/login.html
+  - Uses common core JS (login handled by auth.js).
+
 - frontend/pages/ops-control/dashboard.html
   - Uses admin.js + charts.js + common core JS.
 

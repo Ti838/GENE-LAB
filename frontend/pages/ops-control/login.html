@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2026 GeneLab. All rights reserved.
+ * Do not copy, distribute, or modify without permission.
+ -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeneLab | Secure Admin Gateway</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: { extend: { colors: {
+          cyan: 'var(--cyan)', teal: { DEFAULT: 'var(--teal)', 400: 'var(--teal)' },
+          violet: { DEFAULT: 'var(--violet)', 400: 'var(--violet)', 500: 'var(--violet)' },
+          lime: 'var(--lime)', coral: 'var(--coral)', ink: 'var(--ink)',
+          slate: { 300: 'var(--text-muted)', 400: 'var(--text-muted)', 500: 'var(--text-faint)', 800: '#1e293b' }
+        }}}
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="../../js/theme.js" defer></script>
+    <script src="../../js/app.js" defer></script>
+    <script src="../../js/api.js" defer></script>
+    <script src="../../js/auth.js" defer></script>
+    <script src="../../js/dna-background.js" defer></script>
+    <style>
+    html,body{margin:0;padding:0;height:100vh;overflow:hidden}
+    body{display:flex;justify-content:center;align-items:center;min-height:100vh!important;background:#030712}
+    #dna-canvas{z-index:-1;position:absolute;inset:0;width:100%;height:100%}
+
+    .admin-card{width:min(100%,440px);background:rgba(8,15,32,0.85);border:1px solid rgba(0,212,255,0.18);border-radius:24px;padding:2.5rem;box-shadow:0 0 40px rgba(0,212,255,0.1),0 40px 80px rgba(0,0,0,0.65);position:relative;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+    
+    .admin-header{display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin-bottom:2rem}
+    .admin-icon{width:56px;height:56px;border-radius:14px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);display:flex;align-items:center;justify-content:center;color:var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.15)}
+    .admin-label{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-top:0.25rem}
+    .admin-title{font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:white;margin-top:0.25rem}
+    .admin-desc{font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:1.5rem}
+
+    .fi{position:relative;margin-bottom:0.75rem}
+    .fi .ico{position:absolute;left:10px;bottom:9px;font-size:18px!important;color:var(--text-faint);width:18px!important;height:18px!important}
+    .fi input{width:100%;padding:0.55rem 0.5rem 0.55rem 2.2rem!important;font-size:0.85rem!important;border-radius:10px!important;background:rgba(15,23,42,0.75)!important;border:1px solid rgba(255,255,255,0.15)!important;color:white!important;outline:none;transition:all .2s}
+    .fi input:focus{border-color:var(--cyan)!important;box-shadow:0 0 10px rgba(0,212,255,0.25)!important}
+
+    .btn-submit{width:100%;padding:0.65rem;border-radius:12px;font-weight:700;font-size:0.9rem;border:none;cursor:pointer;background:linear-gradient(135deg,var(--cyan),var(--violet))!important;color:#0c121d!important;margin-top:0.75rem;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,180,216,0.3)!important}
+
+    .admin-footer{font-size:9px;color:var(--text-faint);text-align:center;margin-top:2rem;letter-spacing:0.12em;text-transform:uppercase}
+
+    /* HEADER */
+    .header-pill-btn{min-width:48px;width:48px;height:48px;padding:0!important;justify-content:center;box-shadow:none!important;border:0!important;background:transparent!important;border-radius:999px!important}
+    .home-nav-btn{border-color:transparent!important;background:transparent!important;box-shadow:none!important;min-width:48px}
+    .home-nav-btn .material-symbols-outlined,.header-pill-btn .material-symbols-outlined{display:inline-flex!important;align-items:center;justify-content:center;width:24px!important;height:24px!important;font-size:22px!important}
+    </style>
+    <link rel="icon" type="image/svg+xml" href="../../assets/icons/favicon.svg">
+</head>
+<body class="selection:bg-cyan selection:text-ink relative" data-theme="dark">
+
+    <canvas id="dna-canvas"></canvas>
+
+    <!-- Header Toggle -->
+    <header class="fixed top-0 left-0 w-full z-[9999] p-4 sm:p-5 flex justify-between items-center pointer-events-auto">
+        <div class="flex items-center gap-3">
+            <a href="../index.html" class="home-nav-btn header-pill-btn flex items-center justify-center" title="Home">
+                <span class="material-symbols-outlined">home</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-3">
+            <button type="button" data-theme-toggle class="header-pill-btn flex items-center justify-center">
+                <span class="material-symbols-outlined">dark_mode</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Admin Card -->
+    <div class="admin-card">
+        <div class="admin-header">
+            <div class="admin-icon">
+                <span class="material-symbols-outlined" style="font-size:24px!important">admin_panel_settings</span>
+            </div>
+            <div class="text-center">
+                <p class="admin-label">Operations Control</p>
+                <h2 class="admin-title">Admin Access Gateway</h2>
+            </div>
+        </div>
+        
+        <p class="admin-desc">Authorized personnel only. Access logs are continuously audited and stored in compliance with platform policy.</p>
+        
+        <form id="admin-login-form">
+            <div class="fi">
+                <input type="text" id="admin-email" required placeholder="Admin Email or Phone" autocomplete="off">
+                <span class="material-symbols-outlined ico">shield_person</span>
+            </div>
+            <div class="fi">
+                <input type="password" id="admin-password" required placeholder="Admin Password">
+                <span class="material-symbols-outlined ico">lock</span>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-400 mt-2 mb-4 px-1">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" id="remember-me" name="remember-me" class="rounded border-slate-700 bg-slate-900 text-cyan focus:ring-cyan"> Remember session
+                </label>
+            </div>
+            <button type="submit" id="admin-submit-btn" class="btn-submit">
+                <span class="material-symbols-outlined text-sm" style="font-size:16px!important">vpn_key</span>
+                Authorize Session
+            </button>
+        </form>
+        
+        <p class="admin-footer">GeneLab Secure Ops &bull; SSL/TLS Encrypted</p>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const adminLoginForm = document.getElementById('admin-login-form');
+        if (adminLoginForm) {
+            adminLoginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('admin-submit-btn');
+                const emailVal = document.getElementById('admin-email').value.trim();
+                const passwordVal = document.getElementById('admin-password').value;
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm" style="font-size:16px!important">sync</span> Authorizing...';
+                }
+
+                try {
+                    let email = '';
+                    let phone = '';
+                    if (emailVal.includes('@')) {
+                        email = emailVal;
+                    } else {
+                        phone = emailVal;
+                    }
+                    
+                    // Call the shared auth.js login module
+                    await auth.login(email, phone, passwordVal);
+                } catch (err) {
+                    if (typeof showToast === 'function') {
+                        showToast(err.message || 'Admin authorization failed.', 'error');
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm" style="font-size:16px!important">vpn_key</span> Authorize Session';
+                    }
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

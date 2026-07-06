@@ -12,10 +12,9 @@
     // ── Helper: resolve login URL relative to current depth ──────
     function loginUrl() {
         return window.location.pathname.includes('/ops-control/')
-            ? '../login.html'
+            ? 'login.html'
             : 'pages/login.html';
     }
-
     // ── 1. Auth + Role check ──────────────────────────────────────
     const token = localStorage.getItem('genelab_token') ||
                   sessionStorage.getItem('genelab_token');

@@ -61,11 +61,13 @@ const auth = {
         const base = inPages ? '' : 'pages/';
 
         if (role === 'admin') {
-            window.location.href = base + 'ops-control/dashboard.html';
+            const inOpsControl = path.includes('/ops-control/');
+            window.location.href = inOpsControl ? 'dashboard.html' : base + 'ops-control/dashboard.html';
             return;
         }
         // Both 'doctor' and 'researcher' land on the doctor portal
-        window.location.href = base + 'doctor/dashboard.html';
+        const inDoctor = path.includes('/doctor/');
+        window.location.href = inDoctor ? 'dashboard.html' : base + 'doctor/dashboard.html';
     },
 
     async login(email, phone, password) {
@@ -75,9 +77,19 @@ const auth = {
         if (phone) payload.phone = phone;
 
         const response = await api.post('/auth/login', payload);
+        const role = response.user?.role || response.role;
+        const isAdminGateway = window.location.pathname.includes('/ops-control/');
+
+        if (isAdminGateway && role !== 'admin') {
+            throw new Error('Access denied. Secure gateway is restricted to administrators.');
+        }
+        if (!isAdminGateway && role === 'admin') {
+            throw new Error('Admin logins are restricted to the secure gateway.');
+        }
+
         this.persistSession(response, rememberMe);
         showToast(response.message || 'Login successful!', 'success');
-        setTimeout(() => { this.redirectByRole(response.user?.role || 'doctor'); }, 700);
+        setTimeout(() => { this.redirectByRole(role || 'doctor'); }, 700);
     },
 
     async signup(userData) {
@@ -158,8 +170,12 @@ const auth = {
 
         showToast('Logged out successfully.', 'info');
 
-        const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/');
-        const target = isSubDir ? '../login.html' : 'login.html';
+        let target = 'login.html';
+        if (window.location.pathname.includes('/doctor/')) {
+            target = '../login.html';
+        } else if (window.location.pathname.includes('/ops-control/')) {
+            target = 'login.html';
+        }
 
         setTimeout(() => {
             window.location.href = target;
