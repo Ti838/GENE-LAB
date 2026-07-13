@@ -10,12 +10,16 @@ async function runTests() {
     // TEST CASE 1: Authentication (Login)
     // ----------------------------------------------------
     console.log('🔄 [TEST 1/5] Authenticating as Doctor Jameson...');
+    if (!process.env.TEST_USER_EMAIL || !process.env.TEST_USER_PASSWORD) {
+      throw new Error('Please set TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables.');
+    }
+
     const loginRes = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'dr.jameson@genelab.ai',
-        password: 'Geneticist2026!'
+        email: process.env.TEST_USER_EMAIL,
+        password: process.env.TEST_USER_PASSWORD
       })
     });
 
