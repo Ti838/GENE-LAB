@@ -197,6 +197,13 @@ See [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md) for the full audit fi
 
 ---
 
+## Important URLs
+
+- **Live Platform:** [https://gene-lab-gray.vercel.app](https://gene-lab-gray.vercel.app)
+- **Admin Portal:** [https://gene-lab-gray.vercel.app/pages/ops-control/dashboard.html](https://gene-lab-gray.vercel.app/pages/ops-control/dashboard.html)
+- **Doctor Portal:** [https://gene-lab-gray.vercel.app/pages/doctor/dashboard.html](https://gene-lab-gray.vercel.app/pages/doctor/dashboard.html)
+- **Login Page:** [https://gene-lab-gray.vercel.app/pages/login.html](https://gene-lab-gray.vercel.app/pages/login.html)
+
 ## Production Access
 
 | Role | Email | Password |
