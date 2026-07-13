@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, trim: true },
   profilePicture: { type: String, default: '' },
   profilePicturePath: { type: String, default: '' },
-  profilePictureProvider: { type: String, enum: ['firebase', 'supabase', 'manual', 'none'], default: 'none' },
+  profilePictureProvider: { type: String, enum: ['google', 'local', 'manual', 'none'], default: 'none' },
   signatureUrl: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   isEmailVerified: { type: Boolean, default: false },
@@ -64,8 +64,7 @@ userSchema.methods.isLocked = function () {
 // Indexes for ultra-fast queries and organized MongoDB layout
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
-userSchema.index({ firebaseUid: 1 }, { sparse: true });
-userSchema.index({ supabaseUid: 1 }, { sparse: true });
+userSchema.index({ supabaseUid: 1 }, { sparse: true }); // stores Google UID
 
 module.exports = mongoose.model('User', userSchema);
 

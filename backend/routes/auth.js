@@ -252,9 +252,9 @@ router.post('/google', [
         email: normalizedEmail,
         role: role || 'doctor',
         authProvider: 'google',
-        supabaseUid: googleUid,
+        supabaseUid: googleUid,  // reused field — stores Google UID
         profilePicture: avatarUrl,
-        profilePictureProvider: avatarUrl ? 'supabase' : 'none',
+        profilePictureProvider: avatarUrl ? 'google' : 'none',
         isEmailVerified: true,
         lastLogin: new Date()
       });
@@ -263,7 +263,7 @@ router.post('/google', [
       if (!user.name && fullName) user.name = fullName;
       if (avatarUrl && !user.profilePicture) {
         user.profilePicture = avatarUrl;
-        user.profilePictureProvider = 'supabase';
+        user.profilePictureProvider = 'google';
       }
       user.isEmailVerified = true;
       user.lastLogin = new Date();

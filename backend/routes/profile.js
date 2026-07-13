@@ -72,7 +72,7 @@ router.put('/photo', protect, upload.single('profilePhoto'), async (req, res, ne
 
        user.profilePicture = uploadResult.downloadUrl;
       user.profilePicturePath = uploadResult.storagePath;
-      user.profilePictureProvider = 'supabase';
+      user.profilePictureProvider = 'local';
       await user.save();
 
       return res.json({
