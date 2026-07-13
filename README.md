@@ -203,6 +203,7 @@ See [SECURITY_AUDIT_REPORT.md](./SECURITY_AUDIT_REPORT.md) for the full audit fi
 |------|-------|----------|
 | Admin | `admin@genelab.ai` | `GeneLabAdmin2026!` |
 | Doctor | `dr.jameson@genelab.ai` | `Geneticist2026!` |
+| Researcher | `dr.chen@genelab.ai` | `Researcher2026!` |
 
 > Keep credentials private. Never commit them to a public repository.
 
