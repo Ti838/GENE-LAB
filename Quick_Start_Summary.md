@@ -1,7 +1,7 @@
 # GeneLab — Quick Start Guide
 
 **Live (No Setup Needed):** https://gene-lab-gray.vercel.app  
-**Admin Login:** `admin@genelab.ai` / `GeneLabAdmin2026!`
+**Admin Login:** (Ask Administrator for credentials)
 
 ---
 
@@ -11,9 +11,9 @@ No installation required. Go to the live URL and log in.
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | `admin@genelab.ai` | `GeneLabAdmin2026!` |
-| Doctor | `dr.jameson@genelab.ai` | `Geneticist2026!` |
-| Researcher | `dr.chen@genelab.ai` | `Researcher2026!` |
+| Admin | (Ask Admin) | (Private) |
+| Doctor | (Ask Admin) | (Private) |
+| Researcher | (Ask Admin) | (Private) |
 
 Or register a new account — email verification is automatic in the current build.
 
