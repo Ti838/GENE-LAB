@@ -41,8 +41,11 @@
         .quick-action { transition: all 0.3s ease; }
         .quick-action:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
     </style>
+
+    <script src="https://unpkg.com/@barba/core"></script>
+    <script src="../../../js/barba-init.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark" data-barba="wrapper">
     <!-- DNA Background is injected by dna-background.js -->
 
     <div class="relative z-10 flex min-h-screen">
@@ -78,7 +81,7 @@
         </aside>
 
         <!-- ═══ Main Content ═══ -->
-        <main class="flex-1 ml-[19.5rem] p-8">
+        <main class="flex-1 ml-[19.5rem] p-8" data-barba="container" data-barba-namespace="dashboard">
             <header id="main-header" data-animate="hero" class="mb-8 flex justify-between items-start flex-wrap gap-6">
                 <div>
                     <p class="section-badge mb-3 bg-violet/10 text-violet border-violet/20">Researcher workflow</p>

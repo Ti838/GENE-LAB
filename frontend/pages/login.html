@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <!-- Google Identity Services — official Google Sign-In library -->
+    <script src="https://accounts.google.com/gsi/client" async></script>
     <script src="../js/theme.js" defer></script>
     <script src="../js/app.js" defer></script>
     <script src="../js/api.js" defer></script>
@@ -179,8 +181,11 @@
     body[data-theme="light"] .forgot-password-card{background:rgba(255,255,255,0.97);border-color:rgba(0,212,255,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.15)}
 </style>
     <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
+
+    <script src="https://unpkg.com/@barba/core"></script>
+    <script src="../../js/barba-init.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink relative" data-theme="dark">
+<body class="selection:bg-cyan selection:text-ink relative" data-theme="dark" data-barba="wrapper">
 
     <!-- Header -->
     <header class="fixed top-0 left-0 w-full z-[9999] p-4 sm:p-5 flex justify-between items-center pointer-events-auto">

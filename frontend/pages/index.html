@@ -186,8 +186,11 @@
         }
     </style>
     <link rel="icon" type="image/svg+xml" href="../assets/icons/favicon.svg">
+
+    <script src="https://unpkg.com/@barba/core"></script>
+    <script src="../../js/barba-init.js" defer></script>
 </head>
-<body class="selection:bg-cyan selection:text-ink" data-theme="dark">
+<body class="selection:bg-cyan selection:text-ink" data-theme="dark" data-barba="wrapper">
     <!-- DNA Background is injected by dna-background.js -->
 
     <!-- ═══ Navbar ═══ -->
@@ -218,7 +221,7 @@
     </nav>
 
     <!-- ═══ Hero Section ═══ -->
-    <main id="hero" class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
+    <main id="hero" class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden" data-barba="container" data-barba-namespace="index">
         <!-- Decorative glows -->
         <div class="hero-glow" style="width:600px;height:600px;top:-10%;left:-8%;background:rgba(0,180,216,0.08);"></div>
         <div class="hero-glow" style="width:500px;height:500px;bottom:-15%;right:-5%;background:rgba(124,58,237,0.06);"></div>

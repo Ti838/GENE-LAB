@@ -83,9 +83,10 @@ const auth = {
     async loginWithGoogle(button) {
         auth.setButtonLoading(button, true, 'Connecting...');
         try {
-            const response = await api.get('/auth/google-config');
-            if (!response.configured) {
+            const configRes = await api.get('/auth/google-config');
+            if (!configRes.configured) {
                 showToast('Google login is not configured on the server.', 'error');
+                auth.setButtonLoading(button, false);
                 return;
             }
 
@@ -93,48 +94,59 @@ const auth = {
                 || document.querySelector('input[name="access-role"]:checked')?.value
                 || 'doctor';
 
-            localStorage.setItem('genelab_pending_role', selectedRole);
+            // Use Google Identity Services (GSI) — the modern, Google-approved method
+            // This shows a popup instead of redirect, works with all new Google OAuth clients
+            if (typeof google === 'undefined' || !google.accounts) {
+                showToast('Google Sign-In library failed to load. Check your connection.', 'error');
+                auth.setButtonLoading(button, false);
+                return;
+            }
 
-            // Redirect directly to Google OAuth implicit flow
-            const redirectUri = window.location.origin + window.location.pathname;
-            const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${response.clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=openid%20profile%20email&nonce=genelab-nonce`;
-            
-            window.location.href = googleAuthUrl;
+            google.accounts.id.initialize({
+                client_id: configRes.clientId,
+                callback: async (credentialResponse) => {
+                    const idToken = credentialResponse.credential;
+                    try {
+                        const response = await api.post('/auth/google', { idToken, role: selectedRole });
+                        auth.persistSession(response, true);
+                        showToast(response.message || 'Google sign-in successful!', 'success');
+                        setTimeout(() => { auth.redirectByRole(response.user?.role || selectedRole); }, 700);
+                    } catch (err) {
+                        console.error('Google backend verification failed:', err);
+                        showToast(err.message || 'Google sign-in failed.', 'error');
+                    }
+                },
+                error_callback: (err) => {
+                    console.error('GSI error:', err);
+                    showToast('Google sign-in was cancelled or failed.', 'error');
+                    auth.setButtonLoading(button, false);
+                }
+            });
+
+            // Show Google One Tap prompt or popup
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    // One Tap was blocked — fall back to explicit popup button
+                    google.accounts.id.renderButton(
+                        document.getElementById('google-signin-btn') || button,
+                        { theme: 'outline', size: 'large', width: button?.offsetWidth || 300 }
+                    );
+                    auth.setButtonLoading(button, false);
+                }
+            });
+
         } catch (err) {
             console.error(err);
             showToast('Failed to start Google login: ' + err.message, 'error');
-        } finally {
             auth.setButtonLoading(button, false);
         }
     },
 
+    // handleOAuthCallback is no longer needed with GSI popup flow
+    // but kept as a no-op for backward compatibility
     async handleOAuthCallback() {
-        const hash = window.location.hash || '';
-        if (!hash.includes('id_token=')) {
-            return;
-        }
-
-        const params = new URLSearchParams(hash.substring(1));
-        const idToken = params.get('id_token');
-        if (!idToken) return;
-
-        // Clear hash from URL immediately
-        window.history.replaceState(null, null, window.location.pathname);
-
-        const selectedRole = localStorage.getItem('genelab_pending_role') || 'doctor';
-        localStorage.removeItem('genelab_pending_role');
-
-        try {
-            const response = await api.post('/auth/google', { idToken, role: selectedRole });
-            const rememberMe = true;
-            this.persistSession(response, rememberMe);
-
-            showToast(response.message || 'Google sign-in successful!', 'success');
-            setTimeout(() => { this.redirectByRole(response.user?.role || selectedRole); }, 700);
-        } catch (err) {
-            console.error("Verification backend error:", err);
-            showToast(err.message || 'Verification failed.', 'error');
-        }
+        // GSI popup flow — no URL hash to process
+        return;
     },
 
     async requestPasswordReset(email, button) {
