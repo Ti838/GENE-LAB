@@ -3,6 +3,10 @@
  * Do not copy, distribute, or modify without permission.
  */
 
+window.__GENELAB_API_BASE_URL__ = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname)
+  ? 'http://localhost:5000/api'
+  : 'https://genelab-worker-production.up.railway.app/api';
+
 /* ─────────────────────────────────────────────────────────────────
    ROUTE GUARDS
    Call window.adminOnly() or window.doctorOnly() at the top of
