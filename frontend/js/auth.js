@@ -114,6 +114,7 @@ const auth = {
                     } catch (err) {
                         console.error('Google backend verification failed:', err);
                         showToast(err.message || 'Google sign-in failed.', 'error');
+                        auth.setButtonLoading(button, false);
                     }
                 },
                 error_callback: (err) => {

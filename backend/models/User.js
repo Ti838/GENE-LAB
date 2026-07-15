@@ -10,9 +10,14 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: {
     type: String,
-    minlength: 8,
     select: false,
-    default: '',
+    validate: {
+      validator: function (v) {
+        if (this.authProvider === 'google' && (!v || v === '')) return true;
+        return v && v.length >= 8;
+      },
+      message: 'Password must be at least 8 characters.'
+    },
     required: function requiredPassword() {
       return this.authProvider !== 'google';
     }
