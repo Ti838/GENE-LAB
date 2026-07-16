@@ -38,6 +38,8 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
 
     const { patientId, patientAge, biologicalSex, clinicalIndication } = req.body;
     const sequence = dnaService.parseSequence(req.file.buffer.toString('utf8'));
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const backendUrl = `${protocol}://${req.get('host')}`;
     const storageResult = await uploadBufferToFirebase({
       buffer: req.file.buffer,
       originalName: req.file.originalname,
@@ -47,7 +49,8 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
       metadata: {
         userId: req.user._id.toString(),
         purpose: 'dna-file'
-      }
+      },
+      backendUrl
     });
 
     const dnaFile = await DNAFile.create({

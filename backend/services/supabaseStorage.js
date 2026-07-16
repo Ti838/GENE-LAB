@@ -25,7 +25,8 @@ async function uploadBufferToSupabase({
   mimeType,
   folder = 'uploads',
   ownerId,
-  metadata = {}
+  metadata = {},
+  backendUrl: optionsBackendUrl
 }) {
   if (!buffer || !buffer.length) {
     throw new Error('Upload buffer is empty.');
@@ -76,7 +77,7 @@ async function uploadBufferToSupabase({
   const localFilePath = path.join(uploadsDir, localFileName);
   fs.writeFileSync(localFilePath, buffer);
 
-  const backendUrl = process.env.BACKEND_URL || '';
+  const backendUrl = optionsBackendUrl || process.env.BACKEND_URL || '';
   const downloadUrl = backendUrl ? `${backendUrl.replace(/\/$/, '')}/uploads/${localFileName}` : `/uploads/${localFileName}`;
 
   return {
