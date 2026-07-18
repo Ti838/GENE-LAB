@@ -87,23 +87,334 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (viewer) {
             viewer.innerHTML = '';
             if (seq) {
+                // Build interactive container structure
+                const container = document.createElement('div');
+                container.className = 'dna-viewer-wrap';
+
+                // Toolbar
+                const toolbar = document.createElement('div');
+                toolbar.className = 'dna-viewer-toolbar';
+
+                // Left: Search
+                const searchGroup = document.createElement('div');
+                searchGroup.className = 'flex items-center gap-2';
+                
+                const searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.placeholder = 'Search sequence (e.g. ATG)...';
+                searchInput.className = 'field-input px-3 py-1.5 text-xs w-48 bg-slate-900 border border-white/10 rounded-xl focus:outline-none focus:border-cyan/50';
+                
+                const searchPrev = document.createElement('button');
+                searchPrev.type = 'button';
+                searchPrev.className = 'btn-premium btn-ghost px-2 py-1 rounded-lg text-xs flex items-center justify-center';
+                searchPrev.innerHTML = '<span class="material-symbols-outlined text-[14px]">chevron_left</span>';
+                
+                const searchNext = document.createElement('button');
+                searchNext.type = 'button';
+                searchNext.className = 'btn-premium btn-ghost px-2 py-1 rounded-lg text-xs flex items-center justify-center';
+                searchNext.innerHTML = '<span class="material-symbols-outlined text-[14px]">chevron_right</span>';
+
+                const searchStats = document.createElement('span');
+                searchStats.className = 'text-[11px] text-slate-500 font-mono';
+                searchStats.textContent = '0 matches';
+
+                searchGroup.appendChild(searchInput);
+                searchGroup.appendChild(searchPrev);
+                searchGroup.appendChild(searchNext);
+                searchGroup.appendChild(searchStats);
+
+                // Right: Controls (Zoom & Copy)
+                const controlGroup = document.createElement('div');
+                controlGroup.className = 'flex items-center gap-4';
+
+                const zoomContainer = document.createElement('div');
+                zoomContainer.className = 'flex items-center gap-2';
+                const zoomLabel = document.createElement('span');
+                zoomLabel.className = 'text-[11px] text-slate-400 font-mono';
+                zoomLabel.textContent = 'Zoom: 100%';
+                const zoomSlider = document.createElement('input');
+                zoomSlider.type = 'range';
+                zoomSlider.min = '50';
+                zoomSlider.max = '200';
+                zoomSlider.value = '100';
+                zoomSlider.className = 'w-20 accent-cyan cursor-pointer';
+
+                zoomContainer.appendChild(zoomLabel);
+                zoomContainer.appendChild(zoomSlider);
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'btn-premium btn-ghost px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5';
+                copyBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">content_copy</span> Copy FASTA';
+
+                controlGroup.appendChild(zoomContainer);
+                controlGroup.appendChild(copyBtn);
+
+                toolbar.appendChild(searchGroup);
+                toolbar.appendChild(controlGroup);
+
+                // Body (DNA Stream)
+                const body = document.createElement('div');
+                body.className = 'dna-viewer-body';
+
+                // Statusbar
+                const statusbar = document.createElement('div');
+                statusbar.className = 'dna-viewer-statusbar';
+                
+                const hoverIndicator = document.createElement('span');
+                hoverIndicator.textContent = 'Hover a nucleotide for details';
+                
+                const selectionIndicator = document.createElement('span');
+                selectionIndicator.textContent = 'Selection: None';
+
+                statusbar.appendChild(hoverIndicator);
+                statusbar.appendChild(selectionIndicator);
+
+                container.appendChild(toolbar);
+                container.appendChild(body);
+                container.appendChild(statusbar);
+                viewer.appendChild(container);
+
+                // Populate nucleotides
                 const fragment = document.createDocumentFragment();
-                const limit = Math.min(seq.length, 2000);
+                const limit = Math.min(seq.length, 5000); // larger limit for production DNA viewer
+                const variants = src.variants || [];
+
+                // Store elements for fast DOM manipulations
+                const nucElements = [];
+
                 for (let i = 0; i < limit; i++) {
                     const n = seq[i];
                     const span = document.createElement('span');
                     span.className = `nucleotide n-${n.toLowerCase()}`;
                     span.textContent = n;
-                    fragment.appendChild(span);
-                }
-                viewer.appendChild(fragment);
+                    span.dataset.index = i;
+                    
+                    // Check if this position matches any mutation
+                    const hasMutation = variants.some(v => v.position === (i + 1));
+                    if (hasMutation) {
+                        span.classList.add('mutation-highlight');
+                        span.title = `Mutation at position ${i + 1}`;
+                    }
 
-                if (seq.length > 2000) {
-                    const more = document.createElement('span');
-                    more.style.cssText = 'color:var(--text-faint);font-style:italic';
-                    more.textContent = ` … +${(seq.length - 2000).toLocaleString()} bp`;
-                    viewer.appendChild(more);
+                    // Hover Details
+                    span.addEventListener('pointerenter', () => {
+                        const position = i + 1;
+                        let text = `Position: ${position.toLocaleString()} | Base: ${n.toUpperCase()}`;
+                        
+                        // Find matching mutation details if any
+                        const mut = variants.find(v => v.position === position);
+                        if (mut) {
+                            text += ` | Mutation: ${mut.gene}:${mut.variantId || mut.rsid} (${mut.severity} severity)`;
+                        }
+                        hoverIndicator.textContent = text;
+                        span.style.transform = 'scale(1.25)';
+                    });
+                    span.addEventListener('pointerleave', () => {
+                        hoverIndicator.textContent = 'Hover a nucleotide for details';
+                        span.style.transform = '';
+                    });
+
+                    fragment.appendChild(span);
+                    nucElements.push(span);
                 }
+                body.appendChild(fragment);
+
+                if (seq.length > 5000) {
+                    const more = document.createElement('span');
+                    more.style.cssText = 'color:var(--text-faint);font-style:italic;margin-left:8px;';
+                    more.textContent = ` … +${(seq.length - 5000).toLocaleString()} bp`;
+                    body.appendChild(more);
+                }
+
+                // --- Zoom Feature ---
+                zoomSlider.addEventListener('input', () => {
+                    const zoomVal = zoomSlider.value;
+                    zoomLabel.textContent = `Zoom: ${zoomVal}%`;
+                    body.style.fontSize = `${(14 * zoomVal) / 100}px`;
+                    body.style.lineHeight = `${(2.2 * zoomVal) / 100}`;
+                });
+
+                // --- Mobile Pinch Zoom / Double Tap Zoom ---
+                let initialDist = null;
+                let lastTapTime = 0;
+
+                body.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        e.preventDefault();
+                        const dist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        if (initialDist === null) {
+                            initialDist = dist;
+                        } else {
+                            const factor = dist / initialDist;
+                            const currentVal = parseInt(zoomSlider.value);
+                            let newVal = Math.min(Math.max(currentVal * factor, 50), 200);
+                            zoomSlider.value = Math.round(newVal);
+                            zoomLabel.textContent = `Zoom: ${Math.round(newVal)}%`;
+                            body.style.fontSize = `${(14 * newVal) / 100}px`;
+                            body.style.lineHeight = `${(2.2 * newVal) / 100}`;
+                        }
+                    }
+                }, { passive: false });
+
+                body.addEventListener('touchend', (e) => {
+                    if (e.touches.length < 2) {
+                        initialDist = null;
+                    }
+                });
+
+                body.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        const now = Date.now();
+                        if (now - lastTapTime < 300) {
+                            e.preventDefault();
+                            const currentVal = parseInt(zoomSlider.value);
+                            const newVal = currentVal > 120 ? 100 : 150;
+                            zoomSlider.value = newVal;
+                            zoomLabel.textContent = `Zoom: ${newVal}%`;
+                            body.style.fontSize = `${(14 * newVal) / 100}px`;
+                            body.style.lineHeight = `${(2.2 * newVal) / 100}`;
+                        }
+                        lastTapTime = now;
+                    }
+                }, { passive: false });
+
+                // --- Copy FASTA ---
+                copyBtn.addEventListener('click', () => {
+                    const fasta = `>genelab_sequence_${src._id || 'unknown'}\n${seq}`;
+                    navigator.clipboard.writeText(fasta).then(() => {
+                        showToast('FASTA sequence copied!', 'success');
+                    }).catch(() => {
+                        showToast('Copy failed', 'error');
+                    });
+                });
+
+                // --- Selection Feature ---
+                let selectionStart = null;
+                let selectionEnd = null;
+
+                body.addEventListener('mousedown', (e) => {
+                    if (e.target.classList.contains('nucleotide')) {
+                        selectionStart = parseInt(e.target.dataset.index);
+                        clearSelectionStyles();
+                    }
+                });
+
+                body.addEventListener('mouseover', (e) => {
+                    if (selectionStart !== null && e.target.classList.contains('nucleotide')) {
+                        selectionEnd = parseInt(e.target.dataset.index);
+                        updateSelectionStyles();
+                    }
+                });
+
+                window.addEventListener('mouseup', () => {
+                    if (selectionStart !== null) {
+                        if (selectionEnd === null) selectionEnd = selectionStart;
+                        const start = Math.min(selectionStart, selectionEnd);
+                        const end = Math.max(selectionStart, selectionEnd);
+                        const count = end - start + 1;
+                        selectionIndicator.textContent = `Selected: ${count.toLocaleString()} bp (Pos ${start + 1}-${end + 1})`;
+                        selectionStart = null;
+                        selectionEnd = null;
+                    }
+                });
+
+                function clearSelectionStyles() {
+                    nucElements.forEach(el => {
+                        el.style.boxShadow = '';
+                        el.style.borderColor = '';
+                    });
+                    selectionIndicator.textContent = 'Selection: None';
+                }
+
+                function updateSelectionStyles() {
+                    if (selectionStart === null || selectionEnd === null) return;
+                    const start = Math.min(selectionStart, selectionEnd);
+                    const end = Math.max(selectionStart, selectionEnd);
+                    nucElements.forEach((el, idx) => {
+                        if (idx >= start && idx <= end) {
+                            el.style.borderColor = 'rgba(255,255,255,0.7)';
+                            el.style.boxShadow = '0 0 6px rgba(255,255,255,0.3)';
+                        } else {
+                            el.style.boxShadow = '';
+                            el.style.borderColor = '';
+                        }
+                    });
+                }
+
+                // --- Search Feature (Live Highlight + Jump) ---
+                let searchMatches = [];
+                let currentMatchIndex = -1;
+
+                searchInput.addEventListener('input', () => {
+                    const query = searchInput.value.toUpperCase().trim();
+                    nucElements.forEach(el => {
+                        el.classList.remove('search-match', 'search-match-active');
+                    });
+                    searchMatches = [];
+                    currentMatchIndex = -1;
+
+                    if (!query || query.length < 2) {
+                        searchStats.textContent = '0 matches';
+                        return;
+                    }
+
+                    // Find all occurrences of query in the sequence
+                    let pos = seq.indexOf(query);
+                    while (pos !== -1) {
+                        if (pos < limit) {
+                            searchMatches.push({ start: pos, end: pos + query.length - 1 });
+                        }
+                        pos = seq.indexOf(query, pos + 1);
+                    }
+
+                    searchStats.textContent = `${searchMatches.length} matches`;
+
+                    // Highlight all matching spans
+                    searchMatches.forEach(match => {
+                        for (let i = match.start; i <= match.end; i++) {
+                            if (nucElements[i]) nucElements[i].classList.add('search-match');
+                        }
+                    });
+
+                    if (searchMatches.length > 0) {
+                        currentMatchIndex = 0;
+                        highlightActiveMatch();
+                    }
+                });
+
+                function highlightActiveMatch() {
+                    nucElements.forEach(el => el.classList.remove('search-match-active'));
+                    if (currentMatchIndex < 0 || currentMatchIndex >= searchMatches.length) return;
+
+                    const match = searchMatches[currentMatchIndex];
+                    searchStats.textContent = `${currentMatchIndex + 1}/${searchMatches.length} matches`;
+
+                    for (let i = match.start; i <= match.end; i++) {
+                        if (nucElements[i]) nucElements[i].classList.add('search-match-active');
+                    }
+
+                    // Smooth Scroll to match position
+                    const firstMatchEl = nucElements[match.start];
+                    if (firstMatchEl) {
+                        firstMatchEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+
+                searchPrev.addEventListener('click', () => {
+                    if (searchMatches.length === 0) return;
+                    currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
+                    highlightActiveMatch();
+                });
+
+                searchNext.addEventListener('click', () => {
+                    if (searchMatches.length === 0) return;
+                    currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
+                    highlightActiveMatch();
+                });
             } else {
                 const p = document.createElement('p');
                 p.style.color = 'var(--text-faint)';

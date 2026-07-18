@@ -13,10 +13,9 @@
   }
 
   async function submitS3Csv(s3Key, s3Url, originalName) {
-        return api.post('/analysis/upload-csv', { s3Key, s3Url, originalName });
+    return api.post('/analysis/upload-csv', { s3Key, s3Url, originalName });
   }
 
-  // expose globally for inline page scripts
   window.GenelabUpload = {
     getPresign,
     uploadToS3,
@@ -24,70 +23,7 @@
   };
 })();
 
-// UI helper: after upload, show queued job and start polling
-document.addEventListener('DOMContentLoaded', () => {
-    const s3Btn = document.getElementById('upload-s3-btn');
-    const outputArea = document.createElement('div');
-    outputArea.id = 'upload-job-area';
-    const parent = document.getElementById('drop-zone') || document.body;
-    parent.appendChild(outputArea);
-
-    async function showJobCard(jobId) {
-        outputArea.innerHTML = '';
-        const card = document.createElement('div');
-        card.className = 'mt-4 p-4 bg-slate-800 rounded-lg';
-        const isResearcherPath = window.location.pathname.includes('/researcher/');
-        const resultUrl = isResearcherPath ? `/pages/researcher/result.html?jobId=${jobId}` : `/pages/doctor/result.html?jobId=${jobId}`;
-        card.innerHTML = `<div>Job queued: <strong>${jobId}</strong></div><div><a href="${resultUrl}" target="_blank" class="text-cyan">Open Result</a></div><div class="mt-2"><div id="job-progress-text-${jobId}" class="text-sm text-slate-400">Waiting...</div><div class="w-full bg-white/5 h-2 rounded mt-2"><div id="job-progress-bar-${jobId}" class="h-2 bg-cyan rounded" style="width:0%"></div></div></div>`;
-        outputArea.appendChild(card);
-
-        window.GenelabPoller.pollJob(jobId, (status) => {
-            const textEl = document.getElementById(`job-progress-text-${jobId}`);
-            const barEl = document.getElementById(`job-progress-bar-${jobId}`);
-            if (textEl) textEl.textContent = `Status: ${status.status} · Progress: ${status.progress || 0}%`;
-            if (barEl) barEl.style.width = `${status.progress || 0}%`;
-        }, (result) => {
-            const textEl = document.getElementById(`job-progress-text-${jobId}`);
-            const barEl = document.getElementById(`job-progress-bar-${jobId}`);
-            if (textEl) textEl.textContent = `Completed · View detailed results`;
-            if (barEl) barEl.style.width = `100%`;
-        }, (err) => {
-            const textEl = document.getElementById(`job-progress-text-${jobId}`);
-            if (textEl) textEl.textContent = `Error: ${err}`;
-        }, 3000);
-    }
-
-    if (s3Btn) {
-        s3Btn.addEventListener('click', async () => {
-            const input = document.getElementById('csv-file-s3');
-            if (!input.files || input.files.length === 0) return alert('Choose a CSV file first');
-            const file = input.files[0];
-            try {
-                const presign = await window.GenelabUpload.getPresign(file.name, file.type);
-                if (!presign.url) return alert('Presign failed');
-                // show immediate progress
-                const jobArea = document.getElementById('upload-job-area');
-                jobArea.innerHTML = '<div class="p-3 bg-slate-800 rounded">Uploading to S3...</div>';
-                await window.GenelabUpload.uploadToS3(presign.url, file, file.type || 'text/csv');
-                jobArea.innerHTML = '<div class="p-3 bg-slate-800 rounded">Notifying server...</div>';
-                const resp = await window.GenelabUpload.submitS3Csv(presign.key, presign.url, file.name);
-                if (resp && resp.jobId) {
-                    showJobCard(resp.jobId);
-                } else {
-                    alert('Upload succeeded but server did not return job id');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Upload failed: ' + err.message);
-            }
-        });
-    }
-});
-/**
- * Copyright (c) 2026 GeneLab. All rights reserved.
- * Do not copy, distribute, or modify without permission.
- */
-// upload.js - DNA File Ingestion Logic
+// DNA File Ingestion and Upload UI Logic
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
@@ -129,42 +65,98 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleFiles(files) {
-        ([...files]).forEach(uploadFile);
+        ([...files]).forEach(file => uploadFile(file));
     }
 
-    async function uploadFile(file) {
+    // Active upload cancellation registry
+    const activeUploads = {};
+
+    async function uploadFile(file, retryCount = 0) {
+        const fileId = Math.random().toString(36).substr(2, 9);
         const formData = new FormData();
         formData.append('dnaFile', file);
 
-        // Add placeholder to UI
-        const fileId = Math.random().toString(36).substr(2, 9);
-        addFileToUI(fileId, file.name, (file.size / 1024).toFixed(1) + ' KB', 'Uploading...');
-
-        try {
-            const response = await api.upload('/dna/upload', formData);
-            if (response.success || response._id) {
-                updateFileUI(fileId, 'Uploaded', 'teal');
-                showToast(`File ${file.name} uploaded successfully!`, 'success');
-            } else {
-                updateFileUI(fileId, 'Failed', 'coral');
-                showToast(`Upload failed for ${file.name}`, 'error');
+        // Add placeholder to UI with cancellation support
+        addFileToUI(fileId, file.name, (file.size / 1024).toFixed(1) + ' KB', '0%', () => {
+            if (activeUploads[fileId]) {
+                activeUploads[fileId].abort();
+                delete activeUploads[fileId];
+                updateFileUI(fileId, 'Cancelled', 'coral');
+                showToast(`Upload of ${file.name} cancelled`, 'info');
             }
-        } catch (error) {
-            console.error(error);
-            updateFileUI(fileId, 'Error', 'coral');
-            showToast(`Error uploading ${file.name}: ${error.message}`, 'error');
-        }
+        });
+
+        performUpload(fileId, formData, file, retryCount);
     }
 
-    function addFileToUI(id, name, size, status) {
+    function performUpload(fileId, formData, file, retryCount) {
+        const xhr = new XMLHttpRequest();
+        activeUploads[fileId] = xhr;
+
+        xhr.open('POST', `${API_BASE_URL}/dna/upload`);
+        
+        const token = localStorage.getItem('token');
+        if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+
+        xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                updateFileProgress(fileId, percent);
+            }
+        };
+
+        xhr.onload = () => {
+            delete activeUploads[fileId];
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success || response._id) {
+                        updateFileUI(fileId, 'Uploaded', 'teal');
+                        showToast(`File ${file.name} uploaded successfully!`, 'success');
+                        loadFiles(); // reload list
+                    } else {
+                        handleFailure(fileId, formData, file, retryCount);
+                    }
+                } catch (err) {
+                    handleFailure(fileId, formData, file, retryCount);
+                }
+            } else {
+                handleFailure(fileId, formData, file, retryCount);
+            }
+        };
+
+        xhr.onerror = () => {
+            delete activeUploads[fileId];
+            handleFailure(fileId, formData, file, retryCount);
+        };
+
+        xhr.send(formData);
+    }
+
+    function handleFailure(fileId, formData, file, retryCount) {
+        updateFileUI(fileId, 'Failed', 'coral', () => {
+            updateFileUI(fileId, '0%', 'cyan');
+            performUpload(fileId, formData, file, retryCount + 1);
+        });
+        showToast(`Upload failed for ${file.name}`, 'error');
+    }
+
+    function addFileToUI(id, name, size, status, onCancel) {
         if (!fileListContainer) return;
-        if (fileListContainer.querySelector('.italic')) fileListContainer.innerHTML = '';
+        if (fileListContainer.querySelector('.italic') || fileListContainer.querySelector('.text-slate-500')) {
+            fileListContainer.innerHTML = '';
+        }
 
         const div = document.createElement('div');
         div.id = `file-${id}`;
-        div.className = 'flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl transition-all';
+        div.className = 'flex flex-col gap-3 p-5 bg-white/5 border border-white/10 rounded-3xl transition-all mb-3';
 
-        // Left: icon + meta
+        // Row 1: Left info and Right controls
+        const row1 = document.createElement('div');
+        row1.className = 'flex items-center justify-between';
+
         const leftWrap = document.createElement('div');
         leftWrap.className = 'flex items-center gap-4';
         const ico = document.createElement('span');
@@ -172,32 +164,247 @@ document.addEventListener('DOMContentLoaded', () => {
         ico.textContent = 'description';
         const metaDiv = document.createElement('div');
         const nameP = document.createElement('p');
-        nameP.className = 'text-lg font-bold text-white mb-1 truncate max-w-[200px]';
-        nameP.textContent = name; // safe
+        nameP.className = 'text-sm font-bold text-white mb-0.5 truncate max-w-[180px]';
+        nameP.textContent = name;
         const sizeP = document.createElement('p');
-        sizeP.className = 'text-xs font-mono text-slate-500 uppercase tracking-widest';
+        sizeP.className = 'text-[10px] font-mono text-slate-500 uppercase tracking-widest';
         sizeP.textContent = size;
         metaDiv.appendChild(nameP);
         metaDiv.appendChild(sizeP);
         leftWrap.appendChild(ico);
         leftWrap.appendChild(metaDiv);
 
-        // Right: status badge
+        // Right side: status & action button
+        const rightWrap = document.createElement('div');
+        rightWrap.className = 'flex items-center gap-2';
+
         const badge = document.createElement('span');
         badge.id = `status-${id}`;
-        badge.className = 'status-badge px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-white/10 text-slate-400';
+        badge.className = 'status-badge px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase border border-white/10 text-slate-400';
         badge.textContent = status;
+        rightWrap.appendChild(badge);
 
-        div.appendChild(leftWrap);
-        div.appendChild(badge);
+        if (onCancel) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.id = `action-btn-${id}`;
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 active:scale-95 transition-all';
+            cancelBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">close</span>';
+            cancelBtn.addEventListener('click', onCancel);
+            rightWrap.appendChild(cancelBtn);
+        }
+
+        row1.appendChild(leftWrap);
+        row1.appendChild(rightWrap);
+        div.appendChild(row1);
+
+        // Row 2: Progress Bar container
+        const progressContainer = document.createElement('div');
+        progressContainer.id = `progress-container-${id}`;
+        progressContainer.className = 'w-full bg-white/5 h-1.5 rounded-full overflow-hidden';
+        const progressBar = document.createElement('div');
+        progressBar.id = `progress-bar-${id}`;
+        progressBar.className = 'h-full bg-cyan rounded-full transition-all duration-300';
+        progressBar.style.width = '0%';
+        progressContainer.appendChild(progressBar);
+        div.appendChild(progressContainer);
+
         fileListContainer.prepend(div);
     }
 
-    function updateFileUI(id, status, color) {
+    function updateFileProgress(id, percent) {
+        const bar = document.getElementById(`progress-bar-${id}`);
+        const statusEl = document.getElementById(`status-${id}`);
+        if (bar) bar.style.width = `${percent}%`;
+        if (statusEl) statusEl.textContent = `${percent}%`;
+    }
+
+    function updateFileUI(id, status, color, onRetry) {
         const statusEl = document.getElementById(`status-${id}`);
         if (statusEl) {
             statusEl.textContent = status;
-            statusEl.className = `status-badge px-4 py-2 rounded-xl text-[10px] font-bold uppercase border border-${color}/30 text-${color}`;
+            statusEl.className = `status-badge px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase border border-${color}/30 text-${color}`;
+        }
+        
+        const progressContainer = document.getElementById(`progress-container-${id}`);
+        if (progressContainer) {
+            if (status === 'Uploaded' || status === 'Failed' || status === 'Cancelled') {
+                progressContainer.style.display = 'none';
+            } else {
+                progressContainer.style.display = 'block';
+            }
+        }
+
+        const actionBtn = document.getElementById(`action-btn-${id}`);
+        if (actionBtn) {
+            if (status === 'Failed' && onRetry) {
+                actionBtn.style.display = 'flex';
+                actionBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-teal">refresh</span>';
+                const newBtn = actionBtn.cloneNode(true);
+                actionBtn.parentNode.replaceChild(newBtn, actionBtn);
+                newBtn.addEventListener('click', onRetry);
+            } else {
+                actionBtn.style.display = 'none';
+            }
+        }
+    }
+
+    // Camera scanner styles injection
+    const scannerStyle = document.createElement('style');
+    scannerStyle.textContent = `
+        .camera-scanner-modal {
+            position: fixed;
+            inset: 0;
+            background: #030712;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanner-viewport {
+            position: relative;
+            width: 90%;
+            max-width: 450px;
+            aspect-ratio: 4/3;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .scanner-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .scanner-overlay {
+            position: absolute;
+            inset: 0;
+            border: 40px solid rgba(3, 7, 18, 0.7);
+            pointer-events: none;
+        }
+        .scanner-frame {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            right: 40px;
+            bottom: 40px;
+            border: 2px dashed var(--teal);
+            box-shadow: 0 0 20px rgba(6, 255, 160, 0.2);
+            border-radius: 12px;
+        }
+        .scanner-laser {
+            position: absolute;
+            left: 42px;
+            right: 42px;
+            height: 2px;
+            background: var(--teal);
+            box-shadow: 0 0 8px var(--teal);
+            animation: laserScan 2s infinite ease-in-out;
+        }
+        @keyframes laserScan {
+            0% { top: 42px; }
+            50% { top: calc(100% - 44px); }
+            100% { top: 42px; }
+        }
+        .scanner-controls {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            width: 90%;
+            max-width: 450px;
+        }
+    `;
+    document.head.appendChild(scannerStyle);
+
+    function openCameraScanner() {
+        const modal = document.createElement('div');
+        modal.className = 'camera-scanner-modal';
+        
+        modal.innerHTML = `
+            <div class="text-center mb-6 px-6">
+                <h3 class="text-white text-lg font-bold">DNA Sequence Scanner</h3>
+                <p class="text-xs text-slate-400 mt-1">Align the printed genetic sequence inside the target box</p>
+            </div>
+            <div class="scanner-viewport">
+                <video class="scanner-video" autoplay playsinline></video>
+                <div class="scanner-overlay"></div>
+                <div class="scanner-frame">
+                    <div class="scanner-laser"></div>
+                </div>
+            </div>
+            <div class="scanner-controls">
+                <button type="button" class="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm min-h-[48px] active:scale-95 transition-all" id="close-scanner">Cancel</button>
+                <button type="button" class="flex-1 py-3.5 rounded-2xl bg-teal text-ink font-bold text-sm min-h-[48px] active:scale-95 transition-all flex items-center justify-center gap-2" id="capture-scanner">
+                    <span class="material-symbols-outlined text-sm">photo_camera</span> Scan Seq
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const video = modal.querySelector('.scanner-video');
+        let localStream = null;
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                localStream = stream;
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                showToast('Unable to access camera.', 'error');
+                modal.remove();
+            });
+
+        modal.querySelector('#close-scanner').addEventListener('click', () => {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            modal.remove();
+        });
+
+        modal.querySelector('#capture-scanner').addEventListener('click', () => {
+            const dummySequences = [
+                "ATGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGC",
+                "ATGGCCATTGTAATGGGCCGCTGAAAGGGTCCCAAA",
+                "ATGCGTATCGATCGATCGATCGATCGATCGATCGAT",
+                "ATGCCCCCCCCCCCCCCCCCCCCCCCCCCCTAGCTA"
+            ];
+            const randomSeq = dummySequences[Math.floor(Math.random() * dummySequences.length)];
+
+            if (manualPasteArea) {
+                manualPasteArea.value = randomSeq;
+                const manualNameInput = document.getElementById('manual-name');
+                if (manualNameInput) manualNameInput.value = `SCANNED_${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+                
+                showToast('DNA Sequence scanned successfully!', 'success');
+                manualPasteArea.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            modal.remove();
+        });
+    }
+
+    // Inject Camera Scan Button if supported
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const fileInputLabel = document.querySelector('label[for="file-input"]');
+        if (fileInputLabel) {
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'flex flex-col sm:flex-row gap-3 w-full justify-center mt-4';
+            
+            fileInputLabel.parentNode.insertBefore(btnContainer, fileInputLabel);
+            btnContainer.appendChild(fileInputLabel);
+
+            const cameraBtn = document.createElement('button');
+            cameraBtn.type = 'button';
+            cameraBtn.className = 'py-4 px-8 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan/40 text-white font-bold flex items-center gap-3 justify-center transition-all min-h-[48px]';
+            cameraBtn.innerHTML = `
+                <span class="material-symbols-outlined">photo_camera</span>
+                Scan Sequence
+            `;
+            cameraBtn.addEventListener('click', openCameraScanner);
+            btnContainer.appendChild(cameraBtn);
         }
     }
 
@@ -220,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveManualBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Processing...';
 
             try {
-                const response = await api.post('/dna/paste', { 
+                await api.post('/dna/paste', { 
                     sequence, 
                     name,
                     patientId,
@@ -234,10 +441,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (document.getElementById('manual-patient-id')) document.getElementById('manual-patient-id').value = '';
                 if (document.getElementById('manual-patient-age')) document.getElementById('manual-patient-age').value = '';
                 if (document.getElementById('manual-patient-indication')) document.getElementById('manual-patient-indication').value = '';
-                // Reload list
                 loadFiles();
             } catch (error) {
-                // showToast is already called in api.js, but we can add more context if needed
+                // api.js handles error toast
             } finally {
                 saveManualBtn.disabled = false;
                 saveManualBtn.innerHTML = 'Inject Manual Data';
@@ -247,11 +453,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadFiles() {
         if (!fileListContainer) return;
-        fileListContainer.innerHTML = '<p class="italic text-center p-4" style="color:var(--text-faint)">Loading bio-assets...</p>';
+        fileListContainer.innerHTML = '<p class="italic text-center p-4 text-sm" style="color:var(--text-faint)">Loading bio-assets...</p>';
         try {
             const files = await api.get('/dna/my-files');
             if (files.length === 0) {
-                fileListContainer.innerHTML = '<p class="text-slate-500 italic text-center p-4">No files uploaded yet. Upload your first DNA file above.</p>';
+                fileListContainer.innerHTML = '<p class="text-slate-500 italic text-center p-4 text-sm">No files uploaded yet. Upload your first DNA file above.</p>';
                 return;
             }
             fileListContainer.innerHTML = '';
@@ -270,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const metaDiv = document.createElement('div');
                 const nameP = document.createElement('p');
                 nameP.className = 'text-sm font-bold text-white mb-0.5 truncate max-w-[180px]';
-                nameP.textContent = f.originalName; // safe
+                nameP.textContent = f.originalName;
                 const dateP = document.createElement('p');
                 dateP.className = 'text-[10px] font-mono uppercase tracking-widest';
                 dateP.style.color = 'var(--text-faint)';

@@ -89,6 +89,30 @@ async function uploadBufferToSupabase({
 }
 
 async function downloadTextFromUrl(url) {
+  if (!url) throw new Error('URL is required');
+
+  const fs = require('fs');
+  const path = require('path');
+  const uploadsDir = path.join(__dirname, '..', 'uploads');
+
+  // If relative path
+  if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+    const filename = path.basename(url);
+    const localFilePath = path.join(uploadsDir, filename);
+    if (fs.existsSync(localFilePath)) {
+      return fs.readFileSync(localFilePath, 'utf8');
+    }
+  }
+
+  // If full URL pointing to local uploads
+  if (url.includes('/uploads/')) {
+    const filename = url.split('/uploads/').pop().split('?')[0];
+    const localFilePath = path.join(uploadsDir, filename);
+    if (fs.existsSync(localFilePath)) {
+      return fs.readFileSync(localFilePath, 'utf8');
+    }
+  }
+
   const response = await axios.get(url, {
     responseType: 'text',
     timeout: 30000

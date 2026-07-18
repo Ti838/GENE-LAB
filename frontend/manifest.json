@@ -1,0 +1,22 @@
+{
+  "name": "GeneLab AI",
+  "short_name": "GeneLab",
+  "description": "Advanced Genomic Intelligence & Visualizer Platform",
+  "start_url": "/pages/login.html",
+  "display": "standalone",
+  "background_color": "#060b13",
+  "theme_color": "#060b13",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/icons/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

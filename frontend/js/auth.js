@@ -73,6 +73,15 @@ const auth = {
 
         if (response.requiresVerification) {
             showToast(response.message || 'Account created. Check your inbox to verify your email.', 'success');
+            if (response.debugVerificationLink) {
+                console.log("🔗 Debug Verification Link:", response.debugVerificationLink);
+                setTimeout(() => {
+                    const confirmVerify = confirm(`[Dev Mode] Click OK to automatically verify this user account: ${userData.email}`);
+                    if (confirmVerify) {
+                        window.location.href = response.debugVerificationLink;
+                    }
+                }, 1500);
+            }
             return response;
         }
 

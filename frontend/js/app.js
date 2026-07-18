@@ -168,6 +168,100 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Could not customize role branding:', e);
     }
   }
+
+  // Setup mobile layout overrides dynamically
+  setupMobileHeaderAndDrawer();
+  injectMobileBottomNav();
+
+  // Enhance Form accessibility, autocomplete, and password toggles
+  function enhanceForms() {
+    // Autocomplete attributes
+    const loginEmail = document.getElementById('login-email');
+    if (loginEmail) loginEmail.setAttribute('autocomplete', 'username');
+
+    const loginPassword = document.getElementById('login-password');
+    if (loginPassword) loginPassword.setAttribute('autocomplete', 'current-password');
+
+    const signupEmail = document.getElementById('signup-email');
+    if (signupEmail) signupEmail.setAttribute('autocomplete', 'email');
+
+    const signupPassword = document.getElementById('signup-password');
+    if (signupPassword) signupPassword.setAttribute('autocomplete', 'new-password');
+
+    // Password visibility toggles
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+      if (input.dataset.hasToggle) return;
+      input.dataset.hasToggle = 'true';
+
+      const wrapper = input.parentElement;
+      if (wrapper && wrapper.classList.contains('fi')) {
+        wrapper.style.position = 'relative';
+        input.style.paddingRight = '2.4rem';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'pass-toggle absolute right-2 flex items-center justify-center text-slate-400 hover:text-cyan transition-colors';
+        toggleBtn.style.cssText = 'border:none; background:none; cursor:pointer; height:24px; width:24px; bottom:6px; z-index:10; outline:none;';
+        toggleBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">visibility</span>';
+        toggleBtn.setAttribute('tabindex', '-1'); // exclude from normal tab order for better keyboard workflow
+
+        toggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isPass = input.type === 'password';
+          input.type = isPass ? 'text' : 'password';
+          toggleBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">${isPass ? 'visibility_off' : 'visibility'}</span>`;
+        });
+
+        wrapper.appendChild(toggleBtn);
+      }
+    });
+  }
+
+  enhanceForms();
+
+  // Listen to tab transitions (login vs signup)
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTimeout(enhanceForms, 100);
+    });
+  });
+
+  // Inject PWA Manifest link tag dynamically
+  function injectPWAManifest() {
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      const pathDepth = window.location.pathname.includes('/doctor/') ||
+                        window.location.pathname.includes('/researcher/') ||
+                        window.location.pathname.includes('/ops-control/') ? '../..' : '.';
+      link.href = `${pathDepth}/manifest.json`;
+      document.head.appendChild(link);
+    }
+  }
+  injectPWAManifest();
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    const pathDepth = window.location.pathname.includes('/doctor/') ||
+                      window.location.pathname.includes('/researcher/') ||
+                      window.location.pathname.includes('/ops-control/') ? '../..' : '.';
+    navigator.serviceWorker.register(`${pathDepth}/sw.js`)
+      .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
+      .catch((err) => console.warn('Service Worker registration failed:', err));
+  }
+
+  // Connection State Indicators
+  window.addEventListener('online', () => {
+    if (typeof showToast === 'function') {
+      showToast('Back online! Reconnected to GeneLab Services.', 'success');
+    }
+  });
+  window.addEventListener('offline', () => {
+    if (typeof showToast === 'function') {
+      showToast('You are currently offline. Running in local fallback mode.', 'warning');
+    }
+  });
 });
 
 function buildHelix(mount, animate) {
@@ -302,3 +396,214 @@ window.showToast = function(message, type = 'success') {
         }, { once: true });
     }, duration);
 };
+
+// ── Mobile Header, Drawer, and Bottom Navigation Helper Functions ──
+
+function setupMobileHeaderAndDrawer() {
+  // If not on mobile size, clean up and do nothing
+  if (window.innerWidth > 1024) {
+    const existingOverlay = document.querySelector('.drawer-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    const existingTopbar = document.querySelector('.mobile-topbar');
+    if (existingTopbar) existingTopbar.remove();
+    const aside = document.querySelector('aside');
+    if (aside) aside.classList.remove('drawer-open');
+    return;
+  }
+
+  const aside = document.querySelector('aside');
+  if (!aside) return;
+
+  // 1. Setup Drawer Overlay
+  let overlay = document.querySelector('.drawer-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'drawer-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  // 2. Setup Mobile Topbar
+  let topbar = document.querySelector('.mobile-topbar');
+  if (!topbar) {
+    topbar = document.createElement('div');
+    topbar.className = 'mobile-topbar';
+
+    const leftSec = document.createElement('div');
+    leftSec.className = 'mobile-topbar-left';
+
+    const menuBtn = document.createElement('button');
+    menuBtn.type = 'button';
+    menuBtn.className = 'mobile-topbar-menu-btn';
+    const menuIcon = document.createElement('span');
+    menuIcon.className = 'material-symbols-outlined';
+    menuIcon.textContent = 'menu';
+    menuBtn.appendChild(menuIcon);
+    
+    menuBtn.addEventListener('click', () => {
+      aside.classList.toggle('drawer-open');
+      overlay.classList.toggle('active');
+    });
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'text-base font-display font-extrabold tracking-[0.18em]';
+    titleSpan.textContent = 'GENELAB';
+
+    leftSec.appendChild(menuBtn);
+    leftSec.appendChild(titleSpan);
+
+    const rightSec = document.createElement('div');
+    rightSec.className = 'flex items-center gap-2';
+
+    // Theme Toggle on topbar
+    const themeBtn = document.createElement('button');
+    themeBtn.type = 'button';
+    themeBtn.className = 'w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center';
+    themeBtn.style.background = 'rgba(255,255,255,0.03)';
+    themeBtn.setAttribute('data-theme-toggle', '');
+    const themeIcon = document.createElement('span');
+    themeIcon.className = 'material-symbols-outlined';
+    const currentTheme = document.body.dataset.theme || localStorage.getItem('genelab-theme') || 'dark';
+    themeIcon.textContent = currentTheme === 'dark' ? 'dark_mode' : 'light_mode';
+    themeBtn.appendChild(themeIcon);
+
+    themeBtn.addEventListener('click', () => {
+      const nextTheme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.body.dataset.theme = nextTheme;
+      document.documentElement.dataset.theme = nextTheme;
+      localStorage.setItem('genelab-theme', nextTheme);
+      themeIcon.textContent = nextTheme === 'dark' ? 'dark_mode' : 'light_mode';
+      
+      document.querySelectorAll('[data-theme-toggle] .material-symbols-outlined').forEach(ico => {
+        ico.textContent = nextTheme === 'dark' ? 'dark_mode' : 'light_mode';
+      });
+      document.querySelectorAll('[data-theme-toggle] [data-theme-label]').forEach(lbl => {
+        lbl.textContent = nextTheme === 'dark' ? 'Dark' : 'Light';
+      });
+    });
+
+    rightSec.appendChild(themeBtn);
+
+    topbar.appendChild(leftSec);
+    topbar.appendChild(rightSec);
+
+    const mainWrap = document.querySelector('.relative.z-10.flex.min-h-screen');
+    if (mainWrap) {
+      mainWrap.parentNode.insertBefore(topbar, mainWrap);
+    } else {
+      document.body.prepend(topbar);
+    }
+  }
+
+  // Close drawer handlers
+  overlay.addEventListener('click', () => {
+    aside.classList.remove('drawer-open');
+    overlay.classList.remove('active');
+  });
+
+  const links = aside.querySelectorAll('a');
+  links.forEach(link => {
+    link.addEventListener('click', () => {
+      aside.classList.remove('drawer-open');
+      overlay.classList.remove('active');
+    });
+  });
+}
+
+function injectMobileBottomNav() {
+  if (window.innerWidth > 1024) {
+    const existingNav = document.querySelector('.mobile-bottom-nav');
+    if (existingNav) existingNav.remove();
+    return;
+  }
+
+  const path = window.location.pathname;
+  let role = '';
+  if (path.includes('/doctor/')) role = 'doctor';
+  else if (path.includes('/researcher/')) role = 'researcher';
+  else if (path.includes('/ops-control/')) role = 'admin';
+
+  if (!role) return;
+
+  let nav = document.querySelector('.mobile-bottom-nav');
+  if (nav) {
+    const currentFile = path.split('/').pop() || 'dashboard.html';
+    nav.querySelectorAll('.mobile-nav-item').forEach(item => {
+      const href = item.getAttribute('href');
+      if (href === currentFile) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    return;
+  }
+
+  nav = document.createElement('div');
+  nav.className = 'mobile-bottom-nav';
+
+  const currentFile = path.split('/').pop() || 'dashboard.html';
+
+  let links = [];
+  if (role === 'doctor' || role === 'researcher') {
+    links = [
+      { name: 'Dashboard', icon: 'dashboard', url: 'dashboard.html' },
+      { name: 'Analysis', icon: 'psychology', url: 'analysis.html' },
+      { name: 'Upload', icon: 'upload_file', url: 'upload.html', isCenter: true },
+      { name: 'Compare', icon: 'compare_arrows', url: 'compare.html' },
+      { name: 'Reports', icon: 'description', url: 'reports.html' }
+    ];
+  } else if (role === 'admin') {
+    links = [
+      { name: 'Dashboard', icon: 'analytics', url: 'dashboard.html' },
+      { name: 'Doctors', icon: 'manage_accounts', url: 'doctors.html' },
+      { name: 'Logs', icon: 'history', url: 'logs.html', isCenter: true },
+      { name: 'Data', icon: 'dns', url: 'data.html' },
+      { name: 'Settings', icon: 'settings', url: 'settings.html' }
+    ];
+  }
+
+  links.forEach(link => {
+    const a = document.createElement('a');
+    a.href = link.url;
+    
+    if (link.isCenter) {
+      a.className = 'mobile-nav-item-center';
+      a.title = link.name;
+    } else {
+      a.className = 'mobile-nav-item';
+      if (currentFile === link.url) {
+        a.classList.add('active');
+      }
+      const label = document.createElement('span');
+      label.textContent = link.name;
+      a.appendChild(label);
+    }
+    
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.textContent = link.icon;
+    
+    if (link.isCenter) {
+      a.appendChild(icon);
+    } else {
+      a.insertBefore(icon, a.firstChild);
+    }
+    
+    nav.appendChild(a);
+  });
+
+  document.body.appendChild(nav);
+}
+
+let wasMobile = window.innerWidth <= 768;
+window.addEventListener('resize', () => {
+  setupMobileHeaderAndDrawer();
+  injectMobileBottomNav();
+
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile !== wasMobile) {
+    wasMobile = isMobile;
+    window.location.reload();
+  }
+});
+

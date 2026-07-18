@@ -61,6 +61,115 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!tableBody) return;
             tableBody.innerHTML = '';
 
+            const tableCard = tableBody.closest('.glass-panel') || tableBody.parentElement;
+
+            if (window.innerWidth <= 768) {
+                // Mobile Card layout
+                const tableEl = tableCard.querySelector('table');
+                if (tableEl) tableEl.style.display = 'none';
+
+                let cardContainer = tableCard.querySelector('.mobile-cards-container');
+                if (!cardContainer) {
+                    cardContainer = document.createElement('div');
+                    cardContainer.className = 'mobile-cards-container flex flex-col gap-4 p-4';
+                    tableCard.appendChild(cardContainer);
+                }
+                cardContainer.innerHTML = '';
+
+                if (!users.length) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'p-8 text-center italic text-sm text-slate-400';
+                    emptyDiv.textContent = 'No users found matching your criteria.';
+                    cardContainer.appendChild(emptyDiv);
+                    return;
+                }
+
+                users.forEach(user => {
+                    const isActive = user.isActive;
+                    const statusClass = isActive
+                        ? 'bg-teal/20 text-teal border-teal/30'
+                        : 'bg-coral/20 text-coral border-coral/30';
+
+                    const card = document.createElement('div');
+                    card.className = 'glass-card p-5 rounded-2xl border border-white/10 flex flex-col gap-3.5';
+
+                    // Top Row: Info and Status
+                    const topRow = document.createElement('div');
+                    topRow.className = 'flex items-center gap-3';
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = 'w-10 h-10 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan text-sm font-bold flex-shrink-0';
+                    avatar.textContent = (user.name?.charAt(0) || '?').toUpperCase();
+                    
+                    const credText = document.createElement('div');
+                    credText.className = 'flex-1 min-w-0';
+                    const nameP = document.createElement('p');
+                    nameP.className = 'text-sm font-bold text-white truncate';
+                    nameP.textContent = user.name || '—';
+                    const emailP = document.createElement('p');
+                    emailP.className = 'text-[11px] text-slate-400 truncate';
+                    emailP.textContent = user.email || '—';
+                    credText.appendChild(nameP);
+                    credText.appendChild(emailP);
+                    
+                    topRow.appendChild(avatar);
+                    topRow.appendChild(credText);
+
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = `text-[9px] font-bold uppercase px-2.5 py-1 rounded-full border flex-shrink-0 ${statusClass}`;
+                    statusBadge.textContent = isActive ? 'Active' : 'Suspended';
+                    topRow.appendChild(statusBadge);
+
+                    card.appendChild(topRow);
+
+                    // Meta: specialization, role, and joined date
+                    const metaRow = document.createElement('div');
+                    metaRow.className = 'grid grid-cols-2 gap-2 text-xs py-2.5 border-y border-white/5';
+                    metaRow.innerHTML = `
+                        <div>
+                            <span class="block text-[9px] uppercase tracking-wider text-slate-500 font-bold">Specialization</span>
+                            <span class="text-slate-300 font-medium">${user.specialization || '—'}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[9px] uppercase tracking-wider text-slate-500 font-bold">Role & Joined</span>
+                            <span class="text-slate-300 font-medium font-mono">${user.role?.toUpperCase()} (${new Date(user.createdAt).toLocaleDateString()})</span>
+                        </div>
+                    `;
+                    card.appendChild(metaRow);
+
+                    // Actions (with minimum 48px touch targets)
+                    const actionRow = document.createElement('div');
+                    actionRow.className = 'flex justify-end gap-2 mt-1';
+
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.type = 'button';
+                    toggleBtn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition min-h-[48px] flex items-center justify-center';
+                    toggleBtn.style.cssText = 'background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--violet)';
+                    toggleBtn.textContent = isActive ? 'Suspend' : 'Restore';
+                    toggleBtn.addEventListener('click', () => toggleUserStatus(user._id, isActive));
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition min-h-[48px] flex items-center justify-center';
+                    deleteBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', () => deleteUser(user._id, user.name));
+
+                    actionRow.appendChild(toggleBtn);
+                    actionRow.appendChild(deleteBtn);
+                    card.appendChild(actionRow);
+
+                    cardContainer.appendChild(card);
+                });
+                return;
+            }
+
+            // Desktop layout (restores table)
+            const tableEl = tableCard.querySelector('table');
+            if (tableEl) tableEl.style.display = 'table';
+            const cardContainer = tableCard.querySelector('.mobile-cards-container');
+            if (cardContainer) cardContainer.innerHTML = '';
+
             if (!users.length) {
                 tableBody.appendChild(_emptyRow(6, 'No users found matching your criteria.'));
                 return;
@@ -203,6 +312,98 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!dataBody) return;
                 dataBody.innerHTML = '';
 
+                const tableCard = dataBody.closest('.glass-panel') || dataBody.parentElement;
+
+                if (window.innerWidth <= 768) {
+                    // Mobile Cards view
+                    const tableEl = tableCard.querySelector('table');
+                    if (tableEl) tableEl.style.display = 'none';
+
+                    let cardContainer = tableCard.querySelector('.mobile-cards-container');
+                    if (!cardContainer) {
+                        cardContainer = document.createElement('div');
+                        cardContainer.className = 'mobile-cards-container flex flex-col gap-4 p-4';
+                        tableCard.appendChild(cardContainer);
+                    }
+                    cardContainer.innerHTML = '';
+
+                    if (!files.length) {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'p-8 text-center italic text-sm text-slate-400';
+                        emptyDiv.textContent = 'No DNA files in the registry.';
+                        cardContainer.appendChild(emptyDiv);
+                        return;
+                    }
+
+                    files.forEach(file => {
+                        const statusColorMap = { uploaded: 'var(--gold)', analyzed: 'var(--teal)', failed: 'var(--coral)', analyzing: 'var(--violet)' };
+                        const statusColor    = statusColorMap[file.status] || 'var(--text-faint)';
+
+                        const card = document.createElement('div');
+                        card.className = 'glass-card p-5 rounded-2xl border border-white/10 flex flex-col gap-3';
+
+                        const header = document.createElement('div');
+                        header.className = 'flex justify-between items-center';
+                        header.innerHTML = `
+                            <span class="text-xs font-mono font-bold text-cyan">${file._id.substr(-8).toUpperCase()}</span>
+                            <span class="text-[11px] text-slate-400 font-mono">${new Date(file.createdAt).toLocaleDateString()}</span>
+                        `;
+                        card.appendChild(header);
+
+                        const body = document.createElement('div');
+                        body.className = 'flex flex-col gap-1.5';
+                        body.innerHTML = `
+                            <p class="text-sm font-bold text-white truncate">${file.originalName}</p>
+                            <p class="text-xs text-slate-400">Doctor: <strong class="text-white">${file.doctor?.name || 'Unknown'}</strong></p>
+                        `;
+                        card.appendChild(body);
+
+                        const footer = document.createElement('div');
+                        footer.className = 'flex justify-between items-center mt-1 pt-3 border-t border-white/5';
+
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border';
+                        statusSpan.style.cssText = `color:${statusColor}; border-color:${statusColor}40; background:${statusColor}10`;
+                        statusSpan.textContent = file.status;
+                        footer.appendChild(statusSpan);
+
+                        const actionGroup = document.createElement('div');
+                        actionGroup.className = 'flex gap-2';
+
+                        if (file.status === 'analyzed') {
+                            const viewBtn = document.createElement('button');
+                            viewBtn.type = 'button';
+                            viewBtn.className = 'px-3 py-2 rounded-xl text-xs font-bold transition min-h-[44px] flex items-center justify-center';
+                            viewBtn.style.cssText = 'background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);color:var(--cyan)';
+                            viewBtn.textContent = 'View';
+                            viewBtn.addEventListener('click', () => {
+                                window.location.href = `../doctor/result.html?id=${file._id}`;
+                            });
+                            actionGroup.appendChild(viewBtn);
+                        }
+
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.className = 'px-3 py-2 rounded-xl text-xs font-bold transition min-h-[44px] flex items-center justify-center';
+                        delBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
+                        delBtn.textContent = 'Delete';
+                        delBtn.addEventListener('click', () => deleteDNAFile(file._id, file.originalName));
+                        actionGroup.appendChild(delBtn);
+
+                        footer.appendChild(actionGroup);
+                        card.appendChild(footer);
+
+                        cardContainer.appendChild(card);
+                    });
+                    return;
+                }
+
+                // Desktop layout
+                const tableEl = tableCard.querySelector('table');
+                if (tableEl) tableEl.style.display = 'table';
+                const cardContainer = tableCard.querySelector('.mobile-cards-container');
+                if (cardContainer) cardContainer.innerHTML = '';
+
                 if (!files.length) {
                     dataBody.appendChild(_emptyRow(5, 'No DNA files in the registry.'));
                     return;
@@ -337,6 +538,80 @@ document.addEventListener('DOMContentLoaded', async () => {
                 allLogs = data.logs || [];
                 if (!logsBody) return;
                 logsBody.innerHTML = '';
+
+                const tableCard = logsBody.closest('.glass-panel') || logsBody.parentElement;
+
+                if (window.innerWidth <= 768) {
+                    // Mobile Cards view
+                    const tableEl = tableCard.querySelector('table');
+                    if (tableEl) tableEl.style.display = 'none';
+
+                    let cardContainer = tableCard.querySelector('.mobile-cards-container');
+                    if (!cardContainer) {
+                        cardContainer = document.createElement('div');
+                        cardContainer.className = 'mobile-cards-container flex flex-col gap-4 p-4';
+                        tableCard.appendChild(cardContainer);
+                    }
+                    cardContainer.innerHTML = '';
+
+                    if (!allLogs.length) {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'p-8 text-center italic text-sm text-slate-400';
+                        emptyDiv.textContent = 'No activity logs recorded.';
+                        cardContainer.appendChild(emptyDiv);
+                        return;
+                    }
+
+                    allLogs.forEach(log => {
+                        const time   = new Date(log.timestamp).toLocaleString();
+                        const who    = log.userId?.name || 'System';
+                        const role   = log.userId?.role || 'system';
+                        const action = (log.action || 'unknown').replace(/_/g, ' ');
+
+                        let detailsText = '—';
+                        if (log.details) {
+                            try { detailsText = typeof log.details === 'string' ? log.details : JSON.stringify(log.details); }
+                            catch (_) { detailsText = '—'; }
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'glass-card p-5 rounded-2xl border border-white/10 flex flex-col gap-3';
+
+                        const header = document.createElement('div');
+                        header.className = 'flex justify-between items-center';
+                        
+                        const actionBadge = document.createElement('span');
+                        actionBadge.className = 'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-teal/30 bg-teal/5 text-teal font-mono';
+                        actionBadge.textContent = action;
+                        
+                        const timeSpan = document.createElement('span');
+                        timeSpan.className = 'text-[10px] text-slate-400 font-mono';
+                        timeSpan.textContent = time;
+
+                        header.appendChild(actionBadge);
+                        header.appendChild(timeSpan);
+                        card.appendChild(header);
+
+                        const userP = document.createElement('p');
+                        userP.className = 'text-xs text-slate-300';
+                        userP.innerHTML = `Initiator: <strong class="text-white">${who}</strong> <span class="text-[9px] text-slate-500 font-mono uppercase font-bold tracking-wider">(${role})</span>`;
+                        card.appendChild(userP);
+
+                        const descP = document.createElement('p');
+                        descP.className = 'text-[11px] text-slate-400 bg-black/20 p-2.5 rounded-lg font-mono break-all max-h-[80px] overflow-y-auto';
+                        descP.textContent = detailsText;
+                        card.appendChild(descP);
+
+                        cardContainer.appendChild(card);
+                    });
+                    return;
+                }
+
+                // Desktop table
+                const tableEl = tableCard.querySelector('table');
+                if (tableEl) tableEl.style.display = 'table';
+                const cardContainer = tableCard.querySelector('.mobile-cards-container');
+                if (cardContainer) cardContainer.innerHTML = '';
 
                 if (!allLogs.length) {
                     logsBody.appendChild(_emptyRow(5, 'No activity logs recorded.'));

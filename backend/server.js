@@ -102,6 +102,12 @@ app.use(morgan('dev'));
 // Uploads are served through authenticated API routes or fallback static serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.get('/', (req, res) => {
+  res.redirect('/pages/login.html');
+});
+
 // ── API Routes ────────────────────────────────────────────────────────────
 app.use('/api/auth',          authRoutes);
 app.use('/api/requests',      requestRoutes);
