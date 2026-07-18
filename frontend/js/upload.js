@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         xhr.open('POST', `${API_BASE_URL}/dna/upload`);
         
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
         if (token) {
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }

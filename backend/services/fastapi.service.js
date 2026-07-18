@@ -48,35 +48,6 @@ async function _postWithRetry(path, data, opts = {}, retries = 3, delay = 1000, 
  * @returns {Promise<Object>} Full analysis result
  */
 async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
-  if (FASTAPI_BASE_URL === 'http://localhost:8000' && process.env.NODE_ENV === 'production') {
-    return {
-      sequence: "ATGC",
-      sequence_length: 1000,
-      gc_content: 0.55,
-      at_content: 0.45,
-      statistics: {
-        nucleotide_frequency: { A: 250, T: 250, G: 250, C: 250, N: 0 },
-        nucleotide_percentage: { A: 0.25, T: 0.25, G: 0.25, C: 0.25, N: 0 }
-      },
-      codon_analysis: {
-        total_codons: 333,
-        protein_length: 332,
-        start_codon_count: 1,
-        stop_codon_count: 1,
-        open_reading_frames_detected: 1,
-        amino_acid_sequence: "MTEITL*",
-        codon_frequency: {}
-      },
-      mutation_analysis: {
-        variants_analyzed: 0,
-        high_severity_count: 0,
-        variants: []
-      },
-      scientific_summary: "Mock file analysis performed successfully because no FASTAPI_URL was provided.",
-      confidence: 0.99
-    };
-  }
-
   const form = new FormData();
   form.append('file', fs.createReadStream(filePath), { filename: fileName });
   if (variantIds.length > 0) {
@@ -103,35 +74,6 @@ async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
  * @returns {Promise<Object>} Full analysis result
  */
 async function runInstantAnalysisText(sequence, name = 'manual_sequence', variantIds = []) {
-  if (FASTAPI_BASE_URL === 'http://localhost:8000' && process.env.NODE_ENV === 'production') {
-    return {
-      sequence: sequence.substring(0, 100),
-      sequence_length: sequence.length,
-      gc_content: 0.55,
-      at_content: 0.45,
-      statistics: {
-        nucleotide_frequency: { A: 10, T: 10, G: 12, C: 12, N: 0 },
-        nucleotide_percentage: { A: 0.25, T: 0.25, G: 0.25, C: 0.25, N: 0 }
-      },
-      codon_analysis: {
-        total_codons: Math.floor(sequence.length / 3),
-        protein_length: Math.floor(sequence.length / 3) - 1,
-        start_codon_count: 1,
-        stop_codon_count: 1,
-        open_reading_frames_detected: 1,
-        amino_acid_sequence: "MTEITL*",
-        codon_frequency: {}
-      },
-      mutation_analysis: {
-        variants_analyzed: 0,
-        high_severity_count: 0,
-        variants: []
-      },
-      scientific_summary: "Mock analysis performed successfully because no FASTAPI_URL was provided.",
-      confidence: 0.99
-    };
-  }
-
   const form = new FormData();
   form.append('sequence', sequence);
   form.append('name', name);
