@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupPointerParallax(hasGsap && !reducedMotion);
 
-  // Populate sidebar / profile user names dynamically
+  // Populate sidebar / profile user names and avatars dynamically
   const userJson = localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user');
   if (userJson) {
     try {
@@ -162,6 +162,63 @@ document.addEventListener('DOMContentLoaded', () => {
       const sidebarName = document.getElementById('sidebar-user-name') || document.getElementById('admin-name');
       if (sidebarName && user.name) {
         sidebarName.textContent = user.name;
+      }
+
+      // Prepend dynamic profile avatar inside the sidebar container
+      if (sidebarName) {
+        const parent = sidebarName.parentElement;
+        if (parent && !parent.classList.contains('sidebar-avatar-injected')) {
+          parent.classList.add('sidebar-avatar-injected');
+          parent.classList.add('flex', 'items-center', 'gap-3');
+
+          const textWrapper = document.createElement('div');
+          textWrapper.className = 'min-w-0 flex-1';
+
+          while (parent.firstChild) {
+            textWrapper.appendChild(parent.firstChild);
+          }
+
+          const avatarContainer = document.createElement('div');
+          avatarContainer.className = 'w-10 h-10 rounded-full bg-cyan/10 border border-cyan/30 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-all hover:border-cyan/60';
+          avatarContainer.onclick = () => {
+            const pathDepth = window.location.pathname.includes('/doctor/') ||
+                              window.location.pathname.includes('/researcher/') ||
+                              window.location.pathname.includes('/ops-control/') ? '' : 'pages/doctor/';
+            const userRole = user.role || 'doctor';
+            if (userRole === 'admin') {
+              window.location.href = `${pathDepth}../ops-control/dashboard.html`;
+            } else if (userRole === 'researcher') {
+              window.location.href = `${pathDepth}../researcher/profile.html`;
+            } else {
+              window.location.href = `${pathDepth}../doctor/profile.html`;
+            }
+          };
+
+          const avatarImg = document.createElement('img');
+          avatarImg.id = 'sidebar-user-avatar';
+          avatarImg.alt = 'Avatar';
+          avatarImg.className = 'w-full h-full object-cover' + (user.profilePicture ? '' : ' hidden');
+          if (user.profilePicture) {
+            avatarImg.src = user.profilePicture;
+          }
+          avatarContainer.appendChild(avatarImg);
+
+          const avatarPlaceholder = document.createElement('span');
+          avatarPlaceholder.id = 'sidebar-user-avatar-placeholder';
+          avatarPlaceholder.className = 'material-symbols-outlined text-cyan text-xl' + (user.profilePicture ? ' hidden' : '');
+          avatarPlaceholder.textContent = 'person';
+          avatarContainer.appendChild(avatarPlaceholder);
+
+          parent.appendChild(avatarContainer);
+          parent.appendChild(textWrapper);
+        }
+      }
+
+      // ── Global Announcement & Notification Center ──
+      const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
+      const themeToggle = document.querySelector('[data-theme-toggle]');
+      if (token && themeToggle) {
+        setupNotificationCenter(themeToggle);
       }
 
     } catch (e) {
@@ -606,4 +663,178 @@ window.addEventListener('resize', () => {
     window.location.reload();
   }
 });
+
+function setupNotificationCenter(themeToggle) {
+  const parent = themeToggle.parentElement;
+  if (!parent || parent.querySelector('#notif-container')) return;
+
+  const container = document.createElement('div');
+  container.className = 'relative inline-block';
+  container.id = 'notif-container';
+
+  const bellBtn = document.createElement('button');
+  bellBtn.type = 'button';
+  bellBtn.id = 'notif-bell-btn';
+  bellBtn.className = 'btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm relative';
+  bellBtn.innerHTML = `
+    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">notifications</span>
+    <span id="notif-badge" class="absolute top-1.5 right-1.5 w-2 h-2 bg-coral rounded-full hidden animate-pulse"></span>
+  `;
+
+  const dropdown = document.createElement('div');
+  dropdown.id = 'notif-dropdown';
+  dropdown.className = 'absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl transition-all duration-300';
+  dropdown.style.cssText = 'top: 100%; border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(16px);';
+  dropdown.innerHTML = `
+    <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: var(--border);">
+        <h4 class="font-display font-bold text-xs text-white flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-cyan text-base">notifications_active</span> Announcements
+        </h4>
+        <button id="notif-mark-read" class="text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider">Mark all read</button>
+    </div>
+    <div id="notif-list" class="space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: none;">
+        <div class="text-center py-6 text-xs text-slate-500">Loading announcements...</div>
+    </div>
+  `;
+
+  container.appendChild(bellBtn);
+  container.appendChild(dropdown);
+  parent.insertBefore(container, themeToggle);
+
+  bellBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isHidden = dropdown.classList.contains('hidden');
+    dropdown.classList.toggle('hidden');
+    if (isHidden) {
+      loadAnnouncements();
+      markAllNotificationsAsRead();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  const markReadBtn = dropdown.querySelector('#notif-mark-read');
+  if (markReadBtn) {
+    markReadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      markAllNotificationsAsRead();
+      if (window.showToast) window.showToast('All notifications marked as read.', 'success');
+    });
+  }
+
+  checkNewAnnouncements();
+
+  async function loadAnnouncements() {
+    const listContainer = dropdown.querySelector('#notif-list');
+    if (!listContainer) return;
+
+    try {
+      const response = await api.get('/announcements');
+      const announcements = response.announcements || [];
+
+      if (announcements.length === 0) {
+        listContainer.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">No active announcements</div>';
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      announcements.forEach(ann => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-xl border transition-all hover:bg-white/5 flex gap-2.5 items-start';
+        item.style.cssText = 'border-color: var(--border); background: rgba(255,255,255,0.01);';
+
+        const author = ann.authorId || { name: 'System', role: 'admin' };
+        const authorName = author.name || 'System';
+        const authorRole = author.role || 'Admin';
+        const avatarUrl = author.profilePicture || '';
+
+        let priorityColor = 'rgba(255,255,255,0.1)';
+        let priorityTextColor = 'var(--text-muted)';
+        if (ann.priority === 'high') {
+          priorityColor = 'rgba(255,107,107,0.15)';
+          priorityTextColor = 'var(--coral)';
+        } else if (ann.priority === 'medium') {
+          priorityColor = 'rgba(255,204,0,0.15)';
+          priorityTextColor = 'rgba(255,204,0,1)';
+        }
+
+        const timeDiff = getTimeElapsed(new Date(ann.createdAt));
+
+        const avatarMarkup = avatarUrl 
+          ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" alt="${authorName}">`
+          : `<div class="w-8 h-8 rounded-full bg-cyan/10 border border-cyan/20 flex items-center justify-center shrink-0 text-cyan"><span class="material-symbols-outlined text-sm">person</span></div>`;
+
+        item.innerHTML = `
+          ${avatarMarkup}
+          <div class="flex-1 min-w-0 text-left">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="text-[10px] font-bold text-white truncate max-w-[120px]">${authorName} (${authorRole})</span>
+              <span class="text-[9px] uppercase px-1.5 py-0.5 rounded font-bold" style="background: ${priorityColor}; color: ${priorityTextColor};">${ann.priority || 'normal'}</span>
+            </div>
+            <h5 class="text-xs font-bold text-white mb-0.5">${ann.title}</h5>
+            <p class="text-[10px] text-slate-400 break-words leading-relaxed">${ann.content}</p>
+            <span class="text-[8px] text-slate-500 block mt-1.5 font-mono">${timeDiff}</span>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    } catch (err) {
+      listContainer.innerHTML = '<div class="text-center py-6 text-xs text-coral">Failed to load announcements</div>';
+    }
+  }
+
+  async function checkNewAnnouncements() {
+    const badge = container.querySelector('#notif-badge');
+    if (!badge) return;
+
+    try {
+      const response = await api.get('/announcements');
+      const announcements = response.announcements || [];
+      if (announcements.length === 0) return;
+
+      const latestRead = localStorage.getItem('genelab_latest_notif_read') || '0';
+      const latestAnnTime = new Date(announcements[0].createdAt).getTime().toString();
+
+      if (latestAnnTime !== latestRead) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    } catch (err) {
+      console.warn('Failed to check announcements:', err);
+    }
+  }
+
+  function markAllNotificationsAsRead() {
+    const badge = container.querySelector('#notif-badge');
+    if (badge) badge.classList.add('hidden');
+    
+    api.get('/announcements').then(response => {
+      const announcements = response.announcements || [];
+      if (announcements.length > 0) {
+        const latestAnnTime = new Date(announcements[0].createdAt).getTime().toString();
+        localStorage.setItem('genelab_latest_notif_read', latestAnnTime);
+      }
+    }).catch(() => {});
+  }
+
+  function getTimeElapsed(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval + "y ago";
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval + "mo ago";
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + "d ago";
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + "h ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + "m ago";
+    return "just now";
+  }
+}
 

@@ -238,6 +238,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (data.user.profilePicture) {
                         profilePhotoPreview.src = data.user.profilePicture;
                         togglePhotoUI(true);
+
+                        // Update sidebar avatar if present in DOM
+                        const sidebarAvatar = document.querySelector('#sidebar-user-avatar');
+                        const sidebarPlaceholder = document.querySelector('#sidebar-user-avatar-placeholder');
+                        if (sidebarAvatar) {
+                            sidebarAvatar.src = data.user.profilePicture;
+                            sidebarAvatar.classList.remove('hidden');
+                        }
+                        if (sidebarPlaceholder) {
+                            sidebarPlaceholder.classList.add('hidden');
+                        }
                     }
                 }
 

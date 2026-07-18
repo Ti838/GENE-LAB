@@ -11,7 +11,7 @@ const { body, validationResult } = require('express-validator');
 router.get('/', protect, async (req, res, next) => {
   try {
     const announcements = await Announcement.find({ isActive: true })
-      .populate('authorId', 'name role')
+      .populate('authorId', 'name role profilePicture')
       .sort({ createdAt: -1 });
     res.json({ announcements });
   } catch (err) { next(err); }
