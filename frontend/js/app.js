@@ -214,13 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // ── Global Announcement & Notification Center ──
-      const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
-      const themeToggle = document.querySelector('[data-theme-toggle]');
-      if (token && themeToggle) {
-        setupNotificationCenter(themeToggle);
-      }
-
     } catch (e) {
       console.warn('Could not customize role branding:', e);
     }
@@ -229,6 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup mobile layout overrides dynamically
   setupMobileHeaderAndDrawer();
   injectMobileBottomNav();
+
+  // ── Global Announcement & Notification Center ──
+  const token = localStorage.getItem('genelab_token') || sessionStorage.getItem('genelab_token');
+  const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+  if (token && themeToggles.length > 0) {
+    themeToggles.forEach(toggle => {
+      setupNotificationCenter(toggle);
+    });
+  }
 
   // Enhance Form accessibility, autocomplete, and password toggles
   function enhanceForms() {
@@ -666,33 +668,33 @@ window.addEventListener('resize', () => {
 
 function setupNotificationCenter(themeToggle) {
   const parent = themeToggle.parentElement;
-  if (!parent || parent.querySelector('#notif-container')) return;
+  if (!parent || parent.querySelector('.notif-center-container')) return;
+
+  const instanceId = Math.random().toString(36).substr(2, 9);
 
   const container = document.createElement('div');
-  container.className = 'relative inline-block';
-  container.id = 'notif-container';
+  container.className = 'relative inline-block notif-center-container';
+  container.id = `notif-container-${instanceId}`;
 
   const bellBtn = document.createElement('button');
   bellBtn.type = 'button';
-  bellBtn.id = 'notif-bell-btn';
   bellBtn.className = 'btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm relative';
   bellBtn.innerHTML = `
     <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">notifications</span>
-    <span id="notif-badge" class="absolute top-1.5 right-1.5 w-2 h-2 bg-coral rounded-full hidden animate-pulse"></span>
+    <span class="notif-badge absolute top-1.5 right-1.5 w-2 h-2 bg-coral rounded-full hidden animate-pulse"></span>
   `;
 
   const dropdown = document.createElement('div');
-  dropdown.id = 'notif-dropdown';
-  dropdown.className = 'absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl transition-all duration-300';
+  dropdown.className = 'notif-dropdown absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl transition-all duration-300';
   dropdown.style.cssText = 'top: 100%; border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(16px);';
   dropdown.innerHTML = `
     <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: var(--border);">
         <h4 class="font-display font-bold text-xs text-white flex items-center gap-1.5">
             <span class="material-symbols-outlined text-cyan text-base">notifications_active</span> Announcements
         </h4>
-        <button id="notif-mark-read" class="text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider">Mark all read</button>
+        <button class="notif-mark-read text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider">Mark all read</button>
     </div>
-    <div id="notif-list" class="space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: none;">
+    <div class="notif-list space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: none;">
         <div class="text-center py-6 text-xs text-slate-500">Loading announcements...</div>
     </div>
   `;
@@ -704,6 +706,12 @@ function setupNotificationCenter(themeToggle) {
   bellBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isHidden = dropdown.classList.contains('hidden');
+    
+    // Close other notification dropdowns first
+    document.querySelectorAll('.notif-dropdown').forEach(d => {
+      if (d !== dropdown) d.classList.add('hidden');
+    });
+
     dropdown.classList.toggle('hidden');
     if (isHidden) {
       loadAnnouncements();
@@ -717,7 +725,7 @@ function setupNotificationCenter(themeToggle) {
     }
   });
 
-  const markReadBtn = dropdown.querySelector('#notif-mark-read');
+  const markReadBtn = dropdown.querySelector('.notif-mark-read');
   if (markReadBtn) {
     markReadBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -729,7 +737,7 @@ function setupNotificationCenter(themeToggle) {
   checkNewAnnouncements();
 
   async function loadAnnouncements() {
-    const listContainer = dropdown.querySelector('#notif-list');
+    const listContainer = dropdown.querySelector('.notif-list');
     if (!listContainer) return;
 
     try {
@@ -788,7 +796,7 @@ function setupNotificationCenter(themeToggle) {
   }
 
   async function checkNewAnnouncements() {
-    const badge = container.querySelector('#notif-badge');
+    const badge = container.querySelector('.notif-badge');
     if (!badge) return;
 
     try {
@@ -810,7 +818,7 @@ function setupNotificationCenter(themeToggle) {
   }
 
   function markAllNotificationsAsRead() {
-    const badge = container.querySelector('#notif-badge');
+    const badge = container.querySelector('.notif-badge');
     if (badge) badge.classList.add('hidden');
     
     api.get('/announcements').then(response => {
