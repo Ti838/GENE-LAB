@@ -229,6 +229,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (token && themeToggles.length > 0) {
     themeToggles.forEach(toggle => {
       setupNotificationCenter(toggle);
+      if (userJson) {
+        try {
+          const user = JSON.parse(userJson);
+          setupHeaderUserMenu(toggle, user);
+        } catch (err) {}
+      }
     });
   }
 
@@ -844,5 +850,73 @@ function setupNotificationCenter(themeToggle) {
     if (interval >= 1) return interval + "m ago";
     return "just now";
   }
+}
+
+function setupHeaderUserMenu(themeToggle, user) {
+  const parent = themeToggle.parentElement;
+  if (!parent || parent.querySelector('#header-user-menu-container')) return;
+
+  const container = document.createElement('div');
+  container.className = 'relative inline-block';
+  container.id = 'header-user-menu-container';
+
+  const avatarUrl = user.profilePicture || '';
+  const avatarMarkup = avatarUrl 
+    ? `<img src="${avatarUrl}" class="w-full h-full object-cover" id="header-user-menu-avatar" alt="${user.name}">`
+    : `<span class="material-symbols-outlined text-cyan text-xl" id="header-user-menu-placeholder">person</span>`;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'header-avatar-btn';
+  btn.className = 'w-11 h-11 rounded-xl overflow-hidden bg-cyan/10 border border-cyan/30 flex items-center justify-center cursor-pointer transition-all hover:border-cyan/60';
+  btn.innerHTML = avatarMarkup;
+
+  const dropdown = document.createElement('div');
+  dropdown.id = 'header-user-dropdown';
+  dropdown.className = 'absolute right-0 mt-2 w-52 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl transition-all duration-300';
+  dropdown.style.cssText = 'top: 100%; border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(16px);';
+  
+  const pathDepth = window.location.pathname.includes('/doctor/') ||
+                    window.location.pathname.includes('/researcher/') ||
+                    window.location.pathname.includes('/ops-control/') ? '' : 'pages/doctor/';
+  const userRole = user.role || 'doctor';
+  let profileHref = `${pathDepth}../doctor/profile.html`;
+  if (userRole === 'researcher') {
+    profileHref = `${pathDepth}../researcher/profile.html`;
+  }
+
+  dropdown.innerHTML = `
+    <div class="mb-3 pb-2 border-b text-left" style="border-color: var(--border);">
+      <p class="text-xs font-bold text-white truncate">${user.name || 'User'}</p>
+      <p class="text-[9px] font-mono text-cyan uppercase tracking-wider mt-0.5">${userRole}</p>
+    </div>
+    <div class="space-y-1">
+      <a href="${profileHref}" class="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white transition-all text-left">
+        <span class="material-symbols-outlined text-base">settings</span> Profile Settings
+      </a>
+      <a href="#" onclick="auth.logout()" class="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-bold text-coral hover:bg-coral/10 transition-all text-left">
+        <span class="material-symbols-outlined text-base" style="color:var(--coral)">power_settings_new</span> Logout
+      </a>
+    </div>
+  `;
+
+  container.appendChild(btn);
+  container.appendChild(dropdown);
+  
+  // Append inside parent
+  parent.appendChild(container);
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Close other dropdowns
+    document.querySelectorAll('.notif-dropdown').forEach(d => d.classList.add('hidden'));
+    dropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
 }
 

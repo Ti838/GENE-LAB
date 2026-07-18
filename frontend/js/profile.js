@@ -249,6 +249,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (sidebarPlaceholder) {
                             sidebarPlaceholder.classList.add('hidden');
                         }
+
+                        // Update header avatar if present in DOM
+                        const headerBtn = document.querySelector('#header-avatar-btn');
+                        if (headerBtn) {
+                            headerBtn.innerHTML = `<img src="${data.user.profilePicture}" class="w-full h-full object-cover" id="header-user-menu-avatar" alt="${data.user.name}">`;
+                        }
                     }
                 }
 
