@@ -24,3 +24,6 @@ env/
 # Workspace local logs / envs
 logs.txt
 envs.txt
+
+# Local uploads fallback directory
+backend/uploads/

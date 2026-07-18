@@ -201,6 +201,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            const originalSrc = profilePhotoPreview.src;
+            const originalHidden = profilePhotoPreview.classList.contains('hidden');
+
             try {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -232,11 +235,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         sessionStorage.setItem('genelab_user', userJson);
                     }
+                    if (data.user.profilePicture) {
+                        profilePhotoPreview.src = data.user.profilePicture;
+                        togglePhotoUI(true);
+                    }
                 }
 
                 showToast('Profile photo updated successfully!', 'success');
             } catch (error) {
-                showToast('Preview failed: ' + error.message, 'error');
+                profilePhotoPreview.src = originalSrc;
+                togglePhotoUI(!originalHidden);
+                showToast('Upload failed: ' + error.message, 'error');
             }
         };
     }
@@ -255,6 +264,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast('Signature file is too large! Max size 2MB.', 'error');
                 return;
             }
+
+            const originalSigSrc = signaturePreviewImg ? signaturePreviewImg.src : '';
+            const originalSigHidden = signaturePreviewImg ? signaturePreviewImg.classList.contains('hidden') : true;
 
             try {
                 // show local preview immediately
@@ -291,10 +303,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         sessionStorage.setItem('genelab_user', userJson);
                     }
+                    if (data.user.signatureUrl && signaturePreviewImg) {
+                        signaturePreviewImg.src = data.user.signatureUrl;
+                        signaturePreviewImg.classList.remove('hidden');
+                        if (signaturePlaceholder) signaturePlaceholder.classList.add('hidden');
+                    }
                 }
 
                 showToast('Signature updated successfully!', 'success');
             } catch (error) {
+                if (signaturePreviewImg) {
+                    signaturePreviewImg.src = originalSigSrc;
+                    if (originalSigHidden) {
+                        signaturePreviewImg.classList.add('hidden');
+                    } else {
+                        signaturePreviewImg.classList.remove('hidden');
+                    }
+                }
+                if (signaturePlaceholder) {
+                    if (originalSigHidden) {
+                        signaturePlaceholder.classList.remove('hidden');
+                    } else {
+                        signaturePlaceholder.classList.add('hidden');
+                    }
+                }
                 showToast('Signature upload failed: ' + error.message, 'error');
             }
         };
