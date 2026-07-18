@@ -98,7 +98,7 @@ async def deep_analysis_from_file(
     except (RuntimeError, TimeoutError, ValueError) as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    blast_result["file_name"] = file.filename
+    blast_result["file_name"] = file.filename if file else (s3_key.split('/')[-1] if s3_key else "sequence.txt")
     blast_result["sequence_length"] = len(primary_seq)
     blast_result["sequence"] = primary_seq
     blast_result["analysis_type"] = "deep"

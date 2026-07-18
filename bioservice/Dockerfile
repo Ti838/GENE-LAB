@@ -1,8 +1,10 @@
 FROM python:3.11-slim
 
-# Install curl for healthcheck
+# Install curl for healthcheck and build tools for python dependency compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    build-essential \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

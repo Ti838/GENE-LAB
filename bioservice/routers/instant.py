@@ -184,7 +184,7 @@ async def instant_analysis_from_file(
     var_ids = [v.strip() for v in variant_ids.split(",")] if variant_ids else None
 
     result = _run_instant_analysis(combined_seq, variant_ids=var_ids)
-    result["file_name"] = file.filename
+    result["file_name"] = file.filename if file else (s3_key.split('/')[-1] if s3_key else "sequence.txt")
     result["sequences_parsed"] = len(records)
     result["records"] = [
         {"id": r["id"], "description": r["description"], "format": r["format"],
