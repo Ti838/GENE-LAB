@@ -7,7 +7,7 @@ const router = express.Router();
 const multer = require('multer');
 const { protect } = require('../middleware/auth');
 const User = require('../models/User');
-const { uploadBufferToFirebase } = require('../services/firebaseStorage');
+const { uploadBufferToSupabase } = require('../services/supabaseService');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -61,16 +61,11 @@ router.put('/photo', protect, upload.single('profilePhoto'), async (req, res, ne
     const user = await User.findById(req.user._id);
 
     if (req.file) {
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-      const backendUrl = `${protocol}://${req.get('host')}`;
-      const uploadResult = await uploadBufferToFirebase({
+      const uploadResult = await uploadBufferToSupabase({
         buffer: req.file.buffer,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        folder: 'profile-images',
-        ownerId: req.user._id.toString(),
-        metadata: { userId: req.user._id.toString(), purpose: 'profile-photo' },
-        backendUrl
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        folder: 'profile-images'
       });
 
        user.profilePicture = uploadResult.downloadUrl;
@@ -107,16 +102,11 @@ router.put('/signature', protect, upload.single('signature'), async (req, res, n
     const user = await User.findById(req.user._id);
 
     if (req.file) {
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-      const backendUrl = `${protocol}://${req.get('host')}`;
-      const uploadResult = await uploadBufferToFirebase({
+      const uploadResult = await uploadBufferToSupabase({
         buffer: req.file.buffer,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        folder: 'signatures',
-        ownerId: req.user._id.toString(),
-        metadata: { userId: req.user._id.toString(), purpose: 'digital-signature' },
-        backendUrl
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        folder: 'signatures'
       });
 
       user.signatureUrl = uploadResult.downloadUrl;

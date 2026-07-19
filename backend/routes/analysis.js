@@ -43,6 +43,7 @@ const DNAFile = require('../models/DNAFile');
 const queueService = require('../services/queue.service');
 const fastapiService = require('../services/fastapi.service');
 const logger = require('../services/logger.service');
+const { uploadToSupabase } = require('../services/supabaseService');
 
 // ── Multer upload config ──────────────────────────────────────────────────
 const UPLOADS_DIR = process.env.VERCEL === '1'
@@ -145,21 +146,26 @@ router.post('/instant-analysis', protect, upload.single('file'), async (req, res
 
     // Create or link a DNAFile record
     let dnaFileId = null;
+    let s3Key, s3Url;
     if (file) {
+      if (process.env.SUPABASE_URL) {
+        const uploadResult = await uploadToSupabase(file);
+        s3Key = uploadResult.key;
+        s3Url = uploadResult.url;
+      }
+      
       const dnaFilePayload = {
         originalName: file.originalname,
-        filename: file.filename || file.key || file.originalname,
-        path: file.path || (file.location ? `s3://${S3_BUCKET}/${file.key}` : file.location || file.path),
+        filename: s3Key || file.filename || file.key || file.originalname,
+        path: s3Url || file.path || (file.location ? `s3://${S3_BUCKET}/${file.key}` : file.location || file.path),
         size: file.size,
         mimetype: file.mimetype,
         doctor: req.user._id,
         status: 'analyzing',
-        analysisType: 'instant'
+        analysisType: 'instant',
+        s3Key: s3Key || file.key,
+        s3Url: s3Url || file.location
       };
-      if (S3_BUCKET && file.key) {
-        dnaFilePayload.s3Key = file.key;
-        dnaFilePayload.s3Url = file.location;
-      }
       const dnaFile = await DNAFile.create(dnaFilePayload);
       dnaFileId = dnaFile._id.toString();
     } else if (sequence) {
