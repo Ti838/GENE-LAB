@@ -947,6 +947,7 @@ function setupNotificationCenter(themeToggle) {
 
 
 function setupHeaderUserMenu(themeToggle, user) {
+  if (window.location.pathname.includes('/ops-control/')) return;
   const parent = themeToggle.parentElement;
   if (!parent || parent.querySelector('#header-user-menu-container')) return;
 
