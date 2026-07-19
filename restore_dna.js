@@ -17,8 +17,8 @@ try {
     const dnaStartStr = 'DNA CANVAS LAYER';
     let startIdx = oldContent.indexOf(dnaStartStr);
     
-    // Find where the SELECTION block ends (the next block is TYPOGRAPHY)
-    let endIdx = oldContent.indexOf('TYPOGRAPHY');
+    // Find where the ICONS block begins
+    let endIdx = oldContent.indexOf('ICONS');
 
     if (startIdx !== -1 && endIdx !== -1) {
         // Back up startIdx to the start of the comment block
