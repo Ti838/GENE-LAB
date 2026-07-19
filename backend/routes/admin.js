@@ -89,6 +89,17 @@ router.get('/users', protect, adminOnly, async (req, res, next) => {
 router.put('/users/:id', protect, adminOnly, async (req, res, next) => {
   try {
     const { isActive, role } = req.body;
+    
+    // Prevent admin from deactivating or changing the role of their own account
+    if (req.params.id === req.user._id.toString()) {
+      if (isActive === false) {
+        return res.status(400).json({ message: 'You cannot deactivate your own administrator account.' });
+      }
+      if (role && role !== 'admin') {
+        return res.status(400).json({ message: 'You cannot change your own administrator role.' });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, { isActive, role }, { new: true, runValidators: true }).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
 

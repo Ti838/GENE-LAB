@@ -28,16 +28,17 @@ const api = {
                 data = { message: text };
             }
         }
-                if (!response.ok) {
+        if (!response.ok) {
             const errorMsg = data.message || 'Something went wrong';
-            if (response.status === 401) {
-                // Automatically clear invalid/expired token and redirect to login
+            const isDeactivated = response.status === 403 && errorMsg.toLowerCase().includes('deactivated');
+            if (response.status === 401 || isDeactivated) {
+                // Automatically clear invalid/expired/deactivated token and redirect to login
                 localStorage.removeItem('genelab_token');
                 localStorage.removeItem('genelab_user');
                 sessionStorage.removeItem('genelab_token');
                 sessionStorage.removeItem('genelab_user');
                 
-                if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
+                if (window.showToast) window.showToast(isDeactivated ? errorMsg : 'Session expired. Please log in again.', 'warning');
                 setTimeout(() => {
                     const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/') || window.location.pathname.includes('/researcher/');
                     window.location.href = isSubDir ? '../login.html' : 'login.html';
@@ -67,12 +68,13 @@ const api = {
         }
         if (!response.ok) {
             const errorMsg = data.message || 'Upload failed';
-            if (response.status === 401) {
+            const isDeactivated = response.status === 403 && errorMsg.toLowerCase().includes('deactivated');
+            if (response.status === 401 || isDeactivated) {
                 localStorage.removeItem('genelab_token');
                 localStorage.removeItem('genelab_user');
                 sessionStorage.removeItem('genelab_token');
                 sessionStorage.removeItem('genelab_user');
-                if (window.showToast) window.showToast('Session expired. Please log in again.', 'warning');
+                if (window.showToast) window.showToast(isDeactivated ? errorMsg : 'Session expired. Please log in again.', 'warning');
                 setTimeout(() => {
                     const isSubDir = window.location.pathname.includes('/doctor/') || window.location.pathname.includes('/ops-control/') || window.location.pathname.includes('/researcher/');
                     window.location.href = isSubDir ? '../login.html' : 'login.html';

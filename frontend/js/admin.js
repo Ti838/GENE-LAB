@@ -77,6 +77,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!tableBody) return;
             tableBody.innerHTML = '';
 
+            let currentUserId = '';
+            try {
+                const u = JSON.parse(localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user') || '{}');
+                currentUserId = u.id || u._id || '';
+            } catch (e) {}
+
             const tableCard = tableBody.closest('.glass-panel') || tableBody.parentElement;
 
             if (window.innerWidth <= 768) {
@@ -160,16 +166,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const toggleBtn = document.createElement('button');
                     toggleBtn.type = 'button';
                     toggleBtn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition min-h-[48px] flex items-center justify-center';
-                    toggleBtn.style.cssText = 'background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--violet)';
-                    toggleBtn.textContent = isActive ? 'Suspend' : 'Restore';
-                    toggleBtn.addEventListener('click', () => toggleUserStatus(user._id, isActive));
-
+                    
                     const deleteBtn = document.createElement('button');
                     deleteBtn.type = 'button';
                     deleteBtn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition min-h-[48px] flex items-center justify-center';
-                    deleteBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
-                    deleteBtn.textContent = 'Delete';
-                    deleteBtn.addEventListener('click', () => deleteUser(user._id, user.name));
+                    
+                    if (user._id === currentUserId) {
+                        toggleBtn.disabled = true;
+                        toggleBtn.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-faint);cursor:not-allowed;opacity:0.5';
+                        toggleBtn.textContent = 'Suspend';
+                        toggleBtn.title = 'You cannot suspend your own admin account';
+
+                        deleteBtn.disabled = true;
+                        deleteBtn.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-faint);cursor:not-allowed;opacity:0.5';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.title = 'You cannot delete your own admin account';
+                    } else {
+                        toggleBtn.style.cssText = 'background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--violet)';
+                        toggleBtn.textContent = isActive ? 'Suspend' : 'Restore';
+                        toggleBtn.addEventListener('click', () => toggleUserStatus(user._id, isActive));
+
+                        deleteBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.addEventListener('click', () => deleteUser(user._id, user.name));
+                    }
 
                     actionRow.appendChild(toggleBtn);
                     actionRow.appendChild(deleteBtn);
@@ -253,15 +273,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const toggleBtn = document.createElement('button');
                 toggleBtn.className = 'px-3 py-1.5 rounded-lg text-[10px] font-bold transition';
-                toggleBtn.style.cssText = 'background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--violet)';
-                toggleBtn.textContent = isActive ? 'Suspend' : 'Restore';
-                toggleBtn.addEventListener('click', () => toggleUserStatus(user._id, isActive));
-
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'px-3 py-1.5 rounded-lg text-[10px] font-bold transition';
-                deleteBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.addEventListener('click', () => deleteUser(user._id, user.name));
+
+                if (user._id === currentUserId) {
+                    toggleBtn.disabled = true;
+                    toggleBtn.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-faint);cursor:not-allowed;opacity:0.5';
+                    toggleBtn.textContent = 'Suspend';
+                    toggleBtn.title = 'You cannot suspend your own admin account';
+
+                    deleteBtn.disabled = true;
+                    deleteBtn.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-faint);cursor:not-allowed;opacity:0.5';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.title = 'You cannot delete your own admin account';
+                } else {
+                    toggleBtn.style.cssText = 'background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--violet)';
+                    toggleBtn.textContent = isActive ? 'Suspend' : 'Restore';
+                    toggleBtn.addEventListener('click', () => toggleUserStatus(user._id, isActive));
+
+                    deleteBtn.style.cssText = 'background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:var(--coral)';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', () => deleteUser(user._id, user.name));
+                }
 
                 btnWrap.appendChild(toggleBtn);
                 btnWrap.appendChild(deleteBtn);
