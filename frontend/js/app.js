@@ -697,7 +697,7 @@ function setupNotificationCenter(themeToggle) {
 
   // Dropdown (Drawer panel overlay)
   const dropdown = document.createElement('div');
-  dropdown.className = 'notif-drawer fixed right-0 top-0 h-screen w-80 sm:w-96 glass-panel p-6 hidden z-[9999] shadow-2xl flex flex-col transition-all duration-300';
+  dropdown.className = 'notif-drawer fixed right-0 top-0 h-screen w-full sm:w-96 glass-panel p-6 hidden z-[9999] shadow-2xl flex flex-col transition-all duration-300';
   dropdown.style.cssText = 'border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(24px); border-left: 1px solid var(--border);';
 
   const headerRow = document.createElement('div');
