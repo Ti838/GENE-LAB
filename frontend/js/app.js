@@ -926,6 +926,11 @@ function setupNotificationCenter(themeToggle) {
   function markAllRead() {
     badge.classList.add('hidden');
     localStorage.setItem('genelab_notif_read_at', Date.now().toString());
+    listEl.innerHTML = '';
+    const emptyEl = document.createElement('div');
+    emptyEl.className = 'text-center py-6 text-xs text-slate-500 font-medium';
+    emptyEl.textContent = 'All caught up! No new notifications.';
+    listEl.appendChild(emptyEl);
   }
 
   function getTimeElapsed(date) {
