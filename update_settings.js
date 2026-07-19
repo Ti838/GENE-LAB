@@ -1,75 +1,10 @@
-<!DOCTYPE html>
-<!--
- * Copyright (c) 2026 GeneLab. All rights reserved.
- * Do not copy, distribute, or modify without permission.
--->
-<html lang="en">
-<head>
-    <script src="../../js/console-guard.js??v=1784489235550"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <title>System Settings | GeneLab Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js??v=1784489235550" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../css/style.css??v=1784489235550">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../theme.css??v=1784489235550">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    <script src="../../js/theme.js??v=1784489235550" defer></script>
-    <script src="../../js/api.js??v=1784489235550" defer></script>
-    <script src="../../js/auth.js??v=1784489235550" defer></script>
-    <script src="../../js/app.js??v=1784489235550" defer></script>
-    <script src="../../js/dna-background.js??v=1784489235550" defer></script>
-    <link rel="icon" type="image/svg+xml" href="../../assets/icons/favicon.svg">
+const fs = require('fs');
 
-    <script src="https://unpkg.com/@barba/core"></script>
-    <script src="../../../js/barba-init.js??v=1784489235550" defer></script>
-</head>
-<body class="selection:bg-teal selection:text-ink" data-theme="dark" data-barba="wrapper">
+const path = 'frontend/pages/ops-control/settings.html';
+let content = fs.readFileSync(path, 'utf8');
 
-    <div class="relative z-10 flex min-h-screen">
-        <aside class="w-72 glass-panel m-3 rounded-[28px] flex flex-col fixed h-[calc(100vh-1.5rem)] z-20 overflow-hidden">
-            <div class="p-7 border-b flex items-center justify-center gap-3" style="border-color:var(--border)">
-                <div class="w-9 h-9 rounded-lg bg-teal/10 border border-teal/25 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-teal" style="font-size:22px!important;width:22px!important;height:22px!important;">admin_panel_settings</span>
-                </div>
-                <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
-            </div>
-            <nav class="flex-1 px-5 space-y-1.5 mt-8">
-                <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
-                <a href="doctors.html" class="sidebar-link"><span class="material-symbols-outlined">manage_accounts</span> Personnel</a>
-                <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
-                <a href="logs.html" class="sidebar-link"><span class="material-symbols-outlined">history</span> Activity Logs</a>
-                <a href="analytics.html" class="sidebar-link"><span class="material-symbols-outlined">monitoring</span> Analytics</a>
-                <a href="settings.html" class="sidebar-link active"><span class="material-symbols-outlined">settings</span> Settings</a>
-            </nav>
-            <div class="p-6 border-t" style="border-color:var(--border)">
-                <a href="#" onclick="auth.logout()" class="btn-premium btn-danger w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
-                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">power_settings_new</span> Logout
-                </a>
-            </div>
-        </aside>
-
-        <main class="flex-1 ml-[19.5rem] p-8" data-barba="container" data-barba-namespace="settings">
-            <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                    <p class="section-badge mb-3">Admin control</p>
-                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">System Settings</h1>
-                    <p class="font-medium" style="color:var(--text-muted)">Configure platform behavior, policy rules, and security operations.</p>
-                </div>
-                <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
-                    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
-                    <span data-theme-label>Dark</span>
-                </button>
-            </header>
-
-            
+// The replacement logic:
+const newSettingsHTML = `
             <div class="grid xl:grid-cols-[0.95fr_1.05fr] gap-6">
                 <div class="glass-panel p-7 rounded-[24px]" data-animate="panel">
                     <h3 class="text-xl font-display font-bold mb-5">Platform Configuration</h3>
@@ -111,7 +46,24 @@
                     </div>
                 </div>
             </div>
+`;
 
+// Extract existing part
+const startRegex = /<div class="grid xl:grid-cols-\[0.95fr_1.05fr\] gap-6">/;
+const endRegex = /<\/main>/;
+
+const startMatch = content.match(startRegex);
+const endMatch = content.match(endRegex);
+
+if (startMatch && endMatch) {
+    const startIdx = startMatch.index;
+    const endIdx = endMatch.index;
+    
+    const before = content.substring(0, startIdx);
+    const after = content.substring(endIdx);
+    
+    // Add inline script for logic before the closing main tag
+    const logicScript = `
             <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const defaultSettings = {
@@ -132,7 +84,7 @@
                 const updateToggleState = (el, val, onClass, offClass, onText, offText) => {
                     const label = el.querySelector('[data-label]') || el.querySelector('span:last-child');
                     label.textContent = val ? onText : offText;
-                    label.className = `status-chip py-1 ${val ? onClass : offClass}`;
+                    label.className = \`status-chip py-1 \${val ? onClass : offClass}\`;
                 };
                 
                 const mToggle = document.getElementById('toggle-maintenance');
@@ -177,9 +129,11 @@
                 });
             });
             </script>
-</main>
-    </div>
-</body>
-</html>
+`;
 
-
+    content = before + newSettingsHTML + logicScript + after;
+    fs.writeFileSync(path, content, 'utf8');
+    console.log("Updated settings.html");
+} else {
+    console.log("Could not find start or end bounds.");
+}
