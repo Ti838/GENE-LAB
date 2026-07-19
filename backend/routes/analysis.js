@@ -98,11 +98,23 @@ async function createJobRecord(userId, analysisType, extras = {}) {
 }
 
 // ── Helper: Sync fallback when Redis is unavailable ──────────────────────
-async function runSyncFallback(analysisType, filePath, fileName, sequence, sequenceName, variantIds) {
+async function runSyncFallback(analysisType, filePath, fileName, sequence, sequenceName, variantIds, bypassBLAST = false) {
+  console.log('🔄 runSyncFallback called:', { analysisType, sequenceName, bypassBLAST });
   if (analysisType === 'instant') {
     if (filePath) return fastapiService.runInstantAnalysisFile(filePath, fileName, variantIds || []);
     return fastapiService.runInstantAnalysisText(sequence, sequenceName, variantIds || []);
   } else {
+    if (bypassBLAST) {
+      console.log('🧬 bypassBLAST is true! Aligning locally...');
+      const alignmentService = require('../services/alignment.service');
+      const dnaService = require('../services/dna.service');
+      let targetSeq = sequence || '';
+      if (!targetSeq && filePath && fs.existsSync(filePath)) {
+        targetSeq = dnaService.parseSequence(fs.readFileSync(filePath, 'utf-8'));
+      }
+      return alignmentService.alignLocally(targetSeq);
+    }
+    console.log('🌐 Calling remote FastAPI deep analysis...');
     if (filePath) return fastapiService.runDeepAnalysisFile(filePath, fileName);
     return fastapiService.runDeepAnalysisText(sequence, sequenceName);
   }
@@ -216,7 +228,8 @@ router.post('/instant-analysis', protect, upload.single('file'), async (req, res
 // ────────────────────────────────────────────────────────────────────────────
 router.post('/deep-analysis', protect, upload.single('file'), async (req, res, next) => {
   try {
-    const { sequence, name } = req.body;
+    const { sequence, name, bypassBLAST } = req.body;
+    const isBypass = bypassBLAST === 'true' || bypassBLAST === true;
     const file = req.file;
 
     if (!file && !sequence) {
@@ -269,7 +282,8 @@ router.post('/deep-analysis', protect, upload.single('file'), async (req, res, n
       sequence: sequence || undefined,
       sequenceName: name,
       s3Key: file?.key || undefined,
-      s3Url: file?.location || undefined
+      s3Url: file?.location || undefined,
+      bypassBLAST: isBypass
     };
 
     try {
@@ -283,14 +297,25 @@ router.post('/deep-analysis', protect, upload.single('file'), async (req, res, n
       });
     } catch (queueErr) {
       console.warn('Queue unavailable, running synchronously:', queueErr.message);
-      const result = await runSyncFallback('deep', file?.path, file?.originalname, sequence, name, []);
+      const result = await runSyncFallback('deep', file?.path, file?.originalname, sequence, name, [], isBypass);
       if (dnaFileId) {
         await DNAFile.findByIdAndUpdate(dnaFileId, {
           status: 'analyzed',
           analysisType: 'deep',
           analysisJobId: jobId,
           sequence: sequence || result.sequence || undefined,
-          blastResult: result,
+          blastResult: {
+            status: result.status,
+            rid: result.rid,
+            totalHits: result.total_hits,
+            topOrganism: result.top_organism,
+            topIdentity: result.top_identity,
+            topAccession: result.top_accession,
+            topEvalue: result.top_evalue,
+            organismsIdentified: result.organisms_identified,
+            scientificExplanation: result.scientific_explanation,
+            hits: result.hits
+          },
           scientificSummary: result.scientific_explanation,
           sequenceLength: result.sequence_length
         });
