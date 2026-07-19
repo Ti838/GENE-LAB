@@ -680,31 +680,52 @@ function setupNotificationCenter(themeToggle) {
 
   const container = document.createElement('div');
   container.className = 'relative inline-block notif-center-container';
-  container.id = `notif-container-${instanceId}`;
+  container.id = 'notif-container-' + instanceId;
 
+  // Bell Button
   const bellBtn = document.createElement('button');
   bellBtn.type = 'button';
   bellBtn.className = 'btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm relative';
-  bellBtn.innerHTML = `
-    <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">notifications</span>
-    <span class="notif-badge absolute top-1.5 right-1.5 w-2 h-2 bg-coral rounded-full hidden animate-pulse"></span>
-  `;
+  const bellIco = document.createElement('span');
+  bellIco.className = 'material-symbols-outlined';
+  bellIco.style.cssText = 'font-size:18px!important;width:18px!important;height:18px!important;';
+  bellIco.textContent = 'notifications';
+  const badge = document.createElement('span');
+  badge.className = 'notif-badge absolute top-1.5 right-1.5 w-2 h-2 bg-coral rounded-full hidden animate-pulse';
+  bellBtn.appendChild(bellIco);
+  bellBtn.appendChild(badge);
 
+  // Dropdown
   const dropdown = document.createElement('div');
-  dropdown.className = 'notif-dropdown absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl transition-all duration-300';
+  dropdown.className = 'notif-dropdown absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl';
   dropdown.style.cssText = 'top: 100%; border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(16px);';
-  dropdown.innerHTML = `
-    <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: var(--border);">
-        <h4 class="font-display font-bold text-xs text-white flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-cyan text-base">notifications_active</span> Announcements
-        </h4>
-        <button class="notif-mark-read text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider">Mark all read</button>
-    </div>
-    <div class="notif-list space-y-3 max-h-64 overflow-y-auto pr-1" style="scrollbar-width: none;">
-        <div class="text-center py-6 text-xs text-slate-500">Loading announcements...</div>
-    </div>
-  `;
 
+  const headerRow = document.createElement('div');
+  headerRow.className = 'flex justify-between items-center mb-3 pb-2 border-b';
+  headerRow.style.borderColor = 'var(--border)';
+
+  const headerLeft = document.createElement('h4');
+  headerLeft.className = 'font-display font-bold text-xs text-white flex items-center gap-1.5';
+  const headerIco = document.createElement('span');
+  headerIco.className = 'material-symbols-outlined text-cyan';
+  headerIco.style.cssText = 'font-size:16px!important;';
+  headerIco.textContent = 'notifications_active';
+  headerLeft.appendChild(headerIco);
+  headerLeft.appendChild(document.createTextNode(' Notifications'));
+
+  const markReadBtn = document.createElement('button');
+  markReadBtn.className = 'notif-mark-read text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider';
+  markReadBtn.textContent = 'Mark all read';
+
+  headerRow.appendChild(headerLeft);
+  headerRow.appendChild(markReadBtn);
+
+  const listEl = document.createElement('div');
+  listEl.className = 'notif-list space-y-3 max-h-72 overflow-y-auto pr-1';
+  listEl.style.scrollbarWidth = 'none';
+
+  dropdown.appendChild(headerRow);
+  dropdown.appendChild(listEl);
   container.appendChild(bellBtn);
   container.appendChild(dropdown);
   parent.insertBefore(container, themeToggle);
@@ -712,145 +733,197 @@ function setupNotificationCenter(themeToggle) {
   bellBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isHidden = dropdown.classList.contains('hidden');
-    
-    // Close other notification dropdowns first
-    document.querySelectorAll('.notif-dropdown').forEach(d => {
-      if (d !== dropdown) d.classList.add('hidden');
-    });
-
+    document.querySelectorAll('.notif-dropdown').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
+    document.querySelectorAll('#header-user-dropdown').forEach(d => d.classList.add('hidden'));
     dropdown.classList.toggle('hidden');
-    if (isHidden) {
-      loadAnnouncements();
-      markAllNotificationsAsRead();
-    }
+    if (isHidden) { loadNotifications(); markAllRead(); }
   });
 
   document.addEventListener('click', (e) => {
-    if (!container.contains(e.target)) {
-      dropdown.classList.add('hidden');
-    }
+    if (!container.contains(e.target)) dropdown.classList.add('hidden');
   });
 
-  const markReadBtn = dropdown.querySelector('.notif-mark-read');
-  if (markReadBtn) {
-    markReadBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      markAllNotificationsAsRead();
-      if (window.showToast) window.showToast('All notifications marked as read.', 'success');
-    });
-  }
+  markReadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    markAllRead();
+    if (window.showToast) window.showToast('All notifications marked as read.', 'success');
+  });
 
-  checkNewAnnouncements();
+  checkUnread();
 
-  async function loadAnnouncements() {
-    const listContainer = dropdown.querySelector('.notif-list');
-    if (!listContainer) return;
-
+  async function loadNotifications() {
+    listEl.innerHTML = '';
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'text-center py-6 text-xs text-slate-500';
+    loadingEl.textContent = 'Loading...';
+    listEl.appendChild(loadingEl);
     try {
-      const response = await api.get('/announcements');
-      const announcements = response.announcements || [];
+      const [annRes, dnaRes] = await Promise.allSettled([
+        api.get('/announcements'),
+        api.get('/dna/my-files')
+      ]);
+      const announcements = (annRes.status === 'fulfilled' ? annRes.value.announcements : []) || [];
+      const dnaFiles      = (dnaRes.status === 'fulfilled' ? dnaRes.value           : []) || [];
 
-      if (announcements.length === 0) {
-        listContainer.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">No active announcements</div>';
+      listEl.innerHTML = '';
+      const items = [];
+
+      announcements.forEach(ann => {
+        items.push({
+          type: 'announcement',
+          title: ann.title,
+          content: ann.content,
+          authorName: ann.authorId ? ann.authorId.name || 'System' : 'System',
+          authorRole: ann.authorId ? ann.authorId.role || 'admin'  : 'admin',
+          avatarUrl:  ann.authorId ? ann.authorId.profilePicture || '' : '',
+          priority:   ann.priority || 'low',
+          date:       new Date(ann.createdAt),
+          icon: 'campaign', iconColor: 'var(--cyan)',
+          href: null
+        });
+      });
+
+      dnaFiles
+        .filter(f => f.status === 'analyzed' || f.status === 'failed')
+        .slice(0, 5)
+        .forEach(f => {
+          const isOk = f.status === 'analyzed';
+          items.push({
+            type: 'job',
+            title: isOk ? 'Analysis Complete' : 'Analysis Failed',
+            content: f.originalName,
+            authorName: 'GeneLab Engine',
+            authorRole: 'bioservice',
+            avatarUrl: '',
+            priority: isOk ? 'medium' : 'high',
+            date: new Date(f.updatedAt || f.createdAt),
+            icon: isOk ? 'done_all' : 'error',
+            iconColor: isOk ? 'var(--teal)' : 'var(--coral)',
+            href: f._id ? 'result.html?id=' + f._id : null
+          });
+        });
+
+      if (!items.length) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'text-center py-8 text-xs text-slate-500';
+        emptyEl.textContent = 'No notifications yet.';
+        listEl.appendChild(emptyEl);
         return;
       }
 
-      listContainer.innerHTML = '';
-      announcements.forEach(ann => {
-        const item = document.createElement('div');
-        item.className = 'p-3 rounded-xl border transition-all hover:bg-white/5 flex gap-2.5 items-start';
-        item.style.cssText = 'border-color: var(--border); background: rgba(255,255,255,0.01);';
+      items.sort((a, b) => b.date - a.date);
+      items.forEach(item => renderItem(item));
 
-        const author = ann.authorId || { name: 'System', role: 'admin' };
-        const authorName = author.name || 'System';
-        const authorRole = author.role || 'Admin';
-        const avatarUrl = author.profilePicture || '';
-
-        let priorityColor = 'rgba(255,255,255,0.1)';
-        let priorityTextColor = 'var(--text-muted)';
-        if (ann.priority === 'high') {
-          priorityColor = 'rgba(255,107,107,0.15)';
-          priorityTextColor = 'var(--coral)';
-        } else if (ann.priority === 'medium') {
-          priorityColor = 'rgba(255,204,0,0.15)';
-          priorityTextColor = 'rgba(255,204,0,1)';
-        }
-
-        const timeDiff = getTimeElapsed(new Date(ann.createdAt));
-
-        const avatarMarkup = avatarUrl 
-          ? `<img src="${avatarUrl}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" alt="${authorName}">`
-          : `<div class="w-8 h-8 rounded-full bg-cyan/10 border border-cyan/20 flex items-center justify-center shrink-0 text-cyan"><span class="material-symbols-outlined text-sm">person</span></div>`;
-
-        item.innerHTML = `
-          ${avatarMarkup}
-          <div class="flex-1 min-w-0 text-left">
-            <div class="flex items-center justify-between gap-1 mb-1">
-              <span class="text-[10px] font-bold text-white truncate max-w-[120px]">${authorName} (${authorRole})</span>
-              <span class="text-[9px] uppercase px-1.5 py-0.5 rounded font-bold" style="background: ${priorityColor}; color: ${priorityTextColor};">${ann.priority || 'normal'}</span>
-            </div>
-            <h5 class="text-xs font-bold text-white mb-0.5">${ann.title}</h5>
-            <p class="text-[10px] text-slate-400 break-words leading-relaxed">${ann.content}</p>
-            <span class="text-[8px] text-slate-500 block mt-1.5 font-mono">${timeDiff}</span>
-          </div>
-        `;
-        listContainer.appendChild(item);
-      });
     } catch (err) {
-      listContainer.innerHTML = '<div class="text-center py-6 text-xs text-coral">Failed to load announcements</div>';
+      listEl.innerHTML = '';
+      const errEl = document.createElement('div');
+      errEl.className = 'text-center py-6 text-xs';
+      errEl.style.color = 'var(--coral)';
+      errEl.textContent = 'Failed to load notifications.';
+      listEl.appendChild(errEl);
     }
   }
 
-  async function checkNewAnnouncements() {
-    const badge = container.querySelector('.notif-badge');
-    if (!badge) return;
+  function renderItem(item) {
+    const pColors = { high: 'var(--coral)', medium: 'rgba(255,204,0,1)', low: 'var(--teal)' };
+    const pBg    = { high: 'rgba(255,107,107,0.12)', medium: 'rgba(255,204,0,0.1)', low: 'rgba(6,255,160,0.08)' };
 
+    const el = document.createElement('div');
+    el.className = 'flex gap-2.5 items-start p-3 rounded-xl border transition-all hover:bg-white/5';
+    el.style.cssText = 'border-color: var(--border); background: rgba(255,255,255,0.01); cursor: default;';
+    if (item.href) {
+      const pathDepth = window.location.pathname.includes('/doctor/') ||
+                        window.location.pathname.includes('/researcher/') ||
+                        window.location.pathname.includes('/ops-control/') ? '' : 'pages/doctor/';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => { window.location.href = pathDepth + item.href; });
+    }
+
+    const avatarEl = document.createElement('div');
+    avatarEl.className = 'w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-white/10';
+    avatarEl.style.background = 'rgba(0,212,255,0.08)';
+    if (item.type === 'announcement' && item.avatarUrl) {
+      const img = document.createElement('img');
+      img.src = item.avatarUrl; img.alt = item.authorName;
+      img.className = 'w-full h-full object-cover';
+      avatarEl.appendChild(img);
+    } else {
+      const ico = document.createElement('span');
+      ico.className = 'material-symbols-outlined';
+      ico.style.cssText = 'font-size:16px!important;color:' + (item.iconColor || 'var(--cyan)') + ';';
+      ico.textContent = item.icon || 'notifications';
+      avatarEl.appendChild(ico);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'flex-1 min-w-0';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'flex items-center justify-between gap-1 mb-1';
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'text-[10px] font-bold text-white truncate max-w-[130px]';
+    authorSpan.textContent = item.authorName + ' · ' + item.authorRole;
+    const pBadge = document.createElement('span');
+    pBadge.className = 'text-[8px] uppercase px-1.5 py-0.5 rounded font-bold';
+    pBadge.style.cssText = 'background:' + (pBg[item.priority]||'rgba(255,255,255,0.05)') + ';color:' + (pColors[item.priority]||'var(--text-faint)') + ';';
+    pBadge.textContent = item.priority;
+    topRow.appendChild(authorSpan);
+    topRow.appendChild(pBadge);
+
+    const titleEl = document.createElement('p');
+    titleEl.className = 'text-xs font-bold text-white mb-0.5';
+    titleEl.textContent = item.title;
+
+    const contentEl = document.createElement('p');
+    contentEl.className = 'text-[10px] text-slate-400 break-words leading-relaxed line-clamp-2';
+    contentEl.textContent = item.content;
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'text-[8px] text-slate-500 block mt-1 font-mono';
+    timeEl.textContent = getTimeElapsed(item.date);
+
+    body.appendChild(topRow);
+    body.appendChild(titleEl);
+    body.appendChild(contentEl);
+    body.appendChild(timeEl);
+    el.appendChild(avatarEl);
+    el.appendChild(body);
+    listEl.appendChild(el);
+  }
+
+  async function checkUnread() {
     try {
-      const response = await api.get('/announcements');
-      const announcements = response.announcements || [];
-      if (announcements.length === 0) return;
-
-      const latestRead = localStorage.getItem('genelab_latest_notif_read') || '0';
-      const latestAnnTime = new Date(announcements[0].createdAt).getTime().toString();
-
-      if (latestAnnTime !== latestRead) {
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-    } catch (err) {
-      console.warn('Failed to check announcements:', err);
-    }
+      const [annRes, dnaRes] = await Promise.allSettled([
+        api.get('/announcements'),
+        api.get('/dna/my-files')
+      ]);
+      const anns     = (annRes.status === 'fulfilled' ? annRes.value.announcements : []) || [];
+      const dnaFiles = (dnaRes.status === 'fulfilled' ? dnaRes.value               : []) || [];
+      const lastRead = parseInt(localStorage.getItem('genelab_notif_read_at') || '0', 10);
+      const hasNew   = anns.some(a => new Date(a.createdAt).getTime() > lastRead) ||
+                       dnaFiles.some(f => (f.status === 'analyzed' || f.status === 'failed') &&
+                         new Date(f.updatedAt || f.createdAt).getTime() > lastRead);
+      badge.classList.toggle('hidden', !hasNew);
+    } catch (_) {}
   }
 
-  function markAllNotificationsAsRead() {
-    const badge = container.querySelector('.notif-badge');
-    if (badge) badge.classList.add('hidden');
-    
-    api.get('/announcements').then(response => {
-      const announcements = response.announcements || [];
-      if (announcements.length > 0) {
-        const latestAnnTime = new Date(announcements[0].createdAt).getTime().toString();
-        localStorage.setItem('genelab_latest_notif_read', latestAnnTime);
-      }
-    }).catch(() => {});
+  function markAllRead() {
+    badge.classList.add('hidden');
+    localStorage.setItem('genelab_notif_read_at', Date.now().toString());
   }
 
   function getTimeElapsed(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = Math.floor(seconds / 31536000);
-    if (interval >= 1) return interval + "y ago";
-    interval = Math.floor(seconds / 2592000);
-    if (interval >= 1) return interval + "mo ago";
-    interval = Math.floor(seconds / 86400);
-    if (interval >= 1) return interval + "d ago";
-    interval = Math.floor(seconds / 3600);
-    if (interval >= 1) return interval + "h ago";
-    interval = Math.floor(seconds / 60);
-    if (interval >= 1) return interval + "m ago";
-    return "just now";
+    const s = Math.floor((new Date() - date) / 1000);
+    let i;
+    i = Math.floor(s / 31536000); if (i >= 1) return i + 'y ago';
+    i = Math.floor(s / 2592000);  if (i >= 1) return i + 'mo ago';
+    i = Math.floor(s / 86400);    if (i >= 1) return i + 'd ago';
+    i = Math.floor(s / 3600);     if (i >= 1) return i + 'h ago';
+    i = Math.floor(s / 60);       if (i >= 1) return i + 'm ago';
+    return 'just now';
   }
 }
+
 
 function setupHeaderUserMenu(themeToggle, user) {
   const parent = themeToggle.parentElement;
