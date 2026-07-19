@@ -25,7 +25,7 @@ if (fs.existsSync(indexFile)) htmlFiles.push(indexFile);
 
 htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
-    content = content.replace(/\?v=4/g, '?v=5');
+    content = content.replace(/\\?v=5/g, '?v=6');
     fs.writeFileSync(file, content, 'utf8');
 });
 console.log("Updated to v=5");
