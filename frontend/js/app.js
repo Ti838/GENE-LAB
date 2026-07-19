@@ -695,52 +695,67 @@ function setupNotificationCenter(themeToggle) {
   bellBtn.appendChild(bellIco);
   bellBtn.appendChild(badge);
 
-  // Dropdown
+  // Dropdown (Drawer panel overlay)
   const dropdown = document.createElement('div');
-  dropdown.className = 'notif-dropdown absolute right-0 mt-2 w-80 glass-panel p-4 rounded-2xl hidden z-50 shadow-2xl';
-  dropdown.style.cssText = 'top: 100%; border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(16px);';
+  dropdown.className = 'notif-drawer fixed right-0 top-0 h-screen w-80 sm:w-96 glass-panel p-6 hidden z-[9999] shadow-2xl flex flex-col transition-all duration-300';
+  dropdown.style.cssText = 'border-color: var(--border); background: var(--bg-glass); backdrop-filter: blur(24px); border-left: 1px solid var(--border);';
 
   const headerRow = document.createElement('div');
-  headerRow.className = 'flex justify-between items-center mb-3 pb-2 border-b';
+  headerRow.className = 'flex justify-between items-center mb-5 pb-3 border-b shrink-0';
   headerRow.style.borderColor = 'var(--border)';
 
   const headerLeft = document.createElement('h4');
-  headerLeft.className = 'font-display font-bold text-xs text-white flex items-center gap-1.5';
+  headerLeft.className = 'font-display font-bold text-sm text-white flex items-center gap-1.5';
   const headerIco = document.createElement('span');
   headerIco.className = 'material-symbols-outlined text-cyan';
-  headerIco.style.cssText = 'font-size:16px!important;';
+  headerIco.style.cssText = 'font-size:18px!important;';
   headerIco.textContent = 'notifications_active';
   headerLeft.appendChild(headerIco);
   headerLeft.appendChild(document.createTextNode(' Notifications'));
 
+  const headerRight = document.createElement('div');
+  headerRight.className = 'flex items-center gap-3';
+
   const markReadBtn = document.createElement('button');
-  markReadBtn.className = 'notif-mark-read text-[9px] text-cyan hover:underline font-bold uppercase tracking-wider';
+  markReadBtn.className = 'notif-mark-read text-[10px] text-cyan hover:underline font-bold uppercase tracking-wider';
   markReadBtn.textContent = 'Mark all read';
 
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 active:scale-95 transition-all';
+  closeBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">close</span>';
+
+  headerRight.appendChild(markReadBtn);
+  headerRight.appendChild(closeBtn);
   headerRow.appendChild(headerLeft);
-  headerRow.appendChild(markReadBtn);
+  headerRow.appendChild(headerRight);
 
   const listEl = document.createElement('div');
-  listEl.className = 'notif-list space-y-3 max-h-72 overflow-y-auto pr-1';
+  listEl.className = 'notif-list space-y-3 flex-1 overflow-y-auto pr-1';
   listEl.style.scrollbarWidth = 'none';
 
   dropdown.appendChild(headerRow);
   dropdown.appendChild(listEl);
   container.appendChild(bellBtn);
-  container.appendChild(dropdown);
+  document.body.appendChild(dropdown);
   parent.insertBefore(container, themeToggle);
 
   bellBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isHidden = dropdown.classList.contains('hidden');
-    document.querySelectorAll('.notif-dropdown').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
+    document.querySelectorAll('.notif-drawer').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
     document.querySelectorAll('#header-user-dropdown').forEach(d => d.classList.add('hidden'));
     dropdown.classList.toggle('hidden');
     if (isHidden) { loadNotifications(); markAllRead(); }
   });
 
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.add('hidden');
+  });
+
   document.addEventListener('click', (e) => {
-    if (!container.contains(e.target)) dropdown.classList.add('hidden');
+    if (!dropdown.contains(e.target) && !container.contains(e.target)) dropdown.classList.add('hidden');
   });
 
   markReadBtn.addEventListener('click', (e) => {
@@ -981,8 +996,8 @@ function setupHeaderUserMenu(themeToggle, user) {
 
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    // Close other dropdowns
-    document.querySelectorAll('.notif-dropdown').forEach(d => d.classList.add('hidden'));
+    // Close other dropdowns/drawers
+    document.querySelectorAll('.notif-drawer').forEach(d => d.classList.add('hidden'));
     dropdown.classList.toggle('hidden');
   });
 
