@@ -41,10 +41,34 @@
                 </div>
                 <span class="text-lg font-display font-extrabold tracking-[0.18em]">GENELAB</span>
             </div>
-            <div class="px-6 py-4 border-b" style="border-color:var(--border)">
-                <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
-                <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">Dr. User</p>
-                <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">doctor</p>
+            <!-- User greeting in sidebar -->
+            <div class="px-6 py-4 border-b sidebar-avatar-injected flex items-center gap-3" style="border-color:var(--border)">
+                <div class="w-10 h-10 rounded-full bg-cyan/10 border border-cyan/30 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-all hover:border-cyan/60" id="sidebar-user-avatar-container" onclick="window.location.href='profile.html'">
+                    <img id="sidebar-user-avatar" alt="Avatar" class="w-full h-full object-cover hidden">
+                    <span id="sidebar-user-avatar-placeholder" class="material-symbols-outlined text-cyan text-xl">person</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-faint)">Logged in as</p>
+                    <p class="text-sm font-bold text-white truncate" id="sidebar-user-name">—</p>
+                    <p class="text-[10px] font-mono truncate" style="color:var(--text-faint)" id="sidebar-user-role">—</p>
+                </div>
+                <script>
+                    (function() {
+                        try {
+                            const u = JSON.parse(localStorage.getItem('genelab_user') || sessionStorage.getItem('genelab_user') || '{}');
+                            if (u.name) {
+                                document.getElementById('sidebar-user-name').textContent = u.name;
+                                document.getElementById('sidebar-user-role').textContent = u.role || 'user';
+                                if (u.profilePicture) {
+                                    const img = document.getElementById('sidebar-user-avatar');
+                                    img.src = u.profilePicture;
+                                    img.classList.remove('hidden');
+                                    document.getElementById('sidebar-user-avatar-placeholder').classList.add('hidden');
+                                }
+                            }
+                        } catch(e) {}
+                    })();
+                </script>
             </div>
             <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
