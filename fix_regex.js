@@ -25,7 +25,7 @@ if (fs.existsSync(indexFile)) htmlFiles.push(indexFile);
 
 htmlFiles.forEach(file => {
     let content = fs.readFileSync(file, 'utf8');
-    content = content.replace(/\.js\?v=2delivr/g, '.jsdelivr');
+    content = content.replace(/\?v=2/g, '?v=3');
     fs.writeFileSync(file, content, 'utf8');
 });
-console.log("Fixed jsdelivr issue");
+console.log("Updated to v=3");

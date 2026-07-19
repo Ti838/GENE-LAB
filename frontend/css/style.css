@@ -10,6 +10,18 @@
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
 
+/* ── DNA Canvas Global ────────────────────────────────────────── */
+#dna-canvas, #dna-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+
 /* ── Utility fonts ──────────────────────────────────────────── */
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 
