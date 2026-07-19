@@ -1170,6 +1170,110 @@ h1, h2, h3, h4, h5, .font-display {
    25. PRINT STYLES
 ------------------------------------------------------------------------ */
 
+
+
+/* -----------------------------------------------------------------
+   LIGHT MODE OVERRIDES for Tailwind classes used in pages
+----------------------------------------------------------------- */
+body[data-theme="light"] .text-white             { color: #0a1e30 !important; }
+body[data-theme="light"] [class*="text-slate-4"] { color: #4a7a9b !important; }
+body[data-theme="light"] [class*="text-slate-5"] { color: #3a6685 !important; }
+body[data-theme="light"] [class*="border-white"] { border-color: rgba(10,60,100,0.12) !important; }
+body[data-theme="light"] [class*="bg-white/5"]   { background-color: rgba(10,50,90,0.04) !important; }
+body[data-theme="light"] [class*="bg-white/10"]  { background-color: rgba(10,50,90,0.07) !important; }
+body[data-theme="light"] .bg-slate-800,
+body[data-theme="light"] .bg-slate-900           { background-color: rgba(255,255,255,0.85) !important; }
+body[data-theme="light"] .glass-panel {
+  background: rgba(255,255,255,0.88) !important;
+  border-color: rgba(0, 120, 180, 0.14) !important;
+  box-shadow: 0 20px 56px rgba(10,50,80,0.10) !important;
+}
+body[data-theme="light"] .glass-card:hover {
+  background: rgba(255,255,255,0.98) !important;
+  border-color: rgba(0,148,198,0.28) !important;
+}
+body[data-theme="light"] .btn-premium {
+  background: rgba(255,255,255,0.82);
+  border-color: rgba(10,60,100,0.16);
+  color: #0a1e30;
+}
+body[data-theme="light"] .btn-premium:hover {
+  background: #ffffff;
+  color: #040e1a;
+}
+body[data-theme="light"] .btn-ghost {
+  background: rgba(10,50,90,0.05);
+  border-color: rgba(10,60,100,0.12);
+}
+body[data-theme="light"] .sidebar-link         { color: #4a7a9b; }
+body[data-theme="light"] .sidebar-link:hover   { color: #0a1e30; }
+body[data-theme="light"] .sidebar-link.active  { color: #0070a0; }
+body[data-theme="light"] .field-input {
+  background: rgba(255,255,255,0.88);
+  border-color: rgba(0,120,180,0.18);
+  color: #0a1e30;
+}
+body[data-theme="light"] .field-input:focus {
+  box-shadow: 0 0 0 4px rgba(0,148,198,0.12);
+  background: #ffffff;
+}
+body[data-theme="light"] .section-badge::before {
+  background: linear-gradient(90deg, transparent, #0094c6);
+}
+body[data-theme="light"] .role-tile {
+  background: rgba(255,255,255,0.72);
+  border-color: rgba(0,120,180,0.15);
+}
+body[data-theme="light"] .role-tile:has(:checked) {
+  background: rgba(0,148,198,0.10);
+  border-color: rgba(0,148,198,0.40);
+}
+
+/* -----------------------------------------------------------------
+   MICRO-ANIMATIONS
+----------------------------------------------------------------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(0, 212, 255, 0.08); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.75); }
+}
+
+.animate-pulse-dot { animation: dotPulse 1.6s ease-in-out infinite; }
+.animate-float     { animation: floatY 5s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 12s linear infinite; }
+
+button, a, input, select, textarea {
+  transition: all 0.28s ease;
+}
+
 @media print {
   #dna-canvas, #dna-overlay, .sidebar, .mobile-topbar, .mobile-bottom-nav, .drawer-overlay,
   button, .btn, [data-theme-toggle], header, footer, .toast-container { display: none !important; }
