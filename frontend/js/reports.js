@@ -28,7 +28,7 @@ function _safeStem(originalName) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!window.location.pathname.includes('reports.html')) return;
+    if (!window.location.pathname.includes('reports')) return;
     const isResearcherPath = window.location.pathname.includes('/researcher/');
     const guard = isResearcherPath ? window.researcherOnly : window.doctorOnly;
     if (typeof guard === 'function' && !guard()) return;

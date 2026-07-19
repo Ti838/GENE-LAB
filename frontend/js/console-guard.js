@@ -45,7 +45,7 @@
     const mobileUARegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
     const isMobileUA    = mobileUARegex.test(navigator.userAgent);
     const isSmallScreen = window.innerWidth < 1024;
-    const isBlockedPage = window.location.pathname.includes('mobile-blocked.html');
+    const isBlockedPage = window.location.pathname.includes('mobile-blocked');
 
     if ((isMobileUA || isSmallScreen) && !isBlockedPage) {
         sessionStorage.setItem('console-block-reason', JSON.stringify({

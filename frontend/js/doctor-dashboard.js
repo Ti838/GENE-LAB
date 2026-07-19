@@ -4,7 +4,7 @@
 // doctor-dashboard.js - Live Data & Chart Filter Logic
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!window.location.pathname.includes('doctor/dashboard.html')) return;
+    if (!window.location.pathname.includes('doctor/dashboard')) return;
     // Role guard — redirect non-doctors immediately
     if (typeof window.doctorOnly === 'function' && !window.doctorOnly()) return;
 

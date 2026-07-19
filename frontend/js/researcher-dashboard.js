@@ -4,7 +4,7 @@
 // researcher-dashboard.js - Live Data & Chart Filter Logic
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!window.location.pathname.includes('researcher/dashboard.html')) return;
+    if (!window.location.pathname.includes('researcher/dashboard')) return;
     // Role guard — redirect non-researchers immediately
     if (typeof window.researcherOnly === 'function' && !window.researcherOnly()) return;
 

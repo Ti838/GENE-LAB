@@ -18,6 +18,22 @@ function _td(text, className = '') {
 // ─────────────────────────────────────────────────────────────────────────────
 // XSS-safe empty-row builder
 // ─────────────────────────────────────────────────────────────────────────────
+
+function _skeletonRows(colSpan, count = 3) {
+    const fragment = document.createDocumentFragment();
+    for(let i=0; i<count; i++) {
+        const tr = document.createElement('tr');
+        for(let j=0; j<colSpan; j++) {
+            const td = document.createElement('td');
+            td.className = 'p-4';
+            td.innerHTML = `<div class="h-4 bg-slate-400/20 rounded animate-pulse w-3/4"></div>`;
+            tr.appendChild(td);
+        }
+        fragment.appendChild(tr);
+    }
+    return fragment;
+}
+
 function _emptyRow(colSpan, msg) {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
@@ -35,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ═══════════════════════════════════════════════════════════════
     // USER / DOCTOR MANAGEMENT  — ops-control/doctors.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('ops-control/doctors.html')) {
+    if (path.includes('ops-control/doctors')) {
         const tableBody  = document.getElementById('doctors-table-body');
         const searchInput = document.getElementById('doctor-search');
         let allUsers = [];
@@ -43,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         async function loadUsers() {
             if (tableBody) {
                 tableBody.innerHTML = '';
-                tableBody.appendChild(_emptyRow(6, 'Loading personnel...'));
+                tableBody.appendChild(_skeletonRows(6, 4));
             }
             try {
                 const data = await api.get('/admin/users');
@@ -297,14 +313,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ═══════════════════════════════════════════════════════════════
     // DNA DATA REGISTRY  — ops-control/data.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('ops-control/data.html')) {
+    if (path.includes('ops-control/data')) {
         const dataBody = document.getElementById('dna-data-body');
         let currentRegistryFiles = [];
 
         async function loadDNAData() {
             if (dataBody) {
                 dataBody.innerHTML = '';
-                dataBody.appendChild(_emptyRow(5, 'Loading registry...'));
+                dataBody.appendChild(_skeletonRows(5, 5));
             }
             try {
                 const files = await api.get('/admin/dna');
@@ -523,7 +539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ═══════════════════════════════════════════════════════════════
     // ACTIVITY LOGS  — ops-control/logs.html
     // ═══════════════════════════════════════════════════════════════
-    if (path.includes('ops-control/logs.html')) {
+    if (path.includes('ops-control/logs')) {
         const logsBody  = document.getElementById('logs-body');
         const exportBtn = document.getElementById('export-logs-btn');
         let allLogs = [];
@@ -531,7 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         async function loadLogs(page = 1) {
             if (logsBody) {
                 logsBody.innerHTML = '';
-                logsBody.appendChild(_emptyRow(5, 'Streaming system audit trail...'));
+                logsBody.appendChild(_skeletonRows(5, 8));
             }
             try {
                 const data = await api.get(`/admin/audit-logs?limit=100&page=${page}`);

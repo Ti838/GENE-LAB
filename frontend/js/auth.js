@@ -29,7 +29,7 @@ const auth = {
     redirectByRole(role) {
         // Build the target path based on current depth in the pages/ directory
         const path = window.location.pathname;
-        const inPages = path.includes('/pages/') || path.endsWith('login.html') || path.endsWith('index.html');
+        const inPages = path.includes('/pages/') || path.(path.endsWith('login.html') || path.endsWith('/login')) || path.(path.endsWith('index.html') || path === '/' || path === '');
         const base = inPages ? '' : 'pages/';
 
         if (role === 'admin') {
