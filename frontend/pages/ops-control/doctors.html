@@ -5,32 +5,32 @@
 -->
 <html lang="en">
 <head>
-    <script src="../../js/console-guard.js??v=1784484724017"></script>
+    <script src="../../js/console-guard.js??v=1784485474117"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <title>Doctor Management | GeneLab Admin</title>
+    <title>Personnel Management | GeneLab Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{colors:{cyan:'var(--cyan)',teal:{DEFAULT:'var(--teal)',400:'var(--teal)'},violet:{DEFAULT:'var(--violet)',400:'var(--violet)'},coral:'var(--coral)',lime:'var(--lime)',ink:'var(--ink)',slate:{300:'var(--text-muted)',400:'var(--text-muted)',500:'var(--text-faint)',800:'#1e293b'}}}}}</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js??v=1784484724017" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js??v=1784484724017" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js??v=1784485474117" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js??v=1784485474117" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../css/style.css??v=1784484724017">
+    <link rel="stylesheet" href="../../css/style.css??v=1784485474117">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../theme.css??v=1784484724017">
+    <link rel="stylesheet" href="../../theme.css??v=1784485474117">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    <script src="../../js/theme.js??v=1784484724017" defer></script>
-    <script src="../../js/app.js??v=1784484724017" defer></script>
-    <script src="../../js/api.js??v=1784484724017" defer></script>
-    <script src="../../js/auth.js??v=1784484724017" defer></script>
-    <script src="../../js/dna-background.js??v=1784484724017" defer></script>
+    <script src="../../js/theme.js??v=1784485474117" defer></script>
+    <script src="../../js/app.js??v=1784485474117" defer></script>
+    <script src="../../js/api.js??v=1784485474117" defer></script>
+    <script src="../../js/auth.js??v=1784485474117" defer></script>
+    <script src="../../js/dna-background.js??v=1784485474117" defer></script>
     <link rel="icon" type="image/svg+xml" href="../../assets/icons/favicon.svg">
 
     <script src="https://unpkg.com/@barba/core"></script>
-    <script src="../../../js/barba-init.js??v=1784484724017" defer></script>
+    <script src="../../../js/barba-init.js??v=1784485474117" defer></script>
 </head>
 <body class="selection:bg-teal selection:text-ink" data-theme="dark" data-barba="wrapper">
 
@@ -52,7 +52,7 @@
             </div>
             <nav class="flex-1 px-5 space-y-1.5 mt-5 overflow-y-auto" style="scrollbar-width:none">
                 <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined">analytics</span> Dashboard</a>
-                <a href="doctors.html" class="sidebar-link active"><span class="material-symbols-outlined">manage_accounts</span> Doctors</a>
+                <a href="doctors.html" class="sidebar-link active"><span class="material-symbols-outlined">manage_accounts</span> Personnel</a>
                 <a href="data.html" class="sidebar-link"><span class="material-symbols-outlined">dns</span> Data Registry</a>
                 <a href="logs.html" class="sidebar-link"><span class="material-symbols-outlined">history</span> Activity Logs</a>
                 <a href="analytics.html" class="sidebar-link"><span class="material-symbols-outlined">monitoring</span> Analytics</a>
@@ -69,8 +69,8 @@
             <header data-animate="hero" class="mb-10 flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <p class="section-badge mb-3">Admin control</p>
-                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Doctor Management</h1>
-                    <p class="font-medium" style="color:var(--text-muted)">Manage access and validation for all medical providers.</p>
+                    <h1 class="text-4xl sm:text-5xl font-display font-extrabold mb-2">Personnel Management</h1>
+                    <p class="font-medium" style="color:var(--text-muted)">Manage access and validation for all users (Doctors and Researchers).</p>
                 </div>
                 <button type="button" data-theme-toggle class="btn-premium btn-ghost px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
                     <span class="material-symbols-outlined" style="font-size:18px!important;width:18px!important;height:18px!important;">dark_mode</span>
@@ -87,7 +87,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-[10px] font-bold uppercase tracking-widest" style="color:var(--text-faint);border-bottom:1px solid var(--border)">
-                                <th class="p-4">Doctor Credentials</th>
+                                <th class="p-4">User Credentials</th>
                                 <th class="p-4">Specialization</th>
                                 <th class="p-4">Hospital Node</th>
                                 <th class="p-4">Status</th>
@@ -103,7 +103,7 @@
                     </table>
                 </div>
             </div>
-            <script src="../../js/admin.js??v=1784484724017" defer></script>
+            <script src="../../js/admin.js??v=1784485474117" defer></script>
             <script>
             document.addEventListener('DOMContentLoaded', () => {
                 try {
