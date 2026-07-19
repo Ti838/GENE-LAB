@@ -1,0 +1,17 @@
+{
+  "name": "genelab-frontend",
+  "version": "1.0.0",
+  "description": "Frontend build assets for GeneLab",
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/input.css -o ./dist/bundle.css --minify",
+    "build:js": "terser js/*.js -o ./dist/bundle.js --compress --mangle",
+    "build": "npm run build:css"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17",
+    "cssnano": "^6.0.3",
+    "terser": "^5.27.1"
+  }
+}

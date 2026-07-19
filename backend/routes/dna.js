@@ -87,7 +87,9 @@ router.post('/upload', protect, upload.single('dnaFile'), async (req, res, next)
 // ────────────────────────────────────────────────────────────────────────────
 router.get('/my-files', protect, async (req, res, next) => {
   try {
+    // Optimization: Use projection to exclude heavy fields like sequence, variants, etc.
     const files = await DNAFile.find({ doctor: req.user._id })
+      .select('-sequence -variants -blastResult.hits -codonAnalysis.codonFrequency')
       .sort({ createdAt: -1 })
       .lean();
     res.json(files);

@@ -53,13 +53,19 @@ button, input, select, textarea { font: inherit; }
 }
 
 /* ── Premium DNA Sequence Viewer ────────────────────────────── */
+/* Local surface tokens — overridden per-theme below so the box
+   adapts to both dark and light modes instead of being hardcoded. */
 .dna-viewer-wrap {
+  --viewer-bg:        rgba(10, 18, 36, 0.40);
+  --viewer-bar-bg:    rgba(15, 23, 42, 0.65);
+  --viewer-body-bg:   transparent;
+
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: 20px;
   overflow: hidden;
-  background: rgba(10, 18, 36, 0.4);
+  background: var(--viewer-bg);
   backdrop-filter: blur(12px);
   margin-top: 1rem;
 }
@@ -68,7 +74,7 @@ button, input, select, textarea { font: inherit; }
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--viewer-bar-bg);
   border-bottom: 1px solid var(--border);
   gap: 1rem;
   flex-wrap: wrap;
@@ -77,6 +83,7 @@ button, input, select, textarea { font: inherit; }
   padding: 24px;
   max-height: 400px;
   overflow-y: auto;
+  background: var(--viewer-body-bg);
   font-family: var(--font-mono), monospace;
   font-size: 14px;
   line-height: 2.2;
@@ -91,11 +98,26 @@ button, input, select, textarea { font: inherit; }
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--viewer-bar-bg);
   border-top: 1px solid var(--border);
   font-size: 11px;
   color: var(--text-muted);
   font-family: var(--font-mono), monospace;
+}
+
+/* Light-mode adaptation for the DNA Sequence Viewer box */
+body[data-theme="light"] .dna-viewer-wrap {
+  --viewer-bg:        rgba(255, 255, 255, 0.75);
+  --viewer-bar-bg:    rgba(238, 245, 252, 0.85);
+  --viewer-body-bg:   rgba(248, 251, 254, 0.60);
+}
+body[data-theme="light"] .dna-viewer-toolbar,
+body[data-theme="light"] .dna-viewer-statusbar {
+  color: var(--text-muted);
+}
+body[data-theme="light"] .sequence-viewer {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 120, 180, 0.18);
 }
 .nucleotide {
   display: inline-block;
@@ -228,6 +250,17 @@ body[data-theme='dark'] #dna-container {
 
 /* ── Responsive layout ──────────────────────────────────────── */
 @media (max-width: 1024px) {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* iOS Input Zoom Prevention */
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select {
+    font-size: 16px !important;
+  }
+
   body > .relative.z-10.flex.min-h-screen {
     display: block;
   }
@@ -635,7 +668,7 @@ body[data-theme='dark'] #dna-container {
 .forgot-password-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 10, 16, 0.85);
+  background: rgba(3, 11, 20, 0.7);
   backdrop-filter: blur(12px);
   z-index: 999;
   display: flex;
@@ -645,21 +678,25 @@ body[data-theme='dark'] #dna-container {
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
+body[data-theme="light"] .forgot-password-overlay {
+  background: rgba(220, 232, 244, 0.7);
+}
 .forgot-password-overlay:not(.hidden) {
   opacity: 1;
   pointer-events: auto;
 }
 .forgot-password-card {
-  background: rgba(20, 24, 35, 0.7);
+  background: var(--bg-panel);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   border-radius: 24px;
   padding: 2.5rem;
   width: 420px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow);
   position: relative;
   transform: scale(0.95);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--text);
 }
 .forgot-password-overlay:not(.hidden) .forgot-password-card {
   transform: scale(1);

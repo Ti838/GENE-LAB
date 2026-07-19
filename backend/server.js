@@ -21,6 +21,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -96,14 +97,27 @@ app.use('/api/analysis/', analysisLimiter);
 // ── Body Parsing ──────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// ── Compression ──────────────────────────────────────────────────────────
+app.use(compression({ level: 6, threshold: 1024 }));
 
 // ── Static Uploads (optional — serves uploaded files if needed) ───────────
 // Uploads are served through authenticated API routes or fallback static serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Serve frontend static files with aggressive cache headers
+app.use(express.static(path.join(__dirname, '../frontend'), {
+  maxAge: process.env.NODE_ENV === 'production' ? '1y' : 0,
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    // HTML files: no cache so users always get latest
+    if (filePath.endsWith('.html')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+    }
+  }
+}));
 app.get('/', (req, res) => {
   res.redirect('/pages/login.html');
 });
@@ -166,7 +180,7 @@ async function startServer() {
     }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🧬 GeneLab Server running on port ${PORT}`);
     if (process.env.BACKEND_URL) {
       console.log(`🌐 Public URL: ${process.env.BACKEND_URL}`);
@@ -174,6 +188,10 @@ async function startServer() {
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🐍 FastAPI URL: ${process.env.FASTAPI_URL || 'http://localhost:8000'}`);
   });
+  
+  // Enable HTTP Keep-Alive
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
 }
 
 if (!process.env.VERCEL) {

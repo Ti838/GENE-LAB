@@ -198,40 +198,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeLogsBtn = document.getElementById('close-logs-modal');
     const logsBtn      = document.getElementById('view-all-logs-btn');
 
-    function openLogsModal() {
+        async function openLogsModal() {
         if (!logsOverlay || !logsModal) return;
         const container = document.getElementById('logs-stream-container');
+        if (!container) return;
+
         container.innerHTML = '';
-        const sys = [
-            { time: new Date().toLocaleTimeString(), level: 'INFO', msg: 'GeneLab backend API — connected to MongoDB Atlas' },
-            { time: new Date().toLocaleTimeString(), level: 'INFO', msg: 'JWT authentication middleware — active' },
-            { time: new Date().toLocaleTimeString(), level: 'OK',   msg: 'Rate limiter: 100 req/15 min per IP' },
-        ];
-        [...allFiles].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,10).forEach(f => {
-            sys.push({ time: new Date(f.createdAt).toLocaleTimeString(), level: f.status === 'analyzed' ? 'OK' : 'PENDING', msg: `[${f.status.toUpperCase()}] ${f.originalName}` });
-        });
-        const cols = { INFO:'#00b4d8', OK:'#06d6a0', PENDING:'#f4a261' };
-        sys.forEach(e => {
-            const line = document.createElement('div');
-            line.className = 'flex gap-3 items-start py-1.5 border-b border-white/5';
-            // Build each column safely
-            const timeSpan = document.createElement('span');
-            timeSpan.style.cssText = 'color:var(--text-faint);min-width:70px';
-            timeSpan.textContent = e.time;
-            const levelSpan = document.createElement('span');
-            levelSpan.style.cssText = `color:${cols[e.level]||'#fff'};min-width:58px;font-weight:700`;
-            levelSpan.textContent = `[${e.level}]`;
-            const msgSpan = document.createElement('span');
-            msgSpan.style.color = '#cbd5e1';
-            msgSpan.textContent = e.msg; // textContent safe
-            line.appendChild(timeSpan);
-            line.appendChild(levelSpan);
-            line.appendChild(msgSpan);
-            container.appendChild(line);
-        });
+
+        // Load real audit logs from backend.
+        // Admin-only endpoint; for non-admin doctors backend should return 403.
+        // We keep UI consistent and show a professional message.
+        try {
+            const data = await api.get('/admin/audit-logs?limit=50&page=1');
+            const logs = data?.logs || [];
+
+            if (!logs.length) {
+                const p = document.createElement('p');
+                p.className = 'text-sm italic text-center py-6';
+                p.style.color = 'var(--text-faint)';
+                p.textContent = 'No audit events found.';
+                container.appendChild(p);
+            } else {
+                // Render newest first (backend already sorts desc)
+                const slice = logs.slice(0, 30);
+                const cols = { INFO: '#00b4d8', OK: '#06d6a0', PENDING: '#f4a261' };
+
+                slice.forEach(log => {
+                    const time = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const action = String(log.action || 'unknown');
+                    const userName = log.userId?.name || 'System';
+
+                    // Heuristic label mapping without fabricating messages.
+                    const levelLabel = action.includes('error') ? 'INFO' : 'OK';
+                    const levelColor = cols[levelLabel] || '#fff';
+
+                    const line = document.createElement('div');
+                    line.className = 'flex gap-3 items-start py-1.5 border-b border-white/5';
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.style.cssText = 'color:var(--text-muted);min-width:70px';
+                    timeSpan.textContent = time;
+
+                    const levelSpan = document.createElement('span');
+                    levelSpan.style.cssText = `color:${levelColor};min-width:58px;font-weight:700`;
+                    levelSpan.textContent = `[${String(levelLabel)}]`;
+
+                    const msgSpan = document.createElement('span');
+                    msgSpan.style.color = 'var(--text)';
+                    // Keep message derived from backend fields.
+                    const detailsText = log.details ? (() => {
+                        try {
+                            return typeof log.details === 'string' ? log.details : JSON.stringify(log.details);
+                        } catch (_) {
+                            return '';
+                        }
+                    })() : '';
+
+                    const msg = `${action.replace(/_/g, ' ')} — ${userName}${detailsText ? ' — ' + detailsText : ''}`;
+                    msgSpan.textContent = msg;
+
+                    line.appendChild(timeSpan);
+                    line.appendChild(levelSpan);
+                    line.appendChild(msgSpan);
+                    container.appendChild(line);
+                });
+            }
+        } catch (err) {
+            // Expected for doctors if endpoint is admin-only.
+            const p = document.createElement('p');
+            p.className = 'text-sm italic text-center py-6';
+            p.style.color = 'var(--text-faint)';
+            p.textContent = 'Unable to load audit logs (insufficient permissions).';
+            container.appendChild(p);
+        }
+
         logsOverlay.classList.remove('hidden');
         logsModal.classList.remove('hidden');
     }
+
 
     logsBtn?.addEventListener('click', openLogsModal);
     closeLogsBtn?.addEventListener('click', () => { logsOverlay?.classList.add('hidden'); logsModal?.classList.add('hidden'); });

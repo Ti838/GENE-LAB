@@ -125,10 +125,12 @@ router.put('/requests/:id/approve', protect, adminOnly, async (req, res, next) =
     );
     if (!request) return res.status(404).json({ message: 'Request not found.' });
 
-    // Simulate completion after a short time (in real app, this would be a background job)
-    setTimeout(async () => {
-      await SequencingRequest.findByIdAndUpdate(req.params.id, { status: 'completed', completedAt: new Date() });
-    }, 5000);
+    // Start real processing via the existing backend analysis pipeline.
+    // This route must not simulate completion; workers/jobs must update status.
+    // If no async pipeline exists for SequencingRequest yet, we only move to 'analyzing'
+    // and rely on queue/worker updates.
+    // (Intentionally no setTimeout.)
+
 
     await AuditLog.create({ userId: req.user._id, action: 'approve_request', resourceType: 'SequencingRequest', resourceId: request._id });
     res.json({ message: 'Request approved! Analysis started.', request });

@@ -294,13 +294,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             line.className = 'flex gap-3 items-start py-1.5 border-b border-white/5';
             // Build each column safely
             const timeSpan = document.createElement('span');
-            timeSpan.style.cssText = 'color:var(--text-faint);min-width:70px';
+            timeSpan.style.cssText = 'color:var(--text-muted);min-width:70px';
             timeSpan.textContent = e.time;
             const levelSpan = document.createElement('span');
             levelSpan.style.cssText = `color:${cols[e.level]||'#fff'};min-width:58px;font-weight:700`;
             levelSpan.textContent = `[${e.level}]`;
             const msgSpan = document.createElement('span');
-            msgSpan.style.color = '#cbd5e1';
+            msgSpan.style.color = 'var(--text)';
             msgSpan.textContent = e.msg; // textContent safe
             line.appendChild(timeSpan);
             line.appendChild(levelSpan);

@@ -42,6 +42,7 @@ const AnalysisJob = require('../models/AnalysisJob');
 const DNAFile = require('../models/DNAFile');
 const queueService = require('../services/queue.service');
 const fastapiService = require('../services/fastapi.service');
+const logger = require('../services/logger.service');
 
 // ── Multer upload config ──────────────────────────────────────────────────
 const UPLOADS_DIR = process.env.VERCEL === '1'
@@ -99,13 +100,13 @@ async function createJobRecord(userId, analysisType, extras = {}) {
 
 // ── Helper: Sync fallback when Redis is unavailable ──────────────────────
 async function runSyncFallback(analysisType, filePath, fileName, sequence, sequenceName, variantIds, bypassBLAST = false) {
-  console.log('🔄 runSyncFallback called:', { analysisType, sequenceName, bypassBLAST });
+  logger.info('runSyncFallback called', { analysisType, sequenceName, bypassBLAST });
   if (analysisType === 'instant') {
     if (filePath) return fastapiService.runInstantAnalysisFile(filePath, fileName, variantIds || []);
     return fastapiService.runInstantAnalysisText(sequence, sequenceName, variantIds || []);
   } else {
     if (bypassBLAST) {
-      console.log('🧬 bypassBLAST is true! Aligning locally...');
+      logger.info('bypassBLAST is true! Aligning locally...');
       const alignmentService = require('../services/alignment.service');
       const dnaService = require('../services/dna.service');
       let targetSeq = sequence || '';
@@ -114,7 +115,7 @@ async function runSyncFallback(analysisType, filePath, fileName, sequence, seque
       }
       return alignmentService.alignLocally(targetSeq);
     }
-    console.log('🌐 Calling remote FastAPI deep analysis...');
+    logger.info('Calling remote FastAPI deep analysis...');
     if (filePath) return fastapiService.runDeepAnalysisFile(filePath, fileName);
     return fastapiService.runDeepAnalysisText(sequence, sequenceName);
   }

@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Existing style.css and theme.css content will be imported or pasted here */
+/* For now, we will use @import if postcss-import is available, but let's just use the build tool to combine them. */
