@@ -118,6 +118,59 @@ h1, h2, h3, h4, h5, .font-display {
   color: var(--text);
 }
 
+/* -----------------------------------------------------------------
+   DNA CANVAS LAYER - visible on EVERY page
+----------------------------------------------------------------- */
+#dna-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+body[data-theme="dark"]  #dna-canvas { opacity: 0.72; }
+body[data-theme="light"] #dna-canvas { opacity: 0.85; }
+/* Default (no theme set yet) */
+#dna-canvas { opacity: 0.72; }
+
+#dna-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: transparent !important;
+}
+
+/* -----------------------------------------------------------------
+   LAYOUT LAYER STACKING
+----------------------------------------------------------------- */
+body > #dna-canvas   { z-index: 0; }
+body > #dna-overlay  { z-index: 1; }
+nav, header, .topbar { position: relative; z-index: 50; }
+aside                { position: relative; z-index: 20; }
+main                 { position: relative; z-index: 5;  }
+footer               { position: relative; z-index: 10; }
+
+/* -----------------------------------------------------------------
+   SCROLLBAR
+----------------------------------------------------------------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 180, 216, 0.28);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+/* -----------------------------------------------------------------
+   SELECTION
+----------------------------------------------------------------- */
+::selection {
+  background: rgba(0, 212, 255, 0.25);
+  color: var(--text);
+}
+
 .col-span-1 { grid-column: span 1 / span 1; }
 .col-span-2 { grid-column: span 2 / span 2; }
 .col-span-3 { grid-column: span 3 / span 3; }

@@ -31,7 +31,7 @@ try {
         const insertTarget = '.col-span-1 {';
         const insertIdx = currentTheme.indexOf(insertTarget);
         
-        if (insertIdx !== -1 && !currentTheme.includes('#dna-canvas')) {
+        if (insertIdx !== -1 && !currentTheme.includes('DNA CANVAS LAYER')) {
             currentTheme = currentTheme.substring(0, insertIdx) + missingBlock + '\n\n' + currentTheme.substring(insertIdx);
             fs.writeFileSync(currentThemePath, currentTheme, 'utf8');
             console.log("SUCCESS: Restored missing DNA and Layout CSS!");
