@@ -179,7 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
             textWrapper.appendChild(parent.firstChild);
           }
 
-          const avatarContainer = document.createElement('div');
+          if (window.location.pathname.includes('/ops-control/')) return;
+            const avatarContainer = document.createElement('div');
           avatarContainer.className = 'w-10 h-10 rounded-full bg-cyan/10 border border-cyan/30 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-all hover:border-cyan/60';
           avatarContainer.onclick = () => {
             const pathDepth = window.location.pathname.includes('/doctor/') ||
