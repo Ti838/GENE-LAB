@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Load and render all notes ──────────────────────────────────────────
     async function loadNotes() {
         if (!notesList) return;
-        notesList.innerHTML = '<p class="italic text-center p-4" style="color:var(--text-faint)">Loading...</p>';
+        notesList.innerHTML = Array(3).fill('<div class="p-4 rounded-xl border mb-3 flex flex-col gap-2" style="background:var(--bg-glass);border-color:var(--border)"><div class="w-3/4 h-3 bg-slate-400/20 rounded animate-pulse"></div><div class="w-1/2 h-3 bg-slate-400/20 rounded animate-pulse"></div></div>').join('');
         try {
             const notes = await api.get('/notes');
             notesList.innerHTML = '';

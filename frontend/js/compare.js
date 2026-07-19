@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Load file list ─────────────────────────────────────────────────────
     async function loadFiles() {
         if (!container) return;
-        container.innerHTML = '<p class="italic text-center col-span-2 p-4" style="color:var(--text-faint)">Loading files...</p>';
+        container.innerHTML = Array(4).fill('<div class="p-4 rounded-xl border flex flex-col gap-3" style="background:var(--bg-glass);border-color:var(--border)"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-400/20 animate-pulse"></div><div class="space-y-2"><div class="w-24 h-3 bg-slate-400/20 rounded animate-pulse"></div><div class="w-16 h-2 bg-slate-400/20 rounded animate-pulse"></div></div></div></div>').join('');
         try {
             const files = await api.get('/dna/my-files');
             container.innerHTML = '';
