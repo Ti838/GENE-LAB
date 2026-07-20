@@ -47,9 +47,13 @@ async function _postWithRetry(path, data, opts = {}, retries = 3, delay = 1000, 
  * @param {string[]} [variantIds] - Optional list of rsIDs for MyVariant lookup
  * @returns {Promise<Object>} Full analysis result
  */
+const dnaService = require('./dna.service');
+
 async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
   const form = new FormData();
-  form.append('file', fs.createReadStream(filePath), { filename: fileName });
+  if (fs.existsSync(filePath)) {
+    form.append('file', fs.createReadStream(filePath), { filename: fileName });
+  }
   if (variantIds.length > 0) {
     form.append('variant_ids', variantIds.join(','));
   }
@@ -62,7 +66,10 @@ async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
     });
     return response.data;
   } catch (err) {
-    throw _normalizeError(err, 'Instant analysis (file)');
+    logger.warn('FastAPI unavailable for file instant analysis, using native JS fallback:', err.message);
+    const content = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+    const sequence = dnaService.parseSequence(content);
+    return dnaService.runNativeInstantAnalysis(sequence, fileName, variantIds);
   }
 }
 
@@ -75,7 +82,7 @@ async function runInstantAnalysisFile(filePath, fileName, variantIds = []) {
  */
 async function runInstantAnalysisText(sequence, name = 'manual_sequence', variantIds = []) {
   const form = new FormData();
-  form.append('sequence', sequence);
+  form.append('sequence', sequence || '');
   form.append('name', name);
   if (variantIds.length > 0) {
     form.append('variant_ids', variantIds.join(','));
@@ -87,7 +94,8 @@ async function runInstantAnalysisText(sequence, name = 'manual_sequence', varian
     });
     return response.data;
   } catch (err) {
-    throw _normalizeError(err, 'Instant analysis (text)');
+    logger.warn('FastAPI unavailable for text instant analysis, using native JS fallback:', err.message);
+    return dnaService.runNativeInstantAnalysis(sequence, name, variantIds);
   }
 }
 

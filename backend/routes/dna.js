@@ -242,7 +242,7 @@ router.post('/analyze/:id', protect, async (req, res, next) => {
             throw new Error('No file content available for instant analysis.');
           }
 
-          const updateData = _mapInstantResultToDNAFile(result, jobId);
+          const updateData = queueService._mapResultToDNAFile(result, 'instant', jobId);
           await DNAFile.findByIdAndUpdate(file._id, updateData);
         }
 

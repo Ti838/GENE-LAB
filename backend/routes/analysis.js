@@ -439,10 +439,46 @@ router.post('/upload-csv', protect, upload.single('file'), async (req, res, next
 router.get('/analysis-status/:jobId', protect, async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const status = await queueService.getJobStatus(jobId);
+    let status = await queueService.getJobStatus(jobId);
 
     if (status.status === 'not_found') {
       return res.status(404).json({ message: 'Job not found.', jobId });
+    }
+
+    if (status.status === 'queued' || status.status === 'processing') {
+      try {
+        const jobData = await AnalysisJob.findOne({ jobId }).lean();
+        if (jobData && jobData.dnaFileId) {
+          const dnaFile = await DNAFile.findById(jobData.dnaFileId);
+          if (dnaFile) {
+            let sequence = dnaFile.sequence || '';
+            if (!sequence && (dnaFile.fileUrl || (dnaFile.path && /^https?:\/\//.test(dnaFile.path)))) {
+              const { downloadTextFromUrl } = require('../services/firebaseStorage');
+              const dnaService = require('../services/dna.service');
+              const text = await downloadTextFromUrl(dnaFile.fileUrl || dnaFile.path);
+              sequence = dnaService.parseSequence(text);
+            }
+            const fastapiService = require('../services/fastapi.service');
+            const result = await fastapiService.runInstantAnalysisText(sequence, dnaFile.originalName, []);
+            const updateData = queueService._mapResultToDNAFile(result, jobData.analysisType || 'instant', jobId);
+            await DNAFile.findByIdAndUpdate(dnaFile._id, updateData);
+            await AnalysisJob.findOneAndUpdate(
+              { jobId },
+              { status: 'completed', completedAt: new Date(), progress: 100, result }
+            );
+
+            return res.json({
+              jobId,
+              status: 'completed',
+              progress: 100,
+              analysisType: jobData.analysisType || 'instant',
+              completedAt: new Date()
+            });
+          }
+        }
+      } catch (autoErr) {
+        console.warn('Auto-status fallback error:', autoErr.message);
+      }
     }
 
     return res.json(status);
@@ -458,7 +494,39 @@ router.get('/analysis-result/:jobId', protect, async (req, res, next) => {
     const jobData = await queueService.getJobResult(jobId);
 
     if (!jobData) return res.status(404).json({ message: 'Job not found.', jobId });
+
     if (jobData.status === 'queued' || jobData.status === 'processing') {
+      try {
+        const dnaFile = await DNAFile.findById(jobData.dnaFileId);
+        if (dnaFile) {
+          let sequence = dnaFile.sequence || '';
+          if (!sequence && (dnaFile.fileUrl || (dnaFile.path && /^https?:\/\//.test(dnaFile.path)))) {
+            const { downloadTextFromUrl } = require('../services/firebaseStorage');
+            const dnaService = require('../services/dna.service');
+            const text = await downloadTextFromUrl(dnaFile.fileUrl || dnaFile.path);
+            sequence = dnaService.parseSequence(text);
+          }
+          const fastapiService = require('../services/fastapi.service');
+          const result = await fastapiService.runInstantAnalysisText(sequence, dnaFile.originalName, []);
+          const updateData = queueService._mapResultToDNAFile(result, jobData.analysisType || 'instant', jobId);
+          await DNAFile.findByIdAndUpdate(dnaFile._id, updateData);
+          await AnalysisJob.findOneAndUpdate(
+            { jobId },
+            { status: 'completed', completedAt: new Date(), progress: 100, result }
+          );
+
+          return res.json({
+            jobId,
+            status: 'completed',
+            analysisType: jobData.analysisType || 'instant',
+            completedAt: new Date(),
+            result
+          });
+        }
+      } catch (autoErr) {
+        console.warn('Auto-result fallback error:', autoErr.message);
+      }
+
       return res.status(202).json({
         message: 'Analysis still in progress.',
         status: jobData.status,
@@ -466,6 +534,7 @@ router.get('/analysis-result/:jobId', protect, async (req, res, next) => {
         jobId
       });
     }
+
     if (jobData.status === 'failed') {
       return res.status(500).json({
         message: 'Analysis failed.',

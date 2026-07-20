@@ -426,5 +426,6 @@ module.exports = {
   enqueueInstantAnalysis,
   enqueueDeepAnalysis,
   getJobStatus,
-  getJobResult
+  getJobResult,
+  _mapResultToDNAFile
 };
