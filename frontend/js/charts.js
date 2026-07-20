@@ -283,9 +283,13 @@ window.genelabCharts = (() => {
   });
 
   return {
-    updateTrend: async () => {
-      const trend = await fetchTrendData();
-      initTrendChart(trend.labels, trend.counts);
+    updateTrend: async (labels, counts) => {
+      if (labels && counts) {
+        initTrendChart(labels, counts);
+      } else {
+        const trend = await fetchTrendData();
+        initTrendChart(trend.labels, trend.counts);
+      }
     },
     updateNucleotides: async () => {
       const nuc = await fetchNucleotideData();

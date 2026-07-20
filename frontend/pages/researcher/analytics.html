@@ -254,17 +254,19 @@
         let trendChart = null;
         function buildTrend(mode = 'monthly') {
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
             let labels = [], counts = [];
 
             if (mode === 'weekly') {
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date(); d.setDate(d.getDate() - i);
-                    labels.push(days[d.getDay()]); counts.push(0);
+                const now = Date.now();
+                for (let i = 7; i >= 0; i--) {
+                    const d = new Date(now - i * 7 * 86400000);
+                    labels.push(`${months[d.getMonth()]} ${d.getDate()}`);
+                    counts.push(0);
                 }
                 allFiles.forEach(f => {
-                    const diff = Math.floor((new Date() - new Date(f.createdAt)) / 86400000);
-                    if (diff < 7) counts[6 - diff]++;
+                    const diffDays = Math.floor((now - new Date(f.createdAt).getTime()) / 86400000);
+                    const weekIdx = 7 - Math.floor(diffDays / 7);
+                    if (weekIdx >= 0 && weekIdx < 8) counts[weekIdx]++;
                 });
             } else {
                 const cur = new Date().getMonth();
@@ -304,14 +306,24 @@
         }
 
         buildTrend('monthly');
-        document.getElementById('trend-weekly').addEventListener('click', () => {
-            document.getElementById('trend-weekly').classList.add('btn-cyan');
-            document.getElementById('trend-monthly').classList.remove('btn-cyan');
+        const twBtn = document.getElementById('trend-weekly');
+        const tmBtn = document.getElementById('trend-monthly');
+
+        function setActiveTrendBtn(activeBtn, inactiveBtn) {
+            if (!activeBtn || !inactiveBtn) return;
+            activeBtn.classList.add('btn-cyan');
+            activeBtn.style.cssText = 'background:var(--cyan);color:#0f172a;font-weight:700;box-shadow:0 0 12px rgba(6,182,212,0.4);';
+
+            inactiveBtn.classList.remove('btn-cyan');
+            inactiveBtn.style.cssText = 'background:rgba(255,255,255,0.05);color:var(--text-faint);font-weight:600;box-shadow:none;';
+        }
+
+        twBtn?.addEventListener('click', () => {
+            setActiveTrendBtn(twBtn, tmBtn);
             buildTrend('weekly');
         });
-        document.getElementById('trend-monthly').addEventListener('click', () => {
-            document.getElementById('trend-monthly').classList.add('btn-cyan');
-            document.getElementById('trend-weekly').classList.remove('btn-cyan');
+        tmBtn?.addEventListener('click', () => {
+            setActiveTrendBtn(tmBtn, twBtn);
             buildTrend('monthly');
         });
 
