@@ -26,6 +26,7 @@
     <script src="../../js/theme.js??v=1784490287787"></script>
     <script src="../../js/api.js??v=1784490287787" defer></script>
     <script src="../../js/auth.js??v=1784490287787" defer></script>
+    <script src="../../js/charts.js??v=1784490287787" defer></script>
     <script src="../../js/app.js??v=1784490287787" defer></script>
     <script src="../../js/dna-background.js??v=1784490287787" defer></script>
     <link rel="icon" type="image/svg+xml" href="../../assets/icons/favicon.svg">
@@ -303,6 +304,7 @@
                     }
                 }
             });
+            if (window.addChartControls) window.addChartControls(ctx, trendChart, 'Genomic Upload Trend');
         }
 
         buildTrend('monthly');
@@ -330,7 +332,7 @@
         // ── Status Doughnut Chart ─────────────────────────────────────
         const statusCtx = document.getElementById('statusChart');
         if (statusCtx && typeof Chart !== 'undefined') {
-            new Chart(statusCtx, {
+            const sc = new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Analyzed', 'Pending', 'Anomaly'],
@@ -341,6 +343,7 @@
                     plugins: { legend: { display: false } }
                 }
             });
+            if (window.addChartControls) window.addChartControls(statusCtx, sc, 'Status Breakdown');
             const legend = document.getElementById('status-legend');
             if (legend) {
                 legend.innerHTML = '';
@@ -367,7 +370,7 @@
         const nucCtx = document.getElementById('nucleotideChart');
         if (nucCtx && typeof Chart !== 'undefined') {
             const c = getColors();
-            new Chart(nucCtx, {
+            const nc = new Chart(nucCtx, {
                 type: 'bar',
                 data: {
                     labels: ['Adenine (A)', 'Thymine (T)', 'Guanine (G)', 'Cytosine (C)'],
@@ -382,6 +385,7 @@
                     }
                 }
             });
+            if (window.addChartControls) window.addChartControls(nucCtx, nc, 'Nucleotide Composition');
         }
 
         // ── GC Content Chart ──────────────────────────────────────────
@@ -395,7 +399,7 @@
                 gcBuckets[bi]++;
             });
             const c = getColors();
-            new Chart(gcCtx, {
+            const gcc = new Chart(gcCtx, {
                 type: 'bar',
                 data: {
                     labels: gcLabels,
@@ -410,6 +414,7 @@
                     }
                 }
             });
+            if (window.addChartControls) window.addChartControls(gcCtx, gcc, 'GC Content Distribution');
         }
 
         // ── File Summary Table (XSS-safe DOM building) ──────────────
