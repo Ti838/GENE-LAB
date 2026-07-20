@@ -61,22 +61,34 @@ router.put('/photo', protect, upload.single('profilePhoto'), async (req, res, ne
     const user = await User.findById(req.user._id);
 
     if (req.file) {
-      const uploadResult = await uploadBufferToSupabase({
-        buffer: req.file.buffer,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        folder: 'profile-images'
-      });
+      let avatarUrl = '';
+      let avatarPath = '';
+      let provider = 'manual';
 
-       user.profilePicture = uploadResult.downloadUrl;
-      user.profilePicturePath = uploadResult.storagePath;
-      user.profilePictureProvider = 'local';
+      try {
+        const uploadResult = await uploadBufferToSupabase({
+          buffer: req.file.buffer,
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          folder: 'profile-images'
+        });
+        avatarUrl = uploadResult.downloadUrl;
+        avatarPath = uploadResult.storagePath;
+        provider = 'local';
+      } catch (storageErr) {
+        console.warn('Supabase storage unavailable for photo, falling back to Base64:', storageErr.message);
+        avatarUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      }
+
+      user.profilePicture = avatarUrl;
+      user.profilePicturePath = avatarPath;
+      user.profilePictureProvider = provider;
       await user.save();
 
+      const updatedUser = await User.findById(req.user._id).select('-password');
       return res.json({
         message: 'Profile photo updated!',
-        user: await User.findById(req.user._id).select('-password'),
-        upload: uploadResult
+        user: updatedUser
       });
     }
 
@@ -102,20 +114,28 @@ router.put('/signature', protect, upload.single('signature'), async (req, res, n
     const user = await User.findById(req.user._id);
 
     if (req.file) {
-      const uploadResult = await uploadBufferToSupabase({
-        buffer: req.file.buffer,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        folder: 'signatures'
-      });
+      let sigUrl = '';
+      try {
+        const uploadResult = await uploadBufferToSupabase({
+          buffer: req.file.buffer,
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          folder: 'signatures'
+        });
+        sigUrl = uploadResult.downloadUrl;
+      } catch (storageErr) {
+        console.warn('Supabase storage unavailable for signature, falling back to Base64:', storageErr.message);
+        sigUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      }
 
-      user.signatureUrl = uploadResult.downloadUrl;
+      user.signatureUrl = sigUrl;
       await user.save();
 
+      const updatedUser = await User.findById(req.user._id).select('-password');
       return res.json({
         message: 'Signature updated successfully!',
-        user: await User.findById(req.user._id).select('-password'),
-        signatureUrl: uploadResult.downloadUrl
+        user: updatedUser,
+        signatureUrl: sigUrl
       });
     }
 

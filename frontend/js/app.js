@@ -165,10 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebarName.textContent = user.name;
       }
 
+      const existingAvatar = document.getElementById('sidebar-user-avatar');
+      const existingPlaceholder = document.getElementById('sidebar-user-avatar-placeholder');
+      if (existingAvatar && user.profilePicture) {
+        existingAvatar.src = user.profilePicture;
+        existingAvatar.classList.remove('hidden');
+        if (existingPlaceholder) existingPlaceholder.classList.add('hidden');
+      }
+
       // Prepend dynamic profile avatar inside the sidebar container
       if (sidebarName) {
         const parent = sidebarName.parentElement;
-        if (parent && !parent.classList.contains('sidebar-avatar-injected')) {
+        const outerContainer = sidebarName.closest('.sidebar-avatar-injected');
+        if (parent && !outerContainer && !parent.classList.contains('sidebar-avatar-injected')) {
           parent.classList.add('sidebar-avatar-injected');
           parent.classList.add('flex', 'items-center', 'gap-3');
 
