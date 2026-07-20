@@ -6,6 +6,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const User = require('./models/User');
 const SequencingRequest = require('./models/SequencingRequest');
@@ -70,6 +71,7 @@ async function runSeed() {
     // ── 2. CREATE DEMO ACCOUNTS ──────────────────────────────────────────────
     console.log('👥 Creating primary Demo & Production Accounts...');
 
+    // Password hashes
     const doctorPass = 'Password123!';
     const researcherPass = 'Password123!';
     const adminPass = 'AdminPassword123!';
@@ -90,7 +92,7 @@ async function runSeed() {
     });
 
     // Doctor Account #2 (Secondary Alias)
-    await User.create({
+    const doctorAlias = await User.create({
       name: 'Dr. Sarah Lin',
       email: 'dr.jameson@genelab.ai',
       password: 'Geneticist2026!',
@@ -119,7 +121,7 @@ async function runSeed() {
     });
 
     // Researcher Account #2 (Secondary Alias)
-    await User.create({
+    const researcherAlias = await User.create({
       name: 'Dr. David Chen',
       email: 'dr.chen@genelab.ai',
       password: 'Researcher2026!',
@@ -145,7 +147,7 @@ async function runSeed() {
     });
 
     // Admin Account #2 (Secondary Alias)
-    await User.create({
+    const adminAlias = await User.create({
       name: 'Operations Director',
       email: 'admin@genelab.ai',
       password: 'GeneLabAdmin2026!',
@@ -155,7 +157,10 @@ async function runSeed() {
       isEmailVerified: true
     });
 
-    console.log('✅ Created Core Demo Accounts.');
+    console.log('✅ Created 6 Core Accounts:');
+    console.log('   - Doctor: doctor@genelab.com / Password123!');
+    console.log('   - Researcher: researcher@genelab.com / Password123!');
+    console.log('   - Admin: admin@genelab.com / AdminPassword123!');
 
     // ── 3. SEED 20 REAL CLINICAL DNA FILES & RESULTS FOR DOCTOR ────────────────
     console.log('🧬 Generating 20 real clinical genomic analysis records for Doctor...');
@@ -521,7 +526,7 @@ async function runSeed() {
 
       doctorDNAFiles.push(dnaDoc);
     }
-    console.log('✅ Created 20 Real Clinical DNA Files for Doctor.');
+    console.log('✅ Created 20 Real Clinical DNA Files for Doctor!');
 
     // ── 4. SEED 20 REAL RESEARCH DATASETS FOR RESEARCHER ──────────────────────
     console.log('🧪 Generating 20 real research genomic datasets for Researcher...');
@@ -781,10 +786,10 @@ async function runSeed() {
 
       researcherDNAFiles.push(dnaDoc);
     }
-    console.log('✅ Created 20 Real Research Genomic Datasets for Researcher.');
+    console.log('✅ Created 20 Real Research Genomic Datasets for Researcher!');
 
     // ── 5. SEED 20 CLINICAL & RESEARCH NOTES FOR DOCTOR & RESEARCHER ──────────
-    console.log('📝 Creating clinical notes and research memos...');
+    console.log('📝 Creating 20 clinical notes and research memos...');
 
     for (let i = 0; i < doctorDNAFiles.length; i++) {
       const dnaDoc = doctorDNAFiles[i];
@@ -806,7 +811,7 @@ async function runSeed() {
       });
     }
 
-    console.log('✅ Created 40 Notes.');
+    console.log('✅ Created 40 Notes (20 Doctor Notes, 20 Researcher Notes)!');
 
     // ── 6. SEED SYSTEM ANNOUNCEMENTS & NOTIFICATIONS ──────────────────────
     console.log('📢 Creating system announcements & live notifications...');
@@ -891,9 +896,32 @@ async function runSeed() {
       });
     }
 
-    console.log('=============================================================');
+    console.log('✅ Created Audit Logs and System Logs!');
+
+    // ── SUMMARY REPORT ─────────────────────────────────────────────────────
+    console.log('\n=============================================================');
     console.log('🎉 ULTRA FRESH DATABASE SEEDING COMPLETED SUCCESSFULLY!');
     console.log('=============================================================');
+    console.log('📋 DEMO ACCOUNTS CREATED:');
+    console.log(' 🩺 Doctor Account:');
+    console.log('    - Email:    doctor@genelab.com');
+    console.log('    - Password: Password123!');
+    console.log('    - Secondary Email: dr.jameson@genelab.ai / Geneticist2026!');
+    console.log(' 🔬 Researcher Account:');
+    console.log('    - Email:    researcher@genelab.com');
+    console.log('    - Password: Password123!');
+    console.log('    - Secondary Email: dr.chen@genelab.ai / Researcher2026!');
+    console.log(' 🛡️ Admin Account:');
+    console.log('    - Email:    admin@genelab.com');
+    console.log('    - Password: AdminPassword123!');
+    console.log('=============================================================');
+    console.log('📊 REAL DATA LOADED:');
+    console.log(` 🧬 Clinical DNA Analysis Records (Doctor):     20 Files`);
+    console.log(` 🧪 Research Genomic Datasets (Researcher):    20 Files`);
+    console.log(` 📝 Notes & Clinical Consultations:           40 Notes`);
+    console.log(` 📢 System Announcements & Notifications:      4 Announcements`);
+    console.log(` 🔒 Security Audit & System Execution Logs:    40 Logs`);
+    console.log('=============================================================\n');
 
     process.exit(0);
   } catch (err) {
