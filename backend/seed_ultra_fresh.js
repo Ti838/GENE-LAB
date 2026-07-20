@@ -76,7 +76,7 @@ async function runSeed() {
     const researcherPass = 'Password123!';
     const adminPass = 'AdminPassword123!';
 
-    // Doctor Account #1 (Primary Demo)
+    // Doctor Account (Single Official Account)
     const doctorMain = await User.create({
       name: 'Dr. Elena Jameson',
       email: 'doctor@genelab.com',
@@ -91,21 +91,7 @@ async function runSeed() {
       isEmailVerified: true
     });
 
-    // Doctor Account #2 (Secondary Alias)
-    const doctorAlias = await User.create({
-      name: 'Dr. Sarah Lin',
-      email: 'dr.jameson@genelab.ai',
-      password: 'Geneticist2026!',
-      role: 'doctor',
-      organization: 'Johns Hopkins Genomics Institute',
-      specialization: 'Pediatric Medical Genetics',
-      licenseNumber: 'MD-99120-JH',
-      phone: '+1 (555) 882-9911',
-      isActive: true,
-      isEmailVerified: true
-    });
-
-    // Researcher Account #1 (Primary Demo)
+    // Researcher Account (Single Official Account)
     const researcherMain = await User.create({
       name: 'Dr. Marcus Vance',
       email: 'researcher@genelab.com',
@@ -120,21 +106,7 @@ async function runSeed() {
       isEmailVerified: true
     });
 
-    // Researcher Account #2 (Secondary Alias)
-    const researcherAlias = await User.create({
-      name: 'Dr. David Chen',
-      email: 'dr.chen@genelab.ai',
-      password: 'Researcher2026!',
-      role: 'researcher',
-      organization: 'Stanford Genome Technology Center',
-      specialization: 'Structural Genomics & Metagenomics',
-      licenseNumber: 'ORCID: 0000-0003-4412-8819',
-      phone: '+1 (555) 443-2211',
-      isActive: true,
-      isEmailVerified: true
-    });
-
-    // Admin Account #1 (Primary Demo)
+    // Admin Account (Single Official Account)
     const adminMain = await User.create({
       name: 'GeneLab System Administrator',
       email: 'admin@genelab.com',
@@ -146,18 +118,7 @@ async function runSeed() {
       isEmailVerified: true
     });
 
-    // Admin Account #2 (Secondary Alias)
-    const adminAlias = await User.create({
-      name: 'Operations Director',
-      email: 'admin@genelab.ai',
-      password: 'GeneLabAdmin2026!',
-      role: 'admin',
-      organization: 'GeneLab Security & Infrastructure',
-      isActive: true,
-      isEmailVerified: true
-    });
-
-    console.log('✅ Created 6 Core Accounts:');
+    console.log('✅ Created 3 Official Accounts:');
     console.log('   - Doctor: doctor@genelab.com / Password123!');
     console.log('   - Researcher: researcher@genelab.com / Password123!');
     console.log('   - Admin: admin@genelab.com / AdminPassword123!');
