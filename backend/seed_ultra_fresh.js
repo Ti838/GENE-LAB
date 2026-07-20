@@ -482,7 +482,9 @@ async function runSeed() {
         patientAge: item.age,
         biologicalSex: item.sex,
         clinicalIndication: item.indication,
-        clinicalStatus: item.severity === 'HIGH' ? 'Approved' : 'Pending Approval'
+        clinicalStatus: item.severity === 'HIGH' ? 'Approved' : 'Pending Approval',
+        createdAt: new Date(Date.now() - (19 - doctorClinicalData.indexOf(item)) * 3 * 24 * 60 * 60 * 1000 - Math.floor(Math.random() * 43200000)),
+        updatedAt: new Date(Date.now() - (19 - doctorClinicalData.indexOf(item)) * 3 * 24 * 60 * 60 * 1000)
       });
 
       doctorDNAFiles.push(dnaDoc);
@@ -742,7 +744,9 @@ async function runSeed() {
         patientAge: 35,
         biologicalSex: 'Other',
         clinicalIndication: `High-throughput research study on ${item.organism}`,
-        clinicalStatus: 'Approved'
+        clinicalStatus: 'Approved',
+        createdAt: new Date(Date.now() - (19 - researcherDatasets.indexOf(item)) * 3 * 24 * 60 * 60 * 1000 - Math.floor(Math.random() * 43200000) - 43200000),
+        updatedAt: new Date(Date.now() - (19 - researcherDatasets.indexOf(item)) * 3 * 24 * 60 * 60 * 1000 - 43200000)
       });
 
       researcherDNAFiles.push(dnaDoc);
@@ -758,7 +762,9 @@ async function runSeed() {
         userId: doctorMain._id,
         title: `Clinical Consultation Note: ${dnaDoc.variants[0]?.gene || 'Genomic Panel'}`,
         content: `Reviewed genomic test results for Patient ${dnaDoc.patientId}. Variant ${dnaDoc.mutations[0]} is classified as ${dnaDoc.variants[0]?.clinicalSignificance || 'Pathogenic'}. Recommended immediate genetic counseling and cascade testing for family members.`,
-        dnaFile: dnaDoc._id
+        dnaFile: dnaDoc._id,
+        createdAt: dnaDoc.createdAt,
+        updatedAt: dnaDoc.updatedAt
       });
     }
 
@@ -768,7 +774,9 @@ async function runSeed() {
         userId: researcherMain._id,
         title: `Research Observation Log: ${dnaDoc.blastResult?.topOrganism || 'Genome Study'}`,
         content: `Sequence alignment completed with ${dnaDoc.blastResult?.topIdentity}% identity to reference ${dnaDoc.blastResult?.topAccession}. Structural mutation features confirm key biological properties: ${dnaDoc.scientificSummary}`,
-        dnaFile: dnaDoc._id
+        dnaFile: dnaDoc._id,
+        createdAt: dnaDoc.createdAt,
+        updatedAt: dnaDoc.updatedAt
       });
     }
 
@@ -783,28 +791,32 @@ async function runSeed() {
         content: 'We have updated the bioinformatics alignment engine with high-throughput BioPython & BLAST acceleration. Pipeline processing speed improved by 65%.',
         priority: 'high',
         category: 'update',
-        authorId: adminMain._id
+        authorId: adminMain._id,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
       },
       {
         title: 'ClinVar Database Synchronization Complete',
         content: 'The clinical variant database (ClinVar April 2026 release) has been successfully synchronized across all diagnostic pipeline nodes.',
         priority: 'high',
         category: 'general',
-        authorId: adminMain._id
+        authorId: adminMain._id,
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       },
       {
         title: 'Scheduled Node Optimization',
         content: 'Routine high-performance cluster maintenance will take place on Saturday at 03:00 UTC. Expect zero downtime as failover workers take over.',
         priority: 'medium',
         category: 'maintenance',
-        authorId: adminMain._id
+        authorId: adminMain._id,
+        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
       },
       {
         title: 'HIPAA & ISO-27001 Security Audit Passed',
         content: 'GeneLab platform successfully completed its quarterly HIPAA compliance and zero-trust security audit with a 100% score.',
         priority: 'medium',
         category: 'security',
-        authorId: adminMain._id
+        authorId: adminMain._id,
+        createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000)
       }
     ];
 
@@ -824,7 +836,9 @@ async function runSeed() {
         resourceId: doc._id,
         details: { patientId: doc.patientId, gene: doc.variants[0]?.gene, status: doc.clinicalStatus },
         ipAddress: '192.168.1.102',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GeneLab Client v2.8'
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GeneLab Client v2.8',
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
       });
 
       await SystemLog.create({
@@ -832,7 +846,9 @@ async function runSeed() {
         message: `Bioinformatics pipeline finished analysis for job ${doc.originalName}`,
         context: 'DNAEngine',
         userId: doctorMain._id,
-        ipAddress: '127.0.0.1'
+        ipAddress: '127.0.0.1',
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
       });
     }
 
@@ -845,7 +861,9 @@ async function runSeed() {
         resourceId: doc._id,
         details: { organism: doc.blastResult?.topOrganism, identity: doc.blastResult?.topIdentity },
         ipAddress: '192.168.1.105',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GeneLab Researcher Studio'
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) GeneLab Researcher Studio',
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
       });
 
       await SystemLog.create({
@@ -853,7 +871,9 @@ async function runSeed() {
         message: `Local BLAST pairwise worker completed sequence alignment for ${doc.originalName}`,
         context: 'BLASTEngine',
         userId: researcherMain._id,
-        ipAddress: '127.0.0.1'
+        ipAddress: '127.0.0.1',
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
       });
     }
 
